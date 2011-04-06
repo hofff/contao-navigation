@@ -60,6 +60,51 @@ class ModuleStaticNavigation extends AbstractModuleNavigation {
 		return $this->strNavigation ? parent::generate() : '';
 	}
 	
+	/**
+	 * Fetches page data for all navigation items below the given roots.
+	 * 
+	 * @param integer $arrRoots The root pages of the navigation.
+	 * @param integer $intLevel (optional, defaults to 1) The level of the roots.
+	 * @return null
+	 */
+	protected function fetchItems($arrRoots, $intLevel = 1) {
+		$intHard = $this->backboneit_navigation_hard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
+		$intStop = $this->backboneit_navigation_stop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
+		$arrPIDs = array_keys(array_flip($arrRoots));
+		$intLevel = max(1, $intLevel);
+		
+		while($arrPIDs && $intLevel <= $intHard) {
+			$objSubpages = $this->Database->execute($this->strLevelQueryStart . implode(',', $arrPIDs) . $this->strLevelQueryEnd);
+			
+			if(!$objSubpages->numRows)
+				break;
+			
+			$arrNextPIDs = array();
+			while($objSubpages->next()) {
+				if(isset($arrItems[$objSubpages->id]))
+					continue;
+					
+				if(!$this->checkProtected($objSubpages))
+					continue;
+					
+				$this->arrSubpages[$objSubpages->pid][] = $objSubpages->id; // for order of items
+				$this->arrItems[$objSubpages->id] = $this->compileNavigationItem($objSubpages->row()); // item datasets
+				$arrNextPIDs[] = $objSubpages->id; // ids of current layer (for next layer pids)
+			}
+			
+			$intLevel++;
+			
+			if($intLevel <= $intStop) {
+				$arrPIDs = $arrNextPIDs;
+			} else {
+				$arrPIDs = array();
+				foreach($arrNextPIDs as $intPID)
+					if(isset($this->arrPath[$intPID]))
+						$arrPIDs[] = $intPID;
+			}
+		}
+	}
+	
 	protected function compile() {
 		$this->Template->request = $this->getIndexFreeRequest(true);
 		$this->Template->skipId = 'skipNavigation' . $this->id;

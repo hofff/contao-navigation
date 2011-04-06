@@ -29,68 +29,33 @@ abstract class AbstractModuleNavigation extends Module {
 	protected $strJumpToQuery;
 	protected $strRootConditions; 
 	
-	protected $arrItems; // page datasets as array, probably compiled
+	protected $arrItems; // compiled page datasets
 	protected $arrSubpages; // ordered IDs of subnavigations
 	
-	protected $arrGroups; // set of groups the current user is in
-	
-	protected $arrTrail; // set of parent pages of the current page
-	
-	protected $arrPath; // same as trail but with current page included
-	
-	protected $objPage; // current page dataset
+	protected $arrGroups; // set of groups of the current user
 	
 	protected $intActive; // the id of the active page
+	protected $arrPath; // same as trail but with current page included
+	protected $arrTrail; // set of parent pages of the current page
 	
-	public function __construct(Database_Result $objModule, $strColumn='main') {
+	public function __construct(Database_Result $objModule, $strColumn = 'main') {
 		parent::__construct($objModule, $strColumn);
 		$this->import('Database');
-	}
-	
-	/**
-	 * Brings this instance into a valid state for the navigation generation methods.
-	 * Sets $this->arrGroups, $this->objPage, $this->arrTrail and $this->navigationTpl, if not set.
-	 * Sets optimized stop and hard limits.
-	 * Prepares Queries.
-	 * 
-	 * @return null
-	 */
-	protected function prepare() {
 		
-		if(!is_object($this->objPage)) {
-			global $objPage;
-			$this->objPage = $objPage;
-		}
+		global $objPage;
+		$this->intActive = $this->backboneit_navigation_isSitemap || $this->Input->get('articles') ? false : $objPage->id;
+		$this->arrPath = array_flip($objPage->trail);
+		$this->arrTrail = $this->arrPath;
+		unset($this->arrTrail[$objPage->id]); // trail has a slightly different meaning here (current page excluded, same as in the templates)
 		
-		// set optimized trail of current page as path
-		if(!is_array($this->arrPath)) {
-			$this->arrPath = array_flip($this->objPage->trail);
-		}
-		
-		// set trail has a slightly different meaning here (current page excluded, same as in the templates) 
-		if(!is_array($this->arrTrail)) {
-			$this->arrTrail = $this->arrPath;
-			unset($this->arrTrail[$this->objPage->id]);
-		}
-		
-		// prepare user groups for fast detection
-		if(FE_USER_LOGGED_IN && !is_array($this->arrGroups)) {
+		if(FE_USER_LOGGED_IN) {
 			$this->import('FrontendUser', 'User');
 			$this->arrGroups = array_flip($this->User->groups);
 		}
 		
-		// navigation template fallback
 		if(!strlen($this->navigationTpl))
 			$this->navigationTpl = 'nav_default';
-
-		// active page id
-		if(!isset($this->intActive)) {
-			if($this->sitemap || $this->Input->get('articles')) {
-				$this->intActive = false;
-			} else {
-				$this->intActive = $this->objPage->id;
-			}
-		}
+			
 			
 		if($this->backboneit_navigation_showHidden) {
 			$strHidden = '';
@@ -158,192 +123,6 @@ abstract class AbstractModuleNavigation extends Module {
 			' . $strGuests . $strPublish . '
 			ORDER BY sorting
 			LIMIT	0, 1';
-	}
-	
-	/**
-	 * Renders the navigation of the given IDs into the navigation template.
-	 * Adds CSS classes "first" and "last" to the appropriate navigation item arrays.
-	 * If the given array is empty, the empty string is returned.
-	 * 
-	 * @param array $arrRoots The navigation items arrays
-	 * @param integer $intLevel (optional, defaults to 1) The current level of this navigation layer
-	 * @return string The parsed navigation template, could be empty string.
-	 */
-	protected function renderNaviTree(array $arrIDs, $intLevel = 1) {
-		if(!$arrIDs)
-			return '';
-			
-		$arrItems = array();
-		
-		foreach($arrIDs as $intID) {
-			if(!isset($this->arrItems[$intID]))
-				continue;
-				
-			$arrItem = $this->arrItems[$intID];
-			
-			if(isset($this->arrSubpages[$intID]))
-				$arrItem['subitems'] = $this->renderNaviTree($this->arrSubpages[$intID], $intLevel + 1);
-			
-			$arrItems[] = $arrItem;
-		}
-		
-		$intLast = count($arrItems) - 1;
-		$arrItems[0]['class'] = trim($arrItems[0]['class'] . ' first');
-		$arrItems[$intLast]['class'] = trim($arrItems[$intLast]['class'] . ' last');
-		
-		$objTemplate = new FrontendTemplate($this->navigationTpl);
-		$objTemplate->setData(array(
-			'level' => 'level_' . $intLevel,
-			'items' => $arrItems,
-			'type' => get_class($this)
-		));
-		
-		return $objTemplate->parse();
-	}
-	
-	/**
-	 * Fetches page data for all navigation items below the given roots.
-	 * 
-	 * @param integer $arrRoots The root pages of the navigation.
-	 * @param integer $intLevel (optional, defaults to 1) The level of the roots.
-	 * @return null
-	 */
-	protected function fetchItems($arrRoots, $intLevel = 1) {
-		$intHard = $this->backboneit_navigation_hard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
-		$intStop = $this->backboneit_navigation_stop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
-		$arrPIDs = array_keys(array_flip($arrRoots));
-		$intLevel = max(1, $intLevel);
-		
-		while($arrPIDs && $intLevel <= $intHard) {
-			$objSubpages = $this->Database->execute($this->strLevelQueryStart . implode(',', $arrPIDs) . $this->strLevelQueryEnd);
-			
-			if(!$objSubpages->numRows)
-				break;
-			
-			$arrNextPIDs = array();
-			while($objSubpages->next()) {
-				if(isset($arrItems[$objSubpages->id]))
-					continue;
-					
-				if(!$this->checkProtected($objSubpages))
-					continue;
-					
-				$this->arrSubpages[$objSubpages->pid][] = $objSubpages->id; // for order of items
-				$this->arrItems[$objSubpages->id] = $this->compileNavigationItem($objSubpages->row()); // item datasets
-				$arrNextPIDs[] = $objSubpages->id; // ids of current layer (for next layer pids)
-			}
-			
-			$intLevel++;
-			
-			if($intLevel <= $intStop) {
-				$arrPIDs = $arrNextPIDs;
-			} else {
-				$arrPIDs = array();
-				foreach($arrNextPIDs as $intPID)
-					if(isset($this->arrPath[$intPID]))
-						$arrPIDs[] = $intPID;
-			}
-		}
-	}
-	
-	/**
-	 * Compiles a navigation item array from a page dataset with the given subnavi
-	 * 
-	 * @param array $arrPage The page dataset as an array
-	 * @param string $strSubnavi (optional) HTML string of subnavi
-	 * @return array The compiled navigation item array
-	 */
-	protected function compileNavigationItem(array $arrPage) {
-		// fallback for dataset field collisions
-		$arrPage['_pageTitle']		= $arrPage['pageTitle'];
-		$arrPage['_target']			= $arrPage['target'];
-		$arrPage['_description']	= $arrPage['description'];
-		
-		switch($arrPage['type']) {
-			case 'forward':
-				if($arrPage['jumpTo']) {
-					$intFallbackSearchID = $arrPage['id'];
-					$intJumpToID = $arrPage['jumpTo'];
-					do {
-						$objNext = $this->Database->prepare(
-							$this->strJumpToQuery
-						)->execute($intJumpToID);
-						
-						if(!$objNext->numRows) {
-							$objNext = $this->Database->prepare(
-								$this->strJumpToFallbackQuery
-							)->execute($intFallbackSearchID);
-							break;
-						}
-						
-						$intFallbackSearchID = $intJumpToID;
-						$intJumpToID = $objNext->jumpTo;
-						
-					} while($objNext->type == 'forward');
-				} else {
-					$objNext = $this->Database->prepare(
-						$this->strJumpToFallbackQuery
-					)->execute($arrPage['id']);
-				}
-				
-				if(!$objNext->numRows) {
-					$arrPage['href'] = $this->generateFrontendUrl($arrPage);
-				} elseif($objNext->type == 'redirect') {
-					$arrPage['href'] = $this->encodeEmailURL($arrPage['url']);
-				} else {
-					$intForwardID = $objNext->id;
-					$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
-				}
-				break;
-				
-			case 'redirect':
-				$arrPage['href'] = $this->encodeEmailURL($arrPage['url']);
-				break;
-				
-			default:
-				$arrPage['href'] = $this->generateFrontendUrl($arrPage);
-				break;
-		}
-		
-		$arrPage['link']			= $arrPage['title'];
-		$arrPage['title']			= specialchars($arrPage['title'], true);
-		$arrPage['pageTitle']		= specialchars($arrPage['_pageTitle'], true);
-		$arrPage['nofollow']		= strncmp($arrPage['robots'], 'noindex', 7) === 0;
-		$arrPage['target']			= $arrPage['type'] == 'redirect' && $arrPage['_target'] ? LINK_NEW_WINDOW : '';
-		$arrPage['description']		= str_replace(array("\n", "\r"), array(' ' , ''), $arrPage['_description']);
-		
-		$arrPage['isActive'] = $this->intActive === $arrPage['id'] || $this->intActive === $intForwardID;
-		
-		$strClass = '';
-		if(strlen($strSubnavi))
-			$strClass .= 'submenu';
-		if(strlen($arrPage['cssClass']))
-			$strClass .= ' ' . $arrPage['cssClass'];
-		if($arrPage['pid'] == $objPage->pid) {
-			$strClass .= ' sibling';
-		} elseif(isset($this->arrTrail[$arrPage['id']])) {
-			$strClass .= ' trail';
-		}
-		$arrPage['class'] = trim($strClass);
-		
-		return $arrPage;
-	}
-	
-	/**
-	 * Utility method of compileNavigationItem.
-	 * 
-	 * If the given URL starts with "mailto:", the E-Mail is encoded,
-	 * otherwise nothing is done.
-	 * 
-	 * @param string $strHref The URL to check and possibly encode
-	 * @return string The modified URL
-	 */
-	protected function encodeEmailURL($strHref) {
-		if(strncasecmp($strHref, 'mailto:', 7) !== 0)
-			return $strHref;
-
-		$this->import('String');
-		return $this->String->encodeEmail($strHref);
 	}
 	
 	/**
@@ -421,6 +200,148 @@ abstract class AbstractModuleNavigation extends Module {
 				$arrPrevLevel[] = $arrPrev[$intID];
 		
 		return $arrPrevLevel;
+	}
+	
+	
+	/**
+	 * Renders the navigation of the given IDs into the navigation template.
+	 * Adds CSS classes "first" and "last" to the appropriate navigation item arrays.
+	 * If the given array is empty, the empty string is returned.
+	 * 
+	 * @param array $arrRoots The navigation items arrays
+	 * @param integer $intLevel (optional, defaults to 1) The current level of this navigation layer
+	 * @return string The parsed navigation template, could be empty string.
+	 */
+	protected function renderNaviTree(array $arrIDs, $intLevel = 1) {
+		if(!$arrIDs)
+			return '';
+			
+		$arrItems = array();
+		
+		foreach($arrIDs as $intID) {
+			if(!isset($this->arrItems[$intID]))
+				continue;
+				
+			$arrItem = $this->arrItems[$intID];
+			
+			if(isset($this->arrSubpages[$intID]))
+				$arrItem['subitems'] = $this->renderNaviTree($this->arrSubpages[$intID], $intLevel + 1);
+			
+			$arrItems[] = $arrItem;
+		}
+		
+		$intLast = count($arrItems) - 1;
+		$arrItems[0]['class'] = trim($arrItems[0]['class'] . ' first');
+		$arrItems[$intLast]['class'] = trim($arrItems[$intLast]['class'] . ' last');
+		
+		$objTemplate = new FrontendTemplate($this->navigationTpl);
+		$objTemplate->setData(array(
+			'level' => 'level_' . $intLevel,
+			'items' => $arrItems,
+			'type' => get_class($this)
+		));
+		
+		return $objTemplate->parse();
+	}
+	
+	/**
+	 * Compiles a navigation item array from a page dataset with the given subnavi
+	 * 
+	 * @param array $arrPage The page dataset as an array
+	 * @param string $strSubnavi (optional) HTML string of subnavi
+	 * @return array The compiled navigation item array
+	 */
+	protected function compileNavigationItem(array $arrPage) {
+		// fallback for dataset field collisions
+		$arrPage['_pageTitle']		= $arrPage['pageTitle'];
+		$arrPage['_target']			= $arrPage['target'];
+		$arrPage['_description']	= $arrPage['description'];
+		
+		switch($arrPage['type']) {
+			case 'forward':
+				if($arrPage['jumpTo']) {
+					$intFallbackSearchID = $arrPage['id'];
+					$intJumpToID = $arrPage['jumpTo'];
+					do {
+						$objNext = $this->Database->prepare(
+							$this->strJumpToQuery
+						)->execute($intJumpToID);
+						
+						if(!$objNext->numRows) {
+							$objNext = $this->Database->prepare(
+								$this->strJumpToFallbackQuery
+							)->execute($intFallbackSearchID);
+							break;
+						}
+						
+						$intFallbackSearchID = $intJumpToID;
+						$intJumpToID = $objNext->jumpTo;
+						
+					} while($objNext->type == 'forward');
+				} else {
+					$objNext = $this->Database->prepare(
+						$this->strJumpToFallbackQuery
+					)->execute($arrPage['id']);
+				}
+				
+				if(!$objNext->numRows) {
+					$arrPage['href'] = $this->generateFrontendUrl($arrPage);
+				} elseif($objNext->type == 'redirect') {
+					$arrPage['href'] = $this->encodeEmailURL($objNext->url);
+				} else {
+					$intForwardID = $objNext->id;
+					$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
+				}
+				break;
+				
+			case 'redirect':
+				$arrPage['href'] = $this->encodeEmailURL($arrPage['url']);
+				break;
+				
+			default:
+				$arrPage['href'] = $this->generateFrontendUrl($arrPage);
+				break;
+		}
+		
+		$arrPage['link']			= $arrPage['title'];
+		$arrPage['title']			= specialchars($arrPage['title'], true);
+		$arrPage['pageTitle']		= specialchars($arrPage['_pageTitle'], true);
+		$arrPage['nofollow']		= strncmp($arrPage['robots'], 'noindex', 7) === 0;
+		$arrPage['target']			= $arrPage['type'] == 'redirect' && $arrPage['_target'] ? LINK_NEW_WINDOW : '';
+		$arrPage['description']		= str_replace(array("\n", "\r"), array(' ' , ''), $arrPage['_description']);
+		
+		$arrPage['isActive'] = $this->intActive === $arrPage['id'] || $this->intActive === $intForwardID;
+		
+		$strClass = '';
+		if(strlen($strSubnavi))
+			$strClass .= 'submenu';
+		if(strlen($arrPage['cssClass']))
+			$strClass .= ' ' . $arrPage['cssClass'];
+		if($arrPage['pid'] == $objPage->pid) {
+			$strClass .= ' sibling';
+		} elseif(isset($this->arrTrail[$arrPage['id']])) {
+			$strClass .= ' trail';
+		}
+		$arrPage['class'] = trim($strClass);
+		
+		return $arrPage;
+	}
+	
+	/**
+	 * Utility method of compileNavigationItem.
+	 * 
+	 * If the given URL starts with "mailto:", the E-Mail is encoded,
+	 * otherwise nothing is done.
+	 * 
+	 * @param string $strHref The URL to check and possibly encode
+	 * @return string The modified URL
+	 */
+	protected function encodeEmailURL($strHref) {
+		if(strncasecmp($strHref, 'mailto:', 7) !== 0)
+			return $strHref;
+
+		$this->import('String');
+		return $this->String->encodeEmail($strHref);
 	}
 	
 	/**
