@@ -371,6 +371,31 @@ abstract class AbstractModuleNavigation extends Module {
 		return false;
 	}
 	
+	protected function getQueryPartHidden() {
+		if($this->backboneit_navigation_showHidden) {
+			return '';
+		} elseif($this->backboneit_navigation_isSitemap) {
+			return ' AND (sitemap = \'map_always\' OR (hide != 1 AND sitemap != \'map_never\'))';
+		} else {
+			return ' AND hide != 1';
+		}	
+	}
+	
+	protected function getQueryPartGuests() {
+		if(FE_USER_LOGGED_IN && !BE_USER_LOGGED_IN) {
+			return ' AND guests != 1';
+		}
+	}
+	
+	protected function getQueryPartPublish() {
+		if(BE_USER_LOGGED_IN) {
+			$strPublish = '';
+		} else {
+			static $intTime; if(!$intTime) $intTime = time();
+			$strPublish = ' AND (start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
+		}
+	}	
+	
 	/**
 	 * A helper method to generate BE wildcard.
 	 * 

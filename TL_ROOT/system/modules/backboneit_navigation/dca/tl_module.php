@@ -4,12 +4,13 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navi
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_static']
 	= '{title_legend},name,headline,type;'
-	. '{nav_legend},backboneit_navigation_start,'
-	. 'backboneit_navigation_ignoreGuests,backboneit_navigation_ignoreHidden,'
+	. '{backboneit_navigation_root_legend},backboneit_navigation_start,'
+	. 'backboneit_navigation_currentAsRoot,backboneit_navigation_defineRoots,'
+	. 'backboneit_navigation_ignoreGuests,backboneit_navigation_ignoreHidden;'
+	. '{backboneit_navigation_legend},'
 	. 'backboneit_navigation_stop,backboneit_navigation_hard,'
 	. 'backboneit_navigation_showProtected,backboneit_navigation_showHidden;'
-	. '{reference_legend:hide},backboneit_navigation_currentAsRoot,backboneit_navigation_defineRoots;'
-	. '{template_legend:hide},navigationTpl;'
+	. '{template_legend:hide},navigationTpl,backboneit_navigation_addFields;'
 	. '{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineRoots'] = 'backboneit_navigation_roots';

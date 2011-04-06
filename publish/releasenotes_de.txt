@@ -1,0 +1,17 @@
+=== Titel
+Navigationselemente
+
+
+=== Suchbegriffe
+navigation,seitenstruktur,seiten,menü,
+
+
+=== Teaser
+Verschiedene Navigationselemente (vorerst "nur" ein Navigationsmenü mit vielen neuen Möglichkeiten)
+
+
+=== Beschreibung
+<p></p>
+
+
+=== Freigabe-Notizen und Änderungs-Log
