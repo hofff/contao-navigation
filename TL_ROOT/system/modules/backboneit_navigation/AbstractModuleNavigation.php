@@ -48,10 +48,11 @@ abstract class AbstractModuleNavigation extends Module {
 	protected $strLevelQueryEnd;
 	protected $strJumpToFallbackQuery;
 	protected $strJumpToQuery;
-	protected $strRootConditions; 
 	
 	protected $arrItems; // compiled page datasets
 	protected $arrSubpages; // ordered IDs of subnavigations
+	
+	protected $arrFields = array(); // the fields to use for navigation tpl
 	
 	protected $arrGroups; // set of groups of the current user
 	
@@ -77,44 +78,23 @@ abstract class AbstractModuleNavigation extends Module {
 		if(!strlen($this->navigationTpl))
 			$this->navigationTpl = 'nav_default';
 			
-			
-		if($this->backboneit_navigation_showHidden) {
-			$strHidden = '';
-		} elseif($this->backboneit_navigation_isSitemap) {
-			$strHidden = ' AND (sitemap = \'map_always\' OR (hide != 1 AND sitemap != \'map_never\'))';
-		} else {
-			$strHidden = ' AND hide != 1';
-		}
+		$strHidden = $this->getQueryPartHidden($this->backboneit_navigation_showHidden);
+		$strGuests = $this->getQueryPartGuests();
+		$strPublish = $this->getQueryPartPublish();
 		
-		if(FE_USER_LOGGED_IN && !BE_USER_LOGGED_IN) {
-			$strGuests = ' AND guests != 1';
-		}
-	
-		if(BE_USER_LOGGED_IN) {
-			$strPublish = '';
-		} else {
-			$intTime = time();
-			$strPublish = ' AND (start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
-		}
-		
-		$this->strRootConditions = $strPublish;
-		!$this->backboneit_navigation_ignoreHidden && $this->strRootConditions .= $strHidden;
-		!$this->backboneit_navigation_ignoreGuests && $this->strRootConditions .= $strGuests;
-		
-		$arrFields = deserialize($this->backboneit_navigation_addFields, true);
+		$arrAddFields = deserialize($this->backboneit_navigation_addFields, true);
 		
 		if(count($arrFields) > 10) {
-			$strFields = '*';
+			$this->arrFields[] = $strFields = '*';
 			
 		} else {
-			$arrFields = array_merge(array_flip($arrFields), self::$arrDefaultFields);
+			$arrAddFields = array_merge(array_flip($arrAddFields), self::$arrDefaultFields);
 			
-			$arrExists = array();
 			foreach($this->Database->listFields('tl_page') as $arrField)
-				if(isset($arrFields[$arrField['name']]))
-					$arrExists[] = $arrField['name'];
+				if(isset($arrAddFields[$arrField['name']]))
+					$this->arrFields[] = $arrField['name'];
 					
-			$strFields = implode(',', $arrExists);
+			$strFields = implode(',', $this->arrFields);
 		}
 		
 		$this->strLevelQueryStart =
@@ -154,30 +134,55 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @param array $arrPages An array of page IDs to filter
 	 * @return array Filtered array of page IDs
 	 */
-	protected function filterPages(array $arrPages) {
+	protected function filterPages(array $arrPages, $strConditions = '') {
 		if(!$arrPages)
 			return $arrPages;
 			
 		$objPages = $this->Database->execute(
-			'SELECT	id, protected, groups
+			'SELECT	id, pid, protected, groups
 			FROM	tl_page
 			WHERE	id IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
-			' . $this->strRootConditions);
+			' . $strConditions);
 		
+		$arrPIDs = array();
 		$arrValid = array();
-		while($objPages->next())
-			if($this->checkProtected($objPages))
+		while($objPages->next()) {
+			if($this->checkProtected($objPages)) {
 				$arrValid[$objPages->id] = true;
+				if(!$objPages->protected && $objPages->pid != 0)
+					$arrPIDs[$objPages->pid][] = $objPages->id;
+			}
+		}
 		
+		// exclude pages which are in a protected path
+		while(count($arrPIDs)) {
+			$arrIDs = $arrPIDs;
+			$arrPIDs = array();
+			
+			$objPages = $this->Database->execute(
+				'SELECT id, pid, protected, groups
+				FROM	tl_page
+				WHERE	id IN (' . implode(',', array_keys($arrIDs)) . ')');
+		
+			while($objPages->next()) {
+				if(!$objPages->protected) {
+					if($objPages->pid != 0)
+						$arrPIDs[$objPages->pid] = array_merge($arrPIDs[$objPages->pid], $arrIDs[$objPages->id]);
+				} elseif(!$this->checkProtected($objPages)) {
+					$arrValid = array_diff($arrValid, $arrIDs[$objPages->id]);
+				}
+			}
+		}
+						
 		$arrFiltered = array();
 		foreach($arrPages as $intID)
-			if(isset($arrValid[$intID]))
+			if($arrValid[$intID])
 				$arrFiltered[] = $intID;
 		
 		return $arrFiltered;
 	}
 	
-	protected function getNextLevel(array $arrPages) {
+	protected function getNextLevel(array $arrPages, $strConditions = '') {
 		if(!$arrPages)
 			return $arrPages;
 			
@@ -185,7 +190,7 @@ abstract class AbstractModuleNavigation extends Module {
 			'SELECT	id, pid, protected, groups
 			FROM	tl_page
 			WHERE	pid IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
-			' . $this->strRootConditions . '
+			' . $strConditions . '
 			ORDER BY sorting');
 		
 		$arrNext = array();
@@ -201,14 +206,15 @@ abstract class AbstractModuleNavigation extends Module {
 		return $arrNextLevel;
 	}
 	
-	protected function getPrevLevel(array $arrPages) {
+	protected function getPrevLevel(array $arrPages, $strConditions) {
 		if(!$arrPages)
 			return $arrPages;
 			
 		$objPrev = $this->Database->execute(
 			'SELECT	id, pid
 			FROM	tl_page
-			WHERE	id IN (' . implode(',', array_keys(array_flip($arrPages))) . ')');
+			WHERE	id IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
+			' . $strConditions);
 		
 		$arrPrev = array();
 		while($objPrev->next())
@@ -318,6 +324,13 @@ abstract class AbstractModuleNavigation extends Module {
 				$arrPage['href'] = $this->encodeEmailURL($arrPage['url']);
 				break;
 				
+			case 'root':
+				if(!$arrPage['dns']
+				|| preg_replace('/^www\./', '', $arrPage['dns']) ==  preg_replace('/^www\./', '', $this->Environment->httpHost)) {
+					$arrPage['href'] = $this->Environment->base;
+					break;
+				}
+				
 			default:
 				$arrPage['href'] = $this->generateFrontendUrl($arrPage);
 				break;
@@ -333,7 +346,7 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrPage['isActive'] = $this->intActive === $arrPage['id'] || $this->intActive === $intForwardID;
 		
 		$strClass = '';
-		if(strlen($strSubnavi))
+		if(isset($this->arrSubpages[$arrPage['id']]))
 			$strClass .= 'submenu';
 		if(strlen($arrPage['cssClass']))
 			$strClass .= ' ' . $arrPage['cssClass'];
@@ -391,8 +404,8 @@ abstract class AbstractModuleNavigation extends Module {
 		return false;
 	}
 	
-	protected function getQueryPartHidden() {
-		if($this->backboneit_navigation_showHidden) {
+	protected function getQueryPartHidden($blnShowHidden) {
+		if($blnShowHidden) {
 			return '';
 		} elseif($this->backboneit_navigation_isSitemap) {
 			return ' AND (sitemap = \'map_always\' OR (hide != 1 AND sitemap != \'map_never\'))';
@@ -404,15 +417,17 @@ abstract class AbstractModuleNavigation extends Module {
 	protected function getQueryPartGuests() {
 		if(FE_USER_LOGGED_IN && !BE_USER_LOGGED_IN) {
 			return ' AND guests != 1';
+		} else {
+			return '';
 		}
 	}
 	
 	protected function getQueryPartPublish() {
 		if(BE_USER_LOGGED_IN) {
-			$strPublish = '';
+			return '';
 		} else {
 			static $intTime; if(!$intTime) $intTime = time();
-			$strPublish = ' AND (start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
+			return ' AND (start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
 		}
 	}	
 	

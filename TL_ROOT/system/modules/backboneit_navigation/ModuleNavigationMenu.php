@@ -3,7 +3,7 @@
 
 class ModuleNavigationMenu extends AbstractModuleNavigation {
 	
-	protected $strTemplate = 'mod_backboneit_navigation_static';
+	protected $strTemplate = 'mod_backboneit_navigation_menu';
 	
 	protected $strNavigation;
 	
@@ -11,49 +11,64 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		if(TL_MODE == 'BE')
 			return $this->generateBE('NAVIGATION MENU');
 			
-		if($this->backboneit_navigation_defineRoots) {
-			$arrRoots = deserialize($this->backboneit_navigation_roots, true);
-		} else {
-			$arrRoots = array($this->objPage->rootId);
-		}
+		global $objPage;
+		$this->backboneit_navigation_currentAsRoot && $arrRoots[] = $objPage->id;
+		$arrRoots = $this->backboneit_navigation_defineRoots
+			? deserialize($this->backboneit_navigation_roots, true)
+			: array($objPage->rootId);
 		
-		if($this->backboneit_navigation_currentAsRoot) {
-			$arrRoots[] = $this->objPage->id;
-		}
 		
-//		echo '<pre>';
-//		echo 'roots 2:';
-//		print_r($arrRoots);
+		$strGuests = $this->getQueryPartGuests();
+		$strPublish = $this->getQueryPartPublish();
+		
+		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden);
+		$this->backboneit_navigation_respectPublish && $strConditions .= $strPublish;
+		$this->backboneit_navigation_respectGuests && $strConditions .= $strGuests;
+		
+		$strStartConditions = $this->backboneit_navigation_includeStart ? '' : $strConditions;
 		
 		if($this->backboneit_navigation_start > 0) {
-			$arrRoots = $this->filterPages($arrRoots);
-			for($i = 0, $n = $this->backboneit_navigation_start; $i < $n; $i++)
-				$arrRoots = $this->getNextLevel($arrRoots);
+			$arrRoots = $this->filterPages($arrRoots, $strConditions);
+			for($i = 1, $n = $this->backboneit_navigation_start; $i < $n; $i++)
+				$arrRoots = $this->getNextLevel($arrRoots, $strConditions);
+			$arrRoots = $this->getNextLevel($arrRoots, $strStartConditions);
 			
 		} elseif($this->backboneit_navigation_start < 0) {
 			for($i = 0, $n = -$this->backboneit_navigation_start; $i < $n; $i++)
 				$arrRoots = $this->getPrevLevel($arrRoots);
-			$arrRoots = $this->filterPages($arrRoots);
+			$arrRoots = $this->filterPages($arrRoots, $strStartConditions);
 			
 		} else {
-			$arrRoots = $this->filterPages($arrRoots);
+			$arrRoots = $this->filterPages($arrRoots, $strStartConditions);
 		}
 		
-//		echo 'roots 3:';
-//		print_r($arrRoots);
+		if($this->backboneit_navigation_includeStart) {
+			$objRoots = $this->Database->execute(
+				'SELECT	' . implode(',', $this->arrFields) . '
+				FROM	tl_page
+				WHERE	id IN (' . implode(',', $arrRoots) . ')
+				AND		type != \'error_403\'
+				AND		type != \'error_404\'
+				' . $this->getQueryPartHidden($this->backboneit_navigation_showHidden) . $strGuests . $strPublish);
+
+			while($objRoots->next())
+				$this->arrItems[$objRoots->id] = $this->compileNavigationItem($objRoots->row());
+			
+			$this->fetchItems($arrRoots, 2);
+			
+		} else {
+			$arrItems = array();
+			$this->fetchItems($arrRoots);
+			foreach($arrRoots as $intRootID)
+				if(isset($this->arrSubpages[$intRootID]))
+					$arrItems = array_merge($arrItems, $this->arrSubpages[$intRootID]);
+			$arrRoots = $arrItems;
+		}
 		
-		$this->fetchItems($arrRoots);
-		
-//		echo 'items 1:';
-//		print_r($this->arrItems);
-//		echo '</pre>';
-		
-		$arrItems = array();
-		foreach($arrRoots as $intRootID)
-			if(isset($this->arrSubpages[$intRootID]))
-				$arrItems = array_merge($arrItems, $this->arrSubpages[$intRootID]);
-				
-		$this->strNavigation = trim($this->renderNaviTree($arrItems));
+		foreach($this->arrItems as &$arrPage)
+			$arrPage = $this->compileNavigationItem($arrPage);
+
+		$this->strNavigation = trim($this->renderNaviTree($arrRoots));
 		
 		return $this->strNavigation ? parent::generate() : '';
 	}
@@ -79,14 +94,14 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			
 			$arrNextPIDs = array();
 			while($objSubpages->next()) {
-				if(isset($arrItems[$objSubpages->id]))
+				if(isset($this->arrItems[$objSubpages->id]))
 					continue;
 					
 				if(!$this->checkProtected($objSubpages))
 					continue;
 					
 				$this->arrSubpages[$objSubpages->pid][] = $objSubpages->id; // for order of items
-				$this->arrItems[$objSubpages->id] = $this->compileNavigationItem($objSubpages->row()); // item datasets
+				$this->arrItems[$objSubpages->id] = $objSubpages->row(); // item datasets
 				$arrNextPIDs[] = $objSubpages->id; // ids of current layer (for next layer pids)
 			}
 			

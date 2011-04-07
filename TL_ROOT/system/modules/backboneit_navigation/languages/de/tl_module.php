@@ -20,6 +20,8 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectGuests']
 	= array('"Nur für Gäste sichtbar" beachten', 'Nur Relevant für die Ermittlung der Startebene.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectHidden']
 	= array('Versteckte Seiten beachten', 'Nur Relevant für die Ermittlung der Startebene.');
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectPublish']
+	= array('Unveröffentlichte Seiten beachten', 'Nur Relevant für die Ermittlung der Startebene.');
 	
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_stop']
 	= array('Angezeigte Ebenen', 'Anzahl der Ebenen die immer angezeigt werden.');

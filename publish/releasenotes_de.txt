@@ -24,7 +24,13 @@ die nur Gästen angezeigt werden. Diese werden gar nicht mehr gerendert.)</li>
 </ul>
 
 <h3>Navigationsmenü:</h3>
+<p>Ein Multitalent: Es ist alles möglich was mit einem Navigationsmenü oder
+einer Individuellen Navigation möglich ist, Kombinationen aus beiden und
+noch einiges mehr. Einfach ausprobieren.</p>
+<h4>Funktionen:</h4>
 <ul>
+<li>Kompatibel zu den Templates für das Standard-Navigationsmenü (einziger Unterschied ist, das Seiten
+die CSS-Klasse "submenu" tatsächlich auch nur dann bekommen, wenn dieses Untermenü gerendert wird)</li>
 <li>Mehrere Referenzseiten (Wurzeln der Navigation)</li>
 <li>Aktuelle Seite als Referenzseite</li>
 <li>Startebene wird relativ zu den Referenzseiten berechnet (negative Startebene möglich)</li>

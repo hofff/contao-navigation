@@ -7,7 +7,8 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
 	. '{backboneit_navigation_root_legend},'
 	. 'backboneit_navigation_start,backboneit_navigation_includeStart,'
 	. 'backboneit_navigation_currentAsRoot,backboneit_navigation_defineRoots,'
-	. 'backboneit_navigation_respectGuests,backboneit_navigation_respectHidden;'
+	. 'backboneit_navigation_respectGuests,backboneit_navigation_respectHidden,'
+	. 'backboneit_navigation_respectPublish;'
 	. '{backboneit_navigation_legend},'
 	. 'backboneit_navigation_stop,backboneit_navigation_hard,'
 	. 'backboneit_navigation_showProtected,backboneit_navigation_showHidden;'
@@ -80,6 +81,15 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectHidden']
 	'inputType'	=> 'checkbox',
 	'eval'		=> array(
 		'tl_class'		=> 'w50 cbx'
+	)
+);
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectPublish'] = array(
+	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectPublish'],
+	'exclude'	=> true,
+	'inputType'	=> 'checkbox',
+	'eval'		=> array(
+		'tl_class'		=> 'clr w50 cbx'
 	)
 );
 
