@@ -1,7 +1,7 @@
 <?php
 
 
-class ModuleStaticNavigation extends AbstractModuleNavigation {
+class ModuleNavigationMenu extends AbstractModuleNavigation {
 	
 	protected $strTemplate = 'mod_backboneit_navigation_static';
 	
@@ -9,10 +9,8 @@ class ModuleStaticNavigation extends AbstractModuleNavigation {
 	
 	public function generate() {
 		if(TL_MODE == 'BE')
-			return $this->generateBE('STATIC NAVIGATION MENU');
-	
-		$this->prepare();
-		
+			return $this->generateBE('NAVIGATION MENU');
+			
 		if($this->backboneit_navigation_defineRoots) {
 			$arrRoots = deserialize($this->backboneit_navigation_roots, true);
 		} else {

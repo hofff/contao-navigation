@@ -23,6 +23,27 @@
  */
 abstract class AbstractModuleNavigation extends Module {
 	
+	public static $arrDefaultFields = array(
+		'id'		=> true,
+		'pid'		=> true,
+		'sorting'	=> true,
+		'tstamp'	=> true,
+		'type'		=> true,
+		'alias'		=> true,
+		'title'		=> true,
+		'protected'	=> true,
+		'groups'	=> true,
+		'jumpTo'	=> true,
+		'pageTitle'	=> true,
+		'target'	=> true,
+		'description' => true,
+		'url'		=> true,
+		'robots'	=> true,
+		'cssClass'	=> true,
+		'accesskey'	=> true,
+		'tabindex'	=> true
+	);
+	
 	protected $strLevelQueryStart;
 	protected $strLevelQueryEnd;
 	protected $strJumpToFallbackQuery;
@@ -81,20 +102,19 @@ abstract class AbstractModuleNavigation extends Module {
 		!$this->backboneit_navigation_ignoreGuests && $this->strRootConditions .= $strGuests;
 		
 		$arrFields = deserialize($this->backboneit_navigation_addFields, true);
-		$strFields = 'id,pid,type,alias,title,protected,groups,jumpTo,pageTitle,
-				target,description,url,robots,cssClass,accesskey,tabindex';
 		
 		if(count($arrFields) > 10) {
 			$strFields = '*';
 			
-		} elseif(count($arrFields) > 0) {
-			$arrMiss = array_flip($arrFields);
+		} else {
+			$arrFields = array_merge(array_flip($arrFields), self::$arrDefaultFields);
+			
+			$arrExists = array();
 			foreach($this->Database->listFields('tl_page') as $arrField)
-				unset($arrMiss[$arrField['name']]);
-
-			foreach($arrFields as $strField)
-				if(!isset($arrMiss[$strField]))
-					$strFields = ',' . $strField;
+				if(isset($arrFields[$arrField['name']]))
+					$arrExists[] = $arrField['name'];
+					
+			$strFields = implode(',', $arrExists);
 		}
 		
 		$this->strLevelQueryStart =

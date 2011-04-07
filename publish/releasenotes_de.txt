@@ -11,7 +11,29 @@ Verschiedene Navigationselemente (vorerst "nur" ein Navigationsmenü mit vielen 
 
 
 === Beschreibung
-<p></p>
+<h3>Anmerkungen zum Bestimmen der Sichtbarkeit einer Seite:</h3>
+<ul>
+<li>Der Veröffentlichungsstatus gilt ausschließlich für eine Seite selbst. Das heißt zum Beispiel,
+dass eine Navigation durchaus dargestellt wird, selbst wenn die Referenzseite nicht veröffentlicht ist.</li>
+<li>Der Seitenschutz für bestimmte Mitgliedergruppen vererbt sich, auf alle Unterseiten,
+außer denjenigen die selbst explizit einen Seitenschutz für Mitgliedergruppen definieren und derren Unterseiten.</li>
+<li>Die Einstellung "Nur Gästen anzeigen" gilt nur für die Seite selbst. Tatsächlich ist die Seite für
+angemeldete Benutzer auch noch verfügbar, soll nur in keiner Navigation angezeigt werden. (Anders als zum Beispiel Artikel,
+die nur Gästen angezeigt werden. Diese werden gar nicht mehr gerendert.)</li>
+<li>"Im Menü verstecken" gilt nur für die Seite selbst.</li>
+</ul>
 
+<h3>Navigationsmenü:</h3>
+<ul>
+<li>Mehrere Referenzseiten (Wurzeln der Navigation)</li>
+<li>Aktuelle Seite als Referenzseite</li>
+<li>Startebene wird relativ zu den Referenzseiten berechnet (negative Startebene möglich)</li>
+<li>Hardlimit flexibel (Anmerkung: Stopebene und Hardlimit beziehen sich relativ zur Startebene &endash; 
+diessollte auch durch die geänderten Labels der Moduleinstellungen hervorgehen.</li>
+<li>Versteckte und geschützte Seiten anzeigen</li>
+<li>Als Sitemap verwendbar</li>
+<li>Optimierte Darstellungsalgorithmen, zum Beispiel wird pro Navigationsebene nur noch
+eine Datenbankabfrage durchgeführt, was vorallem bei einer sehr verzweigten Navigation Vorteile bringen sollte.</li>
+</ul>
 
 === Freigabe-Notizen und Änderungs-Log

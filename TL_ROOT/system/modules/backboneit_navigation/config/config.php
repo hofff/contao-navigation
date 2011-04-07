@@ -1,3 +1,3 @@
 <?php
 
-$GLOBALS['FE_MOD']['navigationMenu']['backboneit_navigation_static'] = 'ModuleStaticNavigation';
+$GLOBALS['FE_MOD']['navigationMenu']['backboneit_navigation_menu'] = 'ModuleNavigationMenu';
