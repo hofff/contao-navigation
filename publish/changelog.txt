@@ -1,5 +1,8 @@
 h1. Changelog
 
-h2. 1.0.0 stable
+h2. 1.0.0 rc1
 
+* 3 *Feature*: Added a hook before rendering the navigation
+* 3 *Change*: Some refactoring from protected to public to make the hook more useful
+* 3 *Change*: Some clean-up
 * 2 Initial release

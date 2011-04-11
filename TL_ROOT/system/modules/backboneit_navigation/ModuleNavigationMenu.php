@@ -17,13 +17,9 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			: array($objPage->rootId);
 		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRoots, $objPage->id);
 		
-		
-		$strGuests = $this->getQueryPartGuests();
-		$strPublish = $this->getQueryPartPublish();
-		
 		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden);
-		$this->backboneit_navigation_respectPublish && $strConditions .= $strPublish;
-		$this->backboneit_navigation_respectGuests && $strConditions .= $strGuests;
+		$this->backboneit_navigation_respectGuests && $strConditions .= $this->getQueryPartGuests();
+		$this->backboneit_navigation_respectPublish && $strConditions .= $this->getQueryPartPublish();
 		
 		$strStartConditions = $this->backboneit_navigation_includeStart ? '' : $strConditions;
 		
@@ -49,7 +45,9 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				WHERE	id IN (' . implode(',', $arrRoots) . ')
 				AND		type != \'error_403\'
 				AND		type != \'error_404\'
-				' . $this->getQueryPartHidden($this->backboneit_navigation_showHidden) . $strGuests . $strPublish);
+				' . $this->getQueryPartHidden($this->backboneit_navigation_showHidden)
+				. $this->getQueryPartGuests()
+				. $this->getQueryPartPublish());
 
 			while($objRoots->next())
 				$this->arrItems[$objRoots->id] = $this->compileNavigationItem($objRoots->row());
@@ -67,10 +65,16 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		
 		foreach($this->arrItems as &$arrPage)
 			$arrPage = $this->compileNavigationItem($arrPage);
-
-		$this->strNavigation = trim($this->renderNaviTree($arrRoots));
+			
+		$this->strNavigation = trim($this->renderNaviTree($this->executeHook($arrRoots)));
 		
 		return $this->strNavigation ? parent::generate() : '';
+	}
+	
+	protected function compile() {
+		$this->Template->request = $this->getIndexFreeRequest(true);
+		$this->Template->skipId = 'skipNavigation' . $this->id;
+		$this->Template->items = $this->strNavigation;
 	}
 	
 	/**
@@ -131,10 +135,30 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		}
 	}
 	
-	protected function compile() {
-		$this->Template->request = $this->getIndexFreeRequest(true);
-		$this->Template->skipId = 'skipNavigation' . $this->id;
-		$this->Template->items = $this->strNavigation;
+	/**
+	 * Executes the navigation hook.
+	 * The callback receives the following parameters:
+	 * $this - This navigation module instance
+	 * $arrRoots - The IDs of the first navigation level
+	 * 
+	 * And should return a new root array or null
+	 * 
+	 * @param array $arrRoots The root pages before hook execution
+	 * @return array $arrRoots The root pages after hook execution
+	 */
+	protected function executeHook(array $arrRoots) {
+		if(!is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_menu']))
+			return $arrRoots;
+			
+		foreach($GLOBALS['TL_HOOKS']['backboneit_navigation_menu'] as $arrCallback) {
+			$this->import($arrCallback[0]);
+			$arrNewRoots = $this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrRoots);
+			
+			if($arrNewRoots !== null)
+				$arrRoots = $arrNewRoots;
+		}
+		
+		return $arrRoots;
 	}
 	
 }

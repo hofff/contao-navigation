@@ -47,8 +47,8 @@ abstract class AbstractModuleNavigation extends Module {
 	protected $strJumpToFallbackQuery;
 	protected $strJumpToQuery;
 	
-	protected $arrItems = array(); // compiled page datasets
-	protected $arrSubpages = array(); // ordered IDs of subnavigations
+	public $arrItems = array(); // compiled page datasets
+	public $arrSubpages = array(); // ordered IDs of subnavigations
 	
 	protected $arrFields = array(); // the fields to use for navigation tpl
 	
@@ -110,6 +110,20 @@ abstract class AbstractModuleNavigation extends Module {
 			LIMIT	0, 1';
 	}
 	
+	public function __get($strKey) {
+		switch($strKey) {
+			case 'strJumpToFallbackQuery':
+			case 'strJumpToQuery':
+			case 'arrFields':
+			case 'arrGroups':
+			case 'intActive':
+			case 'arrPath':
+			case 'arrTrail':
+				return $this->$strKey;
+		}
+		return parent::__get($strKey);
+	}
+	
 	/**
 	 * Filters the given array of page IDs in regard of publish state,
 	 * required permissions (protected and guests only) and hidden state, according to
@@ -119,7 +133,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @param array $arrPages An array of page IDs to filter
 	 * @return array Filtered array of page IDs
 	 */
-	protected function filterPages(array $arrPages, $strConditions = '') {
+	public function filterPages(array $arrPages, $strConditions = '') {
 		if(!$arrPages)
 			return $arrPages;
 			
@@ -171,7 +185,15 @@ abstract class AbstractModuleNavigation extends Module {
 		return $arrFiltered;
 	}
 	
-	protected function getNextLevel(array $arrPages, $strConditions = '') {
+	/**
+	 * Retrieves the subpages of the given array of page IDs in respect of the
+	 * given conditions, which are added to the WHERE clause of the query.
+	 * Maintains relative order of the input array.
+	 * 
+	 * @param array $arrPages An array of parent IDs
+	 * @return array The child IDs
+	 */
+	public function getNextLevel(array $arrPages, $strConditions = '') {
 		if(!$arrPages)
 			return $arrPages;
 			
@@ -195,7 +217,15 @@ abstract class AbstractModuleNavigation extends Module {
 		return $arrNextLevel;
 	}
 	
-	protected function getPrevLevel(array $arrPages, $strConditions = '') {
+	/**
+	 * Retrieves the parents of the given array of page IDs in respect of the
+	 * given conditions, which are added to the WHERE clause of the query.
+	 * Maintains relative order of the input array.
+	 * 
+	 * @param array $arrPages An array of child IDs
+	 * @return array The parent IDs
+	 */
+	public function getPrevLevel(array $arrPages, $strConditions = '') {
 		if(!$arrPages)
 			return $arrPages;
 			
@@ -263,10 +293,9 @@ abstract class AbstractModuleNavigation extends Module {
 	 * Compiles a navigation item array from a page dataset with the given subnavi
 	 * 
 	 * @param array $arrPage The page dataset as an array
-	 * @param string $strSubnavi (optional) HTML string of subnavi
 	 * @return array The compiled navigation item array
 	 */
-	protected function compileNavigationItem(array $arrPage) {
+	public function compileNavigationItem(array $arrPage) {
 		// fallback for dataset field collisions
 		$arrPage['_pageTitle']		= $arrPage['pageTitle'];
 		$arrPage['_target']			= $arrPage['target'];
@@ -358,7 +387,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @param string $strHref The URL to check and possibly encode
 	 * @return string The modified URL
 	 */
-	protected function encodeEmailURL($strHref) {
+	public function encodeEmailURL($strHref) {
 		if(strncasecmp($strHref, 'mailto:', 7) !== 0)
 			return $strHref;
 
@@ -374,7 +403,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @param $objPage
 	 * @return unknown_type
 	 */
-	protected function checkProtected($objPage) {
+	public function checkProtected($objPage) {
 		if(BE_USER_LOGGED_IN)
 			return true;
 			
@@ -393,7 +422,13 @@ abstract class AbstractModuleNavigation extends Module {
 		return false;
 	}
 	
-	protected function getQueryPartHidden($blnShowHidden) {
+	/**
+	 * Returns the part of the where condition, checking for hidden state of a page.
+	 * The condition is preceded by " AND ".
+	 * 
+	 * @return string The where condition
+	 */
+	public function getQueryPartHidden($blnShowHidden) {
 		if($blnShowHidden) {
 			return '';
 		} elseif($this->backboneit_navigation_isSitemap) {
@@ -403,7 +438,13 @@ abstract class AbstractModuleNavigation extends Module {
 		}	
 	}
 	
-	protected function getQueryPartGuests() {
+	/**
+	 * Returns the part of the where condition, checking for guest visibility state of a page.
+	 * The condition is preceded by " AND ".
+	 * 
+	 * @return string The where condition
+	 */
+	public function getQueryPartGuests() {
 		if(FE_USER_LOGGED_IN && !BE_USER_LOGGED_IN) {
 			return ' AND guests != 1';
 		} else {
@@ -411,14 +452,20 @@ abstract class AbstractModuleNavigation extends Module {
 		}
 	}
 	
-	protected function getQueryPartPublish() {
+	/**
+	 * Returns the part of the where condition checking for publication state of a page.
+	 * The condition is preceded by " AND ".
+	 * 
+	 * @return string The where condition
+	 */
+	public function getQueryPartPublish() {
 		if(BE_USER_LOGGED_IN) {
 			return '';
 		} else {
 			static $intTime; if(!$intTime) $intTime = time();
 			return ' AND (start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
 		}
-	}	
+	}
 	
 	/**
 	 * A helper method to generate BE wildcard.
