@@ -15,7 +15,7 @@ Verschiedene Navigationselemente (vorerst "nur" ein Navigationsmenü mit vielen 
 <ul>
 <li>Der Veröffentlichungsstatus gilt ausschließlich für eine Seite selbst. Das heißt zum Beispiel,
 dass eine Navigation durchaus dargestellt wird, selbst wenn die Referenzseite nicht veröffentlicht ist.</li>
-<li>Der Seitenschutz für bestimmte Mitgliedergruppen vererbt sich, auf alle Unterseiten,
+<li>Der Seitenschutz für bestimmte Mitgliedergruppen vererbt sich auf alle Unterseiten,
 außer denjenigen die selbst explizit einen Seitenschutz für Mitgliedergruppen definieren und derren Unterseiten.</li>
 <li>Die Einstellung "Nur Gästen anzeigen" gilt nur für die Seite selbst. Tatsächlich ist die Seite für
 angemeldete Benutzer auch noch verfügbar, soll nur in keiner Navigation angezeigt werden. (Anders als zum Beispiel Artikel,
@@ -34,12 +34,13 @@ die CSS-Klasse "submenu" tatsächlich auch nur dann bekommen, wenn dieses Unterm
 <li>Mehrere Referenzseiten (Wurzeln der Navigation)</li>
 <li>Aktuelle Seite als Referenzseite</li>
 <li>Startebene wird relativ zu den Referenzseiten berechnet (negative Startebene möglich)</li>
-<li>Hardlimit flexibel (Anmerkung: Stopebene und Hardlimit beziehen sich relativ zur Startebene &endash; 
+<li>Hardlimit flexibel (Anmerkung: Stopebene und Hardlimit beziehen sich relativ zur Startebene –
 diessollte auch durch die geänderten Labels der Moduleinstellungen hervorgehen.</li>
 <li>Versteckte und geschützte Seiten anzeigen</li>
 <li>Als Sitemap verwendbar</li>
-<li>Optimierte Darstellungsalgorithmen, zum Beispiel wird pro Navigationsebene nur noch
-eine Datenbankabfrage durchgeführt, was vorallem bei einer sehr verzweigten Navigation Vorteile bringen sollte.</li>
+<li>Optimierte Algorithmen: Zum Beispiel wird pro Navigationsebene nur noch
+eine Datenbankabfrage durchgeführt, was vorallem bei einer sehr verzweigten
+Navigation Vorteile bringen sollte.</li>
 </ul>
 
 === Freigabe-Notizen und Änderungs-Log

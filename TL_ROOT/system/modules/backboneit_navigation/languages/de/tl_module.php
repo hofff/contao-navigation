@@ -31,6 +31,8 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showProtected']
 	= array('Geschützte Seiten anzeigen', 'Seiten und Unterseiten mit Mitgliedergruppen-Beschränkung anzeigen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showHidden']
 	= array('Versteckte Seiten anzeigen', 'Seiten und Unterseiten mit Option "Im Menü verstecken" trotzdem anzeigen.');
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_isSitemap']
+	= array('Als Sitemap verwenden', 'Es werden die Sichtbarkeitseinstellungen für Sitemaps der Seiten genutzt. Wird ignoriert, wenn "Versteckte Seiten anzeigen" ausgewählt ist.');
 	
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addFields']
 	= array('Zusätzliche Seitenfelder', 'Diese Datenfelder einer Seite werden zusätzlich in das Navigations-Template übergeben.');

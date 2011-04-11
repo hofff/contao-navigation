@@ -12,10 +12,10 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			return $this->generateBE('NAVIGATION MENU');
 			
 		global $objPage;
-		$this->backboneit_navigation_currentAsRoot && $arrRoots[] = $objPage->id;
 		$arrRoots = $this->backboneit_navigation_defineRoots
 			? deserialize($this->backboneit_navigation_roots, true)
 			: array($objPage->rootId);
+		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRoots, $objPage->id);
 		
 		
 		$strGuests = $this->getQueryPartGuests();
@@ -86,8 +86,21 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$arrPIDs = array_keys(array_flip($arrRoots));
 		$intLevel = max(1, $intLevel);
 		
+		$strQueryStart =
+			'SELECT	' . implode(',', $this->arrFields) . '
+			FROM	tl_page
+			WHERE	pid IN (';
+		$strQueryEnd = ')
+			AND		type != \'root\'
+			AND		type != \'error_403\'
+			AND		type != \'error_404\'
+			' . $this->getQueryPartHidden($this->backboneit_navigation_showHidden)
+			. $this->getQueryPartGuests()
+			. $this->getQueryPartPublish() . '
+			ORDER BY sorting';
+		
 		while($arrPIDs && $intLevel <= $intHard) {
-			$objSubpages = $this->Database->execute($this->strLevelQueryStart . implode(',', $arrPIDs) . $this->strLevelQueryEnd);
+			$objSubpages = $this->Database->execute($strQueryStart . implode(',', $arrPIDs) . $strQueryEnd);
 			
 			if(!$objSubpages->numRows)
 				break;

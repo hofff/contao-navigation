@@ -44,13 +44,11 @@ abstract class AbstractModuleNavigation extends Module {
 		'tabindex'	=> true
 	);
 	
-	protected $strLevelQueryStart;
-	protected $strLevelQueryEnd;
 	protected $strJumpToFallbackQuery;
 	protected $strJumpToQuery;
 	
-	protected $arrItems; // compiled page datasets
-	protected $arrSubpages; // ordered IDs of subnavigations
+	protected $arrItems = array(); // compiled page datasets
+	protected $arrSubpages = array(); // ordered IDs of subnavigations
 	
 	protected $arrFields = array(); // the fields to use for navigation tpl
 	
@@ -72,20 +70,17 @@ abstract class AbstractModuleNavigation extends Module {
 		
 		if(FE_USER_LOGGED_IN) {
 			$this->import('FrontendUser', 'User');
-			$this->arrGroups = array_flip($this->User->groups);
+			if($this->User->groups)
+				$this->arrGroups = array_flip($this->User->groups);
 		}
 		
 		if(!strlen($this->navigationTpl))
 			$this->navigationTpl = 'nav_default';
-			
-		$strHidden = $this->getQueryPartHidden($this->backboneit_navigation_showHidden);
-		$strGuests = $this->getQueryPartGuests();
-		$strPublish = $this->getQueryPartPublish();
 		
 		$arrAddFields = deserialize($this->backboneit_navigation_addFields, true);
 		
 		if(count($arrFields) > 10) {
-			$this->arrFields[] = $strFields = '*';
+			$this->arrFields[] = '*';
 			
 		} else {
 			$arrAddFields = array_merge(array_flip($arrAddFields), self::$arrDefaultFields);
@@ -93,20 +88,10 @@ abstract class AbstractModuleNavigation extends Module {
 			foreach($this->Database->listFields('tl_page') as $arrField)
 				if(isset($arrAddFields[$arrField['name']]))
 					$this->arrFields[] = $arrField['name'];
-					
-			$strFields = implode(',', $this->arrFields);
 		}
-		
-		$this->strLevelQueryStart =
-			'SELECT	' . $strFields . '
-			FROM	tl_page
-			WHERE	pid IN (';
-		$this->strLevelQueryEnd = ')
-			AND		type != \'root\'
-			AND		type != \'error_403\'
-			AND		type != \'error_404\'
-			' . $strHidden . $strGuests . $strPublish . '
-			ORDER BY sorting';
+			
+		$strGuests = $this->getQueryPartGuests();
+		$strPublish = $this->getQueryPartPublish();
 		
 		$this->strJumpToQuery =
 			'SELECT	id, alias, type
@@ -147,11 +132,12 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrPIDs = array();
 		$arrValid = array();
 		while($objPages->next()) {
-			if($this->checkProtected($objPages)) {
-				$arrValid[$objPages->id] = true;
-				if(!$objPages->protected && $objPages->pid != 0)
-					$arrPIDs[$objPages->pid][] = $objPages->id;
-			}
+			if(!$this->checkProtected($objPages))
+				continue;
+			
+			$arrValid[$objPages->id] = true;
+			if(!$objPages->protected && $objPages->pid != 0)
+				$arrPIDs[$objPages->pid][] = $objPages->id;
 		}
 		
 		// exclude pages which are in a protected path
@@ -166,10 +152,13 @@ abstract class AbstractModuleNavigation extends Module {
 		
 			while($objPages->next()) {
 				if(!$objPages->protected) {
-					if($objPages->pid != 0)
-						$arrPIDs[$objPages->pid] = array_merge($arrPIDs[$objPages->pid], $arrIDs[$objPages->id]);
+					if($objPages->pid != 0) {
+						$arrPIDs[$objPages->pid] = isset($arrPIDs[$objPages->pid])
+							? array_merge($arrPIDs[$objPages->pid], $arrIDs[$objPages->id])
+							: $arrIDs[$objPages->id];
+					}
 				} elseif(!$this->checkProtected($objPages)) {
-					$arrValid = array_diff($arrValid, $arrIDs[$objPages->id]);
+					$arrValid = array_diff_key($arrValid, array_flip($arrIDs[$objPages->id]));
 				}
 			}
 		}
@@ -206,7 +195,7 @@ abstract class AbstractModuleNavigation extends Module {
 		return $arrNextLevel;
 	}
 	
-	protected function getPrevLevel(array $arrPages, $strConditions) {
+	protected function getPrevLevel(array $arrPages, $strConditions = '') {
 		if(!$arrPages)
 			return $arrPages;
 			
@@ -389,7 +378,7 @@ abstract class AbstractModuleNavigation extends Module {
 		if(BE_USER_LOGGED_IN)
 			return true;
 			
-		if(!$objSubpages->protected)
+		if(!$objPage->protected)
 			return true;
 			
 		if($this->backboneit_navigation_showProtected)
@@ -398,7 +387,7 @@ abstract class AbstractModuleNavigation extends Module {
 		if(!$this->arrGroups)
 			return false;
 			
-		if(array_intersect_key($this->arrGroups, array_flip(deserialize($objSubpages->groups, true))))
+		if(array_intersect_key($this->arrGroups, array_flip(deserialize($objPage->groups, true))))
 			return true;
 			
 		return false;
