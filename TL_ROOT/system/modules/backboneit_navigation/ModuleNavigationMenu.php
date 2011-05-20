@@ -45,7 +45,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				WHERE	id IN (' . implode(',', $arrRoots) . ')
 				AND		type != \'error_403\'
 				AND		type != \'error_404\'
-				' . $this->getQueryPartHidden($this->backboneit_navigation_showHidden)
+				' . $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden)
 				. $this->getQueryPartGuests()
 				. $this->getQueryPartPublish());
 

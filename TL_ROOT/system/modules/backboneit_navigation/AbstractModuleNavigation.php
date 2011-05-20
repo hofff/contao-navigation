@@ -60,6 +60,9 @@ abstract class AbstractModuleNavigation extends Module {
 	
 	public function __construct(Database_Result $objModule, $strColumn = 'main') {
 		parent::__construct($objModule, $strColumn);
+		if(TL_MODE == 'BE')
+			return;
+		
 		$this->import('Database');
 		
 		global $objPage;
