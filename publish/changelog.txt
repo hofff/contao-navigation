@@ -1,5 +1,11 @@
 h1. Changelog
 
+h2. 1.0.0 stable
+
+* 4 *Change*: Changed the hidden condition flag for including start level from showHidden to respectHidden, which results in a more consistent behavior
+* 4 *Fix*: Fixed an error message in backend, when module is rendered in articles for preview
+* 4 Tagged as stable
+
 h2. 1.0.0 rc1
 
 * 3 *Feature*: Added a hook before rendering the navigation
