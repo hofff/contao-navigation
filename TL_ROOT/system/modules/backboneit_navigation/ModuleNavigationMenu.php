@@ -50,23 +50,28 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				. $this->getQueryPartPublish());
 
 			while($objRoots->next())
-				$this->arrItems[$objRoots->id] = $this->compileNavigationItem($objRoots->row());
+				$this->arrItems[$objRoots->id] = $objRoots->row();
 			
 			$this->fetchItems($arrRoots, 2);
 			
 		} else {
-			$arrItems = array();
 			$this->fetchItems($arrRoots);
+		}
+		
+		foreach($this->arrItems as &$arrPage)
+			$arrPage = $this->compileNavigationItem($arrPage);
+		
+		$arrRoots = $this->executeHook($arrRoots);
+		
+		if(!$this->backboneit_navigation_includeStart) { // get first navigation level, if we do not want to show the root level
+			$arrItems = array();
 			foreach($arrRoots as $intRootID)
 				if(isset($this->arrSubpages[$intRootID]))
 					$arrItems = array_merge($arrItems, $this->arrSubpages[$intRootID]);
 			$arrRoots = $arrItems;
 		}
 		
-		foreach($this->arrItems as &$arrPage)
-			$arrPage = $this->compileNavigationItem($arrPage);
-			
-		$this->strNavigation = trim($this->renderNaviTree($this->executeHook($arrRoots)));
+		$this->strNavigation = trim($this->renderNaviTree($arrRoots));
 		
 		return $this->strNavigation ? parent::generate() : '';
 	}
