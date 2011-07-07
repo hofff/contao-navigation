@@ -257,10 +257,12 @@ abstract class AbstractModuleNavigation extends Module {
 	 * If the given array is empty, the empty string is returned.
 	 * 
 	 * @param array $arrRoots The navigation items arrays
+	 * @param integer $intStop (optional, defaults to PHP_INT_MAX) The soft limit of depth.
+	 * @param integer $intHard (optional, defaults to PHP_INT_MAX) The hard limit of depth.
 	 * @param integer $intLevel (optional, defaults to 1) The current level of this navigation layer
 	 * @return string The parsed navigation template, could be empty string.
 	 */
-	protected function renderNaviTree(array $arrIDs, $intLevel = 1) {
+	protected function renderNaviTree(array $arrIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		if(!$arrIDs)
 			return '';
 			
@@ -272,11 +274,24 @@ abstract class AbstractModuleNavigation extends Module {
 				
 			$arrItem = $this->arrItems[$intID];
 			
-			if(isset($this->arrSubpages[$intID]))
-				$arrItem['subitems'] = $this->renderNaviTree($this->arrSubpages[$intID], $intLevel + 1);
+			if($arrItem['pid'] == $objPage->pid) {
+				$arrItem['class'] .= ' sibling';
+			} elseif(isset($this->arrTrail[$arrItem['id']])) {
+				$arrItem['class'] .= ' trail';
+			}
+		
+			if(($intLevel <= $intStop || isset($this->arrPath[$arrItem['pid']]))
+			&& $intLevel <= $intHard
+			&& isset($this->arrSubpages[$intID])) {
+				$arrItem['class'] .= ' submenu';
+				$arrItem['subitems'] = $this->renderNaviTree($this->arrSubpages[$intID], $intStop, $intHard, $intLevel + 1);
+			}
+			
+			$arrItem['class'] = trim($arrItem['class']);
 			
 			$arrItems[] = $arrItem;
 		}
+		
 		
 		$intLast = count($arrItems) - 1;
 		$arrItems[0]['class'] = trim($arrItems[0]['class'] . ' first');
@@ -358,6 +373,7 @@ abstract class AbstractModuleNavigation extends Module {
 		}
 		
 		$arrPage['link']			= $arrPage['title'];
+		$arrPage['class']			= $arrPage['cssClass'];
 		$arrPage['title']			= specialchars($arrPage['title'], true);
 		$arrPage['pageTitle']		= specialchars($arrPage['_pageTitle'], true);
 		$arrPage['nofollow']		= strncmp($arrPage['robots'], 'noindex', 7) === 0;
@@ -365,18 +381,6 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrPage['description']		= str_replace(array("\n", "\r"), array(' ' , ''), $arrPage['_description']);
 		
 		$arrPage['isActive'] = $this->intActive === $arrPage['id'] || $this->intActive === $intForwardID;
-		
-		$strClass = '';
-		if(isset($this->arrSubpages[$arrPage['id']]))
-			$strClass .= 'submenu';
-		if(strlen($arrPage['cssClass']))
-			$strClass .= ' ' . $arrPage['cssClass'];
-		if($arrPage['pid'] == $objPage->pid) {
-			$strClass .= ' sibling';
-		} elseif(isset($this->arrTrail[$arrPage['id']])) {
-			$strClass .= ' trail';
-		}
-		$arrPage['class'] = trim($strClass);
 		
 		return $arrPage;
 	}

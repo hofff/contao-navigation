@@ -2,6 +2,8 @@ h1. Changelog
 
 h2. 1.0.0 stable
 
+* 5 *Feature*: CSS classes are now calculated while rendering the templates, so navigation items hooked in receive the correct css
+* 5 *Change*: The amount of levels displayed is now additionally checked while rendering the templates, to apply the limits on navigation items hooked in
 * 5 *Change*: Moved the hook before the calculation of the first navigation level (clearer usage, but $arrRoots are now the reference "pages" and not the first navigation level)
 * 4 *Change*: Changed the hidden condition flag for including start level from showHidden to respectHidden, which results in a more consistent behavior
 * 4 *Fix*: Fixed an error message in backend, when module is rendered in articles for preview

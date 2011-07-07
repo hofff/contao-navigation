@@ -11,6 +11,9 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		if(TL_MODE == 'BE')
 			return $this->generateBE('NAVIGATION MENU');
 			
+		$intStop = $this->backboneit_navigation_stop > 0 ? $this->backboneit_navigation_stop : PHP_INT_MAX;
+		$intHard = $this->backboneit_navigation_hard > 0 ? $this->backboneit_navigation_hard : PHP_INT_MAX;
+		
 		global $objPage;
 		$arrRoots = $this->backboneit_navigation_defineRoots
 			? deserialize($this->backboneit_navigation_roots, true)
@@ -52,10 +55,10 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			while($objRoots->next())
 				$this->arrItems[$objRoots->id] = $objRoots->row();
 			
-			$this->fetchItems($arrRoots, 2);
+			$this->fetchItems($arrRoots, $intStop, $intHard, 2);
 			
 		} else {
-			$this->fetchItems($arrRoots);
+			$this->fetchItems($arrRoots, $intStop, $intHard);
 		}
 		
 		foreach($this->arrItems as &$arrPage)
@@ -71,7 +74,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$arrRoots = $arrItems;
 		}
 		
-		$this->strNavigation = trim($this->renderNaviTree($arrRoots));
+		$this->strNavigation = trim($this->renderNaviTree($arrRoots, $intStop, $intHard));
 		
 		return $this->strNavigation ? parent::generate() : '';
 	}
@@ -86,12 +89,12 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	 * Fetches page data for all navigation items below the given roots.
 	 * 
 	 * @param integer $arrRoots The root pages of the navigation.
+	 * @param integer $intStop (optional, defaults to PHP_INT_MAX) The soft limit of depth.
+	 * @param integer $intHard (optional, defaults to PHP_INT_MAX) The hard limit of depth.
 	 * @param integer $intLevel (optional, defaults to 1) The level of the roots.
 	 * @return null
 	 */
-	protected function fetchItems($arrRoots, $intLevel = 1) {
-		$intHard = $this->backboneit_navigation_hard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
-		$intStop = $this->backboneit_navigation_stop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
+	protected function fetchItems($arrRoots, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		$arrPIDs = array_keys(array_flip($arrRoots));
 		$intLevel = max(1, $intLevel);
 		
