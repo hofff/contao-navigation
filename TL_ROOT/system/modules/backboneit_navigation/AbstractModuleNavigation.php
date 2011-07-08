@@ -56,7 +56,6 @@ abstract class AbstractModuleNavigation extends Module {
 	
 	protected $intActive; // the id of the active page
 	protected $arrPath; // same as trail but with current page included
-	protected $arrTrail; // set of parent pages of the current page
 	
 	public function __construct(Database_Result $objModule, $strColumn = 'main') {
 		parent::__construct($objModule, $strColumn);
@@ -68,8 +67,6 @@ abstract class AbstractModuleNavigation extends Module {
 		global $objPage;
 		$this->intActive = $this->backboneit_navigation_isSitemap || $this->Input->get('articles') ? false : $objPage->id;
 		$this->arrPath = array_flip($objPage->trail);
-		$this->arrTrail = $this->arrPath;
-		unset($this->arrTrail[$objPage->id]); // trail has a slightly different meaning here (current page excluded, same as in the templates)
 		
 		if(FE_USER_LOGGED_IN) {
 			$this->import('FrontendUser', 'User');
@@ -85,12 +82,15 @@ abstract class AbstractModuleNavigation extends Module {
 		if(count($arrFields) > 10) {
 			$this->arrFields[] = '*';
 			
-		} else {
+		} elseif($arrFields) {
 			$arrAddFields = array_merge(array_flip($arrAddFields), self::$arrDefaultFields);
 			
 			foreach($this->Database->listFields('tl_page') as $arrField)
 				if(isset($arrAddFields[$arrField['name']]))
 					$this->arrFields[] = $arrField['name'];
+			
+		} else {
+			$this->arrFields = array_keys(self::$arrDefaultFields);
 		}
 			
 		$strGuests = $this->getQueryPartGuests();
@@ -121,7 +121,6 @@ abstract class AbstractModuleNavigation extends Module {
 			case 'arrGroups':
 			case 'intActive':
 			case 'arrPath':
-			case 'arrTrail':
 				return $this->$strKey;
 		}
 		return parent::__get($strKey);
@@ -274,14 +273,16 @@ abstract class AbstractModuleNavigation extends Module {
 				
 			$arrItem = $this->arrItems[$intID];
 			
-			if($arrItem['pid'] == $objPage->pid) {
+			if($arrItem['isActive']) {
+				// nothing (active class is set in template)
+			} elseif($arrItem['pid'] == $objPage->pid) {
 				$arrItem['class'] .= ' sibling';
-			} elseif(isset($this->arrTrail[$arrItem['id']])) {
+			} elseif(isset($this->arrPath[$arrItem['id']])) {
 				$arrItem['class'] .= ' trail';
 			}
 		
-			if(($intLevel <= $intStop || isset($this->arrPath[$arrItem['pid']]))
-			&& $intLevel <= $intHard
+			if($intLevel <= $intHard
+			&& ($intLevel <= $intStop || isset($this->arrPath[$arrItem['pid']]))
 			&& isset($this->arrSubpages[$intID])) {
 				$arrItem['class'] .= ' submenu';
 				$arrItem['subitems'] = $this->renderNaviTree($this->arrSubpages[$intID], $intStop, $intHard, $intLevel + 1);

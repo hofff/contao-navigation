@@ -14,11 +14,10 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$intStop = $this->backboneit_navigation_stop > 0 ? $this->backboneit_navigation_stop : PHP_INT_MAX;
 		$intHard = $this->backboneit_navigation_hard > 0 ? $this->backboneit_navigation_hard : PHP_INT_MAX;
 		
-		global $objPage;
-		$arrRoots = $this->backboneit_navigation_defineRoots
+		$arrRootIDs = $this->backboneit_navigation_defineRoots
 			? deserialize($this->backboneit_navigation_roots, true)
-			: array($objPage->rootId);
-		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRoots, $objPage->id);
+			: array($GLOBALS['objPage']->rootId);
+		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
 		
 		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden);
 		$this->backboneit_navigation_respectGuests && $strConditions .= $this->getQueryPartGuests();
@@ -27,25 +26,25 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$strStartConditions = $this->backboneit_navigation_includeStart ? '' : $strConditions;
 		
 		if($this->backboneit_navigation_start > 0) {
-			$arrRoots = $this->filterPages($arrRoots, $strConditions);
+			$arrRootIDs = $this->filterPages($arrRootIDs, $strConditions);
 			for($i = 1, $n = $this->backboneit_navigation_start; $i < $n; $i++)
-				$arrRoots = $this->getNextLevel($arrRoots, $strConditions);
-			$arrRoots = $this->getNextLevel($arrRoots, $strStartConditions);
+				$arrRootIDs = $this->getNextLevel($arrRootIDs, $strConditions);
+			$arrRootIDs = $this->getNextLevel($arrRootIDs, $strStartConditions);
 			
 		} elseif($this->backboneit_navigation_start < 0) {
 			for($i = 0, $n = -$this->backboneit_navigation_start; $i < $n; $i++)
-				$arrRoots = $this->getPrevLevel($arrRoots);
-			$arrRoots = $this->filterPages($arrRoots, $strStartConditions);
+				$arrRootIDs = $this->getPrevLevel($arrRootIDs);
+			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
 			
 		} else {
-			$arrRoots = $this->filterPages($arrRoots, $strStartConditions);
+			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
 		}
 		
 		if($this->backboneit_navigation_includeStart) {
 			$objRoots = $this->Database->execute(
 				'SELECT	' . implode(',', $this->arrFields) . '
 				FROM	tl_page
-				WHERE	id IN (' . implode(',', $arrRoots) . ')
+				WHERE	id IN (' . implode(',', $arrRootIDs) . ')
 				AND		type != \'error_403\'
 				AND		type != \'error_404\'
 				' . $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden)
@@ -55,26 +54,27 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			while($objRoots->next())
 				$this->arrItems[$objRoots->id] = $objRoots->row();
 			
-			$this->fetchItems($arrRoots, $intStop, $intHard, 2);
+			$this->fetchItems($arrRootIDs, $intStop, $intHard, 2);
 			
 		} else {
-			$this->fetchItems($arrRoots, $intStop, $intHard);
+			$this->fetchItems($arrRootIDs, $intStop, $intHard);
 		}
 		
-		foreach($this->arrItems as &$arrPage)
-			$arrPage = $this->compileNavigationItem($arrPage);
+		foreach($this->arrItems as &$arrItem)
+			$arrItem = $this->compileNavigationItem($arrItem);
 		
-		$arrRoots = $this->executeHook($arrRoots);
+		$arrRootIDs = $this->executeHook($arrRootIDs);
 		
-		if(!$this->backboneit_navigation_includeStart) { // get first navigation level, if we do not want to show the root level
-			$arrItems = array();
-			foreach($arrRoots as $intRootID)
+		if($this->backboneit_navigation_includeStart) { // get first navigation level, if we do not want to show the root level
+			$arrFirstIDs = $arrRootIDs;
+		} else {
+			$arrFirstIDs = array();
+			foreach($arrRootIDs as $intRootID)
 				if(isset($this->arrSubpages[$intRootID]))
-					$arrItems = array_merge($arrItems, $this->arrSubpages[$intRootID]);
-			$arrRoots = $arrItems;
+					$arrFirstIDs = array_merge($arrFirstIDs, $this->arrSubpages[$intRootID]);
 		}
 		
-		$this->strNavigation = trim($this->renderNaviTree($arrRoots, $intStop, $intHard));
+		$this->strNavigation = trim($this->renderNaviTree($arrFirstIDs, $intStop, $intHard));
 		
 		return $this->strNavigation ? parent::generate() : '';
 	}
@@ -88,16 +88,16 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	/**
 	 * Fetches page data for all navigation items below the given roots.
 	 * 
-	 * @param integer $arrRoots The root pages of the navigation.
+	 * @param integer $arrRootIDs The root pages of the navigation.
 	 * @param integer $intStop (optional, defaults to PHP_INT_MAX) The soft limit of depth.
 	 * @param integer $intHard (optional, defaults to PHP_INT_MAX) The hard limit of depth.
 	 * @param integer $intLevel (optional, defaults to 1) The level of the roots.
 	 * @return null
 	 */
-	protected function fetchItems($arrRoots, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
-		$arrPIDs = array_keys(array_flip($arrRoots));
+	protected function fetchItems($arrRootIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
+		$arrNextPIDs = array_keys(array_flip($arrRootIDs));
 		$intLevel = max(1, $intLevel);
-		
+	
 		$strQueryStart =
 			'SELECT	' . implode(',', $this->arrFields) . '
 			FROM	tl_page
@@ -111,7 +111,20 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			. $this->getQueryPartPublish() . '
 			ORDER BY sorting';
 		
-		while($arrPIDs && $intLevel <= $intHard) {
+		while($intLevel <= $intHard) {
+			
+			if($intLevel <= $intStop) {
+				$arrPIDs = $arrNextPIDs;
+			} else {
+				$arrPIDs = array();
+				foreach($arrNextPIDs as $intPID)
+					if(isset($this->arrPath[$intPID]))
+						$arrPIDs[] = $intPID;
+			}
+			
+			if(!$arrPIDs)
+				break;
+			
 			$objSubpages = $this->Database->execute($strQueryStart . implode(',', $arrPIDs) . $strQueryEnd);
 			
 			if(!$objSubpages->numRows)
@@ -131,15 +144,6 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			}
 			
 			$intLevel++;
-			
-			if($intLevel <= $intStop) {
-				$arrPIDs = $arrNextPIDs;
-			} else {
-				$arrPIDs = array();
-				foreach($arrNextPIDs as $intPID)
-					if(isset($this->arrPath[$intPID]))
-						$arrPIDs[] = $intPID;
-			}
 		}
 	}
 	
@@ -147,26 +151,26 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	 * Executes the navigation hook.
 	 * The callback receives the following parameters:
 	 * $this - This navigation module instance
-	 * $arrRoots - The IDs of the first navigation level
+	 * $arrRootIDs - The IDs of the first navigation level
 	 * 
 	 * And should return a new root array or null
 	 * 
-	 * @param array $arrRoots The root pages before hook execution
-	 * @return array $arrRoots The root pages after hook execution
+	 * @param array $arrRootIDs The root pages before hook execution
+	 * @return array $arrRootIDs The root pages after hook execution
 	 */
-	protected function executeHook(array $arrRoots) {
+	protected function executeHook(array $arrRootIDs) {
 		if(!is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_menu']))
-			return $arrRoots;
+			return $arrRootIDs;
 			
 		foreach($GLOBALS['TL_HOOKS']['backboneit_navigation_menu'] as $arrCallback) {
 			$this->import($arrCallback[0]);
-			$arrNewRoots = $this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrRoots);
+			$arrNewRoots = $this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrRootIDs);
 			
 			if($arrNewRoots !== null)
-				$arrRoots = $arrNewRoots;
+				$arrRootIDs = $arrNewRoots;
 		}
 		
-		return $arrRoots;
+		return $arrRootIDs;
 	}
 	
 }
