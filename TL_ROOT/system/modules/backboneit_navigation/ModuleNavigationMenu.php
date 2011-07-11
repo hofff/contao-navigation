@@ -15,20 +15,9 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$intHard = $this->backboneit_navigation_defineHard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
 		
 		$arrRootIDs = $this->calculateRootIDs($intStop);
-	
 		$this->compileNavigationTree($arrRootIDs, $intStop, $intHard);
-		
 		$arrRootIDs = $this->executeHook($arrRootIDs);
-		
-		if($this->backboneit_navigation_includeStart) { // get first navigation level, if we do not want to show the root level
-			$arrFirstIDs = $arrRootIDs;
-		} else {
-			$arrFirstIDs = array();
-			foreach($arrRootIDs as $intRootID)
-				if(isset($this->arrSubpages[$intRootID]))
-					$arrFirstIDs = array_merge($arrFirstIDs, $this->arrSubpages[$intRootID]);
-		}
-		
+		$arrFirstIDs = $this->getFirstNavigationLevel($arrRootIDs);
 		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, $intStop, $intHard));
 		
 		return $this->strNavigation ? parent::generate() : '';
@@ -194,6 +183,19 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		}
 		
 		return $arrRootIDs;
+	}
+	
+	protected function getFirstNavigationLevel(array $arrRootIDs) {
+		if($this->backboneit_navigation_includeStart)
+			return $arrRootIDs;
+			
+		 // if we do not want to show the root level
+		$arrFirstIDs = array();
+		foreach($arrRootIDs as $varRootID)
+			if(isset($this->arrSubpages[$varRootID]))
+				$arrFirstIDs = array_merge($arrFirstIDs, $this->arrSubpages[$varRootID]);
+				
+		return $arrFirstIDs;
 	}
 	
 }

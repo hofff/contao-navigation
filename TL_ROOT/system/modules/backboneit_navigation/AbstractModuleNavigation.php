@@ -5,7 +5,7 @@
  * 
  * Navigation item array layout:
  * Before rendering:
- * id			=> the ID of the current item
+ * id			=> the ID of the current item (optional)
  * isTrail		=> whether this item is in the trail path
  * class		=> CSS classes
  * title		=> page name with Insert-Tags stripped and XML specialchars replaced by their entities
@@ -276,17 +276,17 @@ abstract class AbstractModuleNavigation extends Module {
 			
 		$arrItems = array();
 		
-		foreach($arrIDs as $intID) {
-			if(!isset($this->arrItems[$intID]))
+		foreach($arrIDs as $varID) {
+			if(!isset($this->arrItems[$varID]))
 				continue;
 				
-			$arrItem = $this->arrItems[$intID];
+			$arrItem = $this->arrItems[$varID];
 			
-			if($this->varActiveID === $arrItem['id']) {
+			if($varID === $this->varActiveID) {
 				$blnContainsActive = true;
 				$arrItem['isActive'] = true; // nothing else (active class is set in template)
 				
-			} elseif($this->varActiveID === $arrItem['fid']) {
+			} elseif($arrItem['fid'] === $this->varActiveID) {
 				$arrItem['isActive'] = true; // nothing else (active class is set in template)
 				
 			} elseif($arrItem['isTrail']) {
@@ -294,26 +294,25 @@ abstract class AbstractModuleNavigation extends Module {
 			}
 		
 			if($intLevel <= $intHard
-			&& ($intLevel <= $intStop || $arrItem['isTrail'])
-			&& isset($this->arrSubpages[$intID])) {
+			&& isset($this->arrSubpages[$varID])
+			&& ($intLevel <= $intStop || $arrItem['isTrail'] || $varID === $this->varActiveID)) {
 				$arrItem['class'] .= ' submenu';
-				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubpages[$intID], $intStop, $intHard, $intLevel + 1);
+				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubpages[$varID], $intStop, $intHard, $intLevel + 1);
 			}
-			
 			
 			$arrItems[] = $arrItem;
 		}
 		
-		$arrItems[0]['class'] .= ' first';
-		$arrItems[count($arrItems) - 1]['class'] .= ' last';
-		
-		if($blnContainsActive) {
-			foreach($arrItems as &$arrItem) {
+		if($blnContainsActive)
+			foreach($arrItems as &$arrItem)
 				if(!$arrItem['isActive'])
 					$arrItem['class'] .= ' sibling';
-				$arrItem['class'] = trim($arrItem['class']);
-			}
-		}
+		
+		$arrItems[0]['class'] .= ' first';
+		$arrItems[count($arrItems) - 1]['class'] .= ' last';
+
+		foreach($arrItems as &$arrItem)
+			$arrItem['class'] = trim($arrItem['class']);
 		
 		$objTemplate = new FrontendTemplate($this->navigationTpl);
 		$objTemplate->setData(array(
