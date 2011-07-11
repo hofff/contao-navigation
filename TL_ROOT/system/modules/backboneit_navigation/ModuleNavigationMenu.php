@@ -71,7 +71,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		if($intStop == 0) { // special case, kick all roots outside of current path
 			$arrFilteredIDs = array();
 			foreach($arrRootIDs as $intRootID)
-				if(isset($this->arrPath[$intRootID]))
+				if(isset($this->arrTrail[$intRootID]))
 					$arrFilteredIDs[] = $intRootID;
 			$arrRootIDs = $arrFilteredIDs;
 		}
@@ -141,7 +141,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			} else {
 				$arrPIDs = array();
 				foreach($arrNextPIDs as $intPID)
-					if(isset($this->arrPath[$intPID]))
+					if(isset($this->arrTrail[$intPID]))
 						$arrPIDs[] = $intPID;
 			}
 			
