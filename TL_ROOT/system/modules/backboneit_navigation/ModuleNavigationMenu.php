@@ -65,18 +65,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$arrRootIDs = $this->backboneit_navigation_defineRoots
 			? deserialize($this->backboneit_navigation_roots, true)
 			: array($GLOBALS['objPage']->rootId);
+		
 		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
-		
-		if($intStop == 0) { // special case, kick all roots outside of current path
-			$arrFilteredIDs = array();
-			foreach($arrRootIDs as $intRootID)
-				if(isset($this->arrPath[$intRootID]))
-					$arrFilteredIDs[] = $intRootID;
-			$arrRootIDs = $arrFilteredIDs;
-		}
-		
-		if(!$arrRootIDs)
-			return $arrRootIDs; // empty array
 		
 		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden);
 		$this->backboneit_navigation_respectGuests && $strConditions .= $this->getQueryPartGuests();
@@ -97,6 +87,14 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			
 		} else {
 			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
+		}
+		
+		if($intStop == 0) { // special case, kick all roots outside of current path
+			$arrFilteredIDs = array();
+			foreach($arrRootIDs as $intRootID)
+				if(isset($this->arrPath[$intRootID]))
+					$arrFilteredIDs[] = $intRootID;
+			$arrRootIDs = $arrFilteredIDs;
 		}
 		
 		return $arrRootIDs;
