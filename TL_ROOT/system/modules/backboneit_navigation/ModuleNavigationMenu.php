@@ -16,28 +16,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		
 		$arrRootIDs = $this->calculateRootIDs($intStop);
 	
-		if($this->backboneit_navigation_includeStart) {
-			$objRoots = $this->Database->execute(
-				'SELECT	' . implode(',', $this->arrFields) . '
-				FROM	tl_page
-				WHERE	id IN (' . implode(',', array_keys(array_flip($arrRootIDs))) . ')
-				AND		type != \'error_403\'
-				AND		type != \'error_404\'
-				' . $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden)
-				. $this->getQueryPartGuests()
-				. $this->getQueryPartPublish());
-
-			while($objRoots->next())
-				$this->arrItems[$objRoots->id] = $objRoots->row();
-			
-			$this->fetchItems($arrRootIDs, $intStop, $intHard, 2);
-			
-		} else {
-			$this->fetchItems($arrRootIDs, $intStop, $intHard);
-		}
-		
-		foreach($this->arrItems as &$arrItem)
-			$arrItem = $this->compileNavigationItem($arrItem);
+		$this->compileNavigationTree($arrRootIDs, $intStop, $intHard);
 		
 		$arrRootIDs = $this->executeHook($arrRootIDs);
 		
@@ -50,7 +29,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 					$arrFirstIDs = array_merge($arrFirstIDs, $this->arrSubpages[$intRootID]);
 		}
 		
-		$this->strNavigation = trim($this->renderNaviTree($arrFirstIDs, $intStop, $intHard));
+		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, $intStop, $intHard));
 		
 		return $this->strNavigation ? parent::generate() : '';
 	}
@@ -100,6 +79,36 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		return $arrRootIDs;
 	}
 	
+	protected function compileNavigationTree(array $arrRootIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX) {
+		if(!$arrRootIDs)
+			return;
+		
+		$arrRootIDs = array_keys(array_flip($arrRootIDs));
+			
+		if($this->backboneit_navigation_includeStart) {
+			$objRoots = $this->Database->execute(
+				'SELECT	' . implode(',', $this->arrFields) . '
+				FROM	tl_page
+				WHERE	id IN (' . implode(',', $arrRootIDs) . ')
+				AND		type != \'error_403\'
+				AND		type != \'error_404\'
+				' . $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden)
+				. $this->getQueryPartGuests()
+				. $this->getQueryPartPublish());
+
+			while($objRoots->next())
+				$this->arrItems[$objRoots->id] = $objRoots->row();
+			
+			$this->fetchItems($arrRootIDs, $intStop, $intHard, 2);
+			
+		} else {
+			$this->fetchItems($arrRootIDs, $intStop, $intHard);
+		}
+		
+		foreach($this->arrItems as &$arrItem)
+			$arrItem = $this->compileNavigationItem($arrItem);
+	}
+	
 	/**
 	 * Fetches page data for all navigation items below the given roots.
 	 * 
@@ -109,8 +118,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	 * @param integer $intLevel (optional, defaults to 1) The level of the roots.
 	 * @return null
 	 */
-	protected function fetchItems($arrRootIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
-		$arrNextPIDs = array_keys(array_flip($arrRootIDs));
+	protected function fetchItems(array $arrNextPIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		$intLevel = max(1, $intLevel);
 	
 		$strQueryStart =

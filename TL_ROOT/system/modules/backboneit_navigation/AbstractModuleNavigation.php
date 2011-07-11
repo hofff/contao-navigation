@@ -261,7 +261,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @param integer $intLevel (optional, defaults to 1) The current level of this navigation layer
 	 * @return string The parsed navigation template, could be empty string.
 	 */
-	protected function renderNaviTree(array $arrIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
+	protected function renderNavigationTree(array $arrIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		if(!$arrIDs)
 			return '';
 			
