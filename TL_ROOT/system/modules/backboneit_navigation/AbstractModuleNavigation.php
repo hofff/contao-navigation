@@ -4,7 +4,9 @@
  * Abstract base class for navigation modules
  * 
  * Navigation item array layout:
- * subitems		=> subnavigation as HTML string or empty string
+ * Before rendering:
+ * id			=> the ID of the current item
+ * isTrail		=> whether this item is in the trail path
  * class		=> CSS classes
  * title		=> page name with Insert-Tags stripped and XML specialchars replaced by their entities
  * pageTitle	=> page title with Insert-Tags stripped and XML specialchars replaced by their entities
@@ -14,10 +16,20 @@
  * target		=> either ' onclick="window.open(this.href); return false;"' or empty string
  * description	=> page description with line breaks (\r and \n) replaced by whitespaces
  * 
+ * Calculated while rendering:
+ * subitems		=> subnavigation as HTML string or empty string (rendered if subpages & items setup correctly)
+ * isActive		=> whether this item is the current active navigation item
+ * 
+ * Following CSS classes are calculated while rendering: level_x, trail, sibling, submenu, first, last
+ * 
  * Additionally all page dataset values from the database are available unter their field name,
  * if the field name does not collide with the listed keys.
  * 
  * For the collisions of the Contao core page dataset fields the following keys are available:
+ * _pageTitle
+ * _target
+ * _description
+ * 
  * 
  * @author Oliver Hoff
  */
@@ -44,18 +56,17 @@ abstract class AbstractModuleNavigation extends Module {
 		'tabindex'	=> true
 	);
 	
+	protected $arrFields = array(); // the fields to use for navigation tpl
 	protected $strJumpToFallbackQuery;
 	protected $strJumpToQuery;
 	
+	protected $arrGroups; // set of groups of the current user
+	protected $arrTrail; // same as trail but with current page included
+	
+	public $varActiveID; // the id of the active page
+	
 	public $arrItems = array(); // compiled page datasets
 	public $arrSubpages = array(); // ordered IDs of subnavigations
-	
-	protected $arrFields = array(); // the fields to use for navigation tpl
-	
-	protected $arrGroups; // set of groups of the current user
-	
-	protected $intActive; // the id of the active page
-	protected $arrPath; // same as trail but with current page included
 	
 	public function __construct(Database_Result $objModule, $strColumn = 'main') {
 		parent::__construct($objModule, $strColumn);
@@ -64,9 +75,8 @@ abstract class AbstractModuleNavigation extends Module {
 		
 		$this->import('Database');
 		
-		global $objPage;
-		$this->intActive = $this->backboneit_navigation_isSitemap || $this->Input->get('articles') ? false : $objPage->id;
-		$this->arrPath = array_flip($objPage->trail);
+		$this->varActiveID = $this->backboneit_navigation_isSitemap || $this->Input->get('articles') ? false : $GLOBALS['objPage']->id;
+		$this->arrTrail = array_flip($GLOBALS['objPage']->trail);
 		
 		if(FE_USER_LOGGED_IN) {
 			$this->import('FrontendUser', 'User');
@@ -119,8 +129,7 @@ abstract class AbstractModuleNavigation extends Module {
 			case 'strJumpToQuery':
 			case 'arrFields':
 			case 'arrGroups':
-			case 'intActive':
-			case 'arrPath':
+			case 'arrTrail':
 				return $this->$strKey;
 		}
 		return parent::__get($strKey);
@@ -273,30 +282,38 @@ abstract class AbstractModuleNavigation extends Module {
 				
 			$arrItem = $this->arrItems[$intID];
 			
-			if($arrItem['isActive']) {
-				// nothing (active class is set in template)
-			} elseif($arrItem['pid'] == $objPage->pid) {
-				$arrItem['class'] .= ' sibling';
-			} elseif(isset($this->arrPath[$arrItem['id']])) {
+			if($this->varActiveID === $arrItem['id']) {
+				$blnContainsActive = true;
+				$arrItem['isActive'] = true; // nothing else (active class is set in template)
+				
+			} elseif($this->varActiveID === $arrItem['fid']) {
+				$arrItem['isActive'] = true; // nothing else (active class is set in template)
+				
+			} elseif($arrItem['isTrail']) {
 				$arrItem['class'] .= ' trail';
 			}
 		
 			if($intLevel <= $intHard
-			&& ($intLevel <= $intStop || isset($this->arrPath[$arrItem['pid']]))
+			&& ($intLevel <= $intStop || $arrItem['isTrail'])
 			&& isset($this->arrSubpages[$intID])) {
 				$arrItem['class'] .= ' submenu';
 				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubpages[$intID], $intStop, $intHard, $intLevel + 1);
 			}
 			
-			$arrItem['class'] = trim($arrItem['class']);
 			
 			$arrItems[] = $arrItem;
 		}
 		
+		$arrItems[0]['class'] .= ' first';
+		$arrItems[count($arrItems) - 1]['class'] .= ' last';
 		
-		$intLast = count($arrItems) - 1;
-		$arrItems[0]['class'] = trim($arrItems[0]['class'] . ' first');
-		$arrItems[$intLast]['class'] = trim($arrItems[$intLast]['class'] . ' last');
+		if($blnContainsActive) {
+			foreach($arrItems as &$arrItem) {
+				if(!$arrItem['isActive'])
+					$arrItem['class'] .= ' sibling';
+				$arrItem['class'] = trim($arrItem['class']);
+			}
+		}
 		
 		$objTemplate = new FrontendTemplate($this->navigationTpl);
 		$objTemplate->setData(array(
@@ -352,7 +369,7 @@ abstract class AbstractModuleNavigation extends Module {
 				} elseif($objNext->type == 'redirect') {
 					$arrPage['href'] = $this->encodeEmailURL($objNext->url);
 				} else {
-					$intForwardID = $objNext->id;
+					$arrPage['fid'] = $objNext->id;
 					$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
 				}
 				break;
@@ -380,8 +397,7 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrPage['nofollow']		= strncmp($arrPage['robots'], 'noindex', 7) === 0;
 		$arrPage['target']			= $arrPage['type'] == 'redirect' && $arrPage['_target'] ? LINK_NEW_WINDOW : '';
 		$arrPage['description']		= str_replace(array("\n", "\r"), array(' ' , ''), $arrPage['_description']);
-		
-		$arrPage['isActive'] = $this->intActive === $arrPage['id'] || $this->intActive === $intForwardID;
+		$arrPage['isTrail']			= isset($this->arrTrail[$arrPage['id']]);
 		
 		return $arrPage;
 	}
