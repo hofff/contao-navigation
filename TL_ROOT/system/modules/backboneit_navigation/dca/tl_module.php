@@ -1,6 +1,8 @@
 <?php
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_defineRoots';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_defineStop';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_defineHard';
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
 	= '{title_legend},name,headline,type;'
