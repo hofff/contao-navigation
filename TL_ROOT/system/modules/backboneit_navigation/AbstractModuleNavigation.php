@@ -285,7 +285,7 @@ abstract class AbstractModuleNavigation extends Module {
 			&& ($intLevel <= $intStop || isset($this->arrPath[$arrItem['pid']]))
 			&& isset($this->arrSubpages[$intID])) {
 				$arrItem['class'] .= ' submenu';
-				$arrItem['subitems'] = $this->renderNaviTree($this->arrSubpages[$intID], $intStop, $intHard, $intLevel + 1);
+				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubpages[$intID], $intStop, $intHard, $intLevel + 1);
 			}
 			
 			$arrItem['class'] = trim($arrItem['class']);
