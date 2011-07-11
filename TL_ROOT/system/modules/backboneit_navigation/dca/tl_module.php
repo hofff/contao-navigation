@@ -10,14 +10,17 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
 	. 'backboneit_navigation_respectGuests,backboneit_navigation_respectHidden,'
 	. 'backboneit_navigation_respectPublish;'
 	. '{backboneit_navigation_legend},'
-	. 'backboneit_navigation_stop,backboneit_navigation_hard,'
+	. 'backboneit_navigation_defineStop,'
+	. 'backboneit_navigation_defineHard,'
 	. 'backboneit_navigation_showProtected,backboneit_navigation_showHidden,'
 	. 'backboneit_navigation_isSitemap;'
 	. '{template_legend:hide},navigationTpl,backboneit_navigation_addFields;'
 	. '{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineRoots'] = 'backboneit_navigation_roots';
-	
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineStop'] = 'backboneit_navigation_stop';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineHard'] = 'backboneit_navigation_hard';
+
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_start'] = array(
 	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_start'],
 	'exclude'	=> true,
@@ -94,6 +97,16 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectPublish'
 	)
 );
 
+$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineStop'] = array(
+	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineStop'],
+	'exclude'	=> true,
+	'inputType'	=> 'checkbox',
+	'eval'		=> array(
+		'submitOnChange' => true,
+		'tl_class'		=> 'clr w50 cbx m12'
+	)
+);
+
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_stop'] = array(
 	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_stop'],
 	'exclude'	=> true,
@@ -101,7 +114,17 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_stop'] = array(
 	'eval'		=> array(
 		'maxlength'		=> 5,
 		'rgxp'			=> 'digit',
-		'tl_class'		=> 'clr w50'
+		'tl_class'		=> 'w50'
+	)
+);
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineHard'] = array(
+	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineHard'],
+	'exclude'	=> true,
+	'inputType'	=> 'checkbox',
+	'eval'		=> array(
+		'submitOnChange' => true,
+		'tl_class'		=> 'clr w50 cbx m12'
 	)
 );
 

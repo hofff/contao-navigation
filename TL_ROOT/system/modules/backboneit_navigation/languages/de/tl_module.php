@@ -23,10 +23,14 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectHidden']
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectPublish']
 	= array('Unveröffentlichte Seiten beachten', 'Nur Relevant für die Ermittlung der Startebene.');
 	
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineStop']
+	= array('Anzahl angezeigter Ebenen anpassen', 'Anzahl der Ebenen die immer angezeigt werden festlegen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_stop']
-	= array('Angezeigte Ebenen', 'Anzahl der Ebenen die immer angezeigt werden.');
+	= array('Angezeigte Ebenen', 'Anzahl der Ebenen die immer angezeigt werden. (Größer oder gleich 0)');
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineHard']
+	= array('Anzahl maximal angezeigter Ebenen anpassen', 'Obergrenze der sichbaren Ebenen festlegen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_hard']
-	= array('Maximal angezeigte Ebenen', 'Obergrenze der sichbaren Ebenen.');
+	= array('Maximal angezeigte Ebenen', 'Obergrenze der sichbaren Ebenen. (Größer oder gleich 1)');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showProtected']
 	= array('Geschützte Seiten anzeigen', 'Seiten und Unterseiten mit Mitgliedergruppen-Beschränkung anzeigen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showHidden']

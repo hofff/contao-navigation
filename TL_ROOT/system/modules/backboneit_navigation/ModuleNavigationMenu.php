@@ -11,8 +11,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		if(TL_MODE == 'BE')
 			return $this->generateBE('NAVIGATION MENU');
 			
-		$intStop = $this->backboneit_navigation_stop > 0 ? $this->backboneit_navigation_stop : PHP_INT_MAX;
-		$intHard = $this->backboneit_navigation_hard > 0 ? $this->backboneit_navigation_hard : PHP_INT_MAX;
+		$intStop = $this->backboneit_navigation_defineStop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
+		$intHard = $this->backboneit_navigation_defineHard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
 		
 		$arrRootIDs = $this->backboneit_navigation_defineRoots
 			? deserialize($this->backboneit_navigation_roots, true)
