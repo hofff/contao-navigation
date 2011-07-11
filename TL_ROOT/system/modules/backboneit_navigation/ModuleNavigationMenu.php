@@ -14,37 +14,13 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$intStop = $this->backboneit_navigation_defineStop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
 		$intHard = $this->backboneit_navigation_defineHard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
 		
-		$arrRootIDs = $this->backboneit_navigation_defineRoots
-			? deserialize($this->backboneit_navigation_roots, true)
-			: array($GLOBALS['objPage']->rootId);
-		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
-		
-		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden);
-		$this->backboneit_navigation_respectGuests && $strConditions .= $this->getQueryPartGuests();
-		$this->backboneit_navigation_respectPublish && $strConditions .= $this->getQueryPartPublish();
-		
-		$strStartConditions = $this->backboneit_navigation_includeStart ? '' : $strConditions;
-		
-		if($this->backboneit_navigation_start > 0) {
-			$arrRootIDs = $this->filterPages($arrRootIDs, $strConditions);
-			for($i = 1, $n = $this->backboneit_navigation_start; $i < $n; $i++)
-				$arrRootIDs = $this->getNextLevel($arrRootIDs, $strConditions);
-			$arrRootIDs = $this->getNextLevel($arrRootIDs, $strStartConditions);
-			
-		} elseif($this->backboneit_navigation_start < 0) {
-			for($i = 0, $n = -$this->backboneit_navigation_start; $i < $n; $i++)
-				$arrRootIDs = $this->getPrevLevel($arrRootIDs);
-			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
-			
-		} else {
-			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
-		}
-		
+		$arrRootIDs = $this->calculateRootIDs($intStop);
+	
 		if($this->backboneit_navigation_includeStart) {
 			$objRoots = $this->Database->execute(
 				'SELECT	' . implode(',', $this->arrFields) . '
 				FROM	tl_page
-				WHERE	id IN (' . implode(',', $arrRootIDs) . ')
+				WHERE	id IN (' . implode(',', array_keys(array_flip($arrRootIDs))) . ')
 				AND		type != \'error_403\'
 				AND		type != \'error_404\'
 				' . $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden)
@@ -83,6 +59,47 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$this->Template->request = $this->getIndexFreeRequest(true);
 		$this->Template->skipId = 'skipNavigation' . $this->id;
 		$this->Template->items = $this->strNavigation;
+	}
+	
+	protected function calculateRootIDs($intStop = PHP_INT_MAX) {
+		$arrRootIDs = $this->backboneit_navigation_defineRoots
+			? deserialize($this->backboneit_navigation_roots, true)
+			: array($GLOBALS['objPage']->rootId);
+		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
+		
+		if($intStop == 0) { // special case, kick all roots outside of current path
+			$arrFilteredIDs = array();
+			foreach($arrRootIDs as $intRootID)
+				if(isset($this->arrPath[$intRootID]))
+					$arrFilteredIDs[] = $intRootID;
+			$arrRootIDs = $arrFilteredIDs;
+		}
+		
+		if(!$arrRootIDs)
+			return $arrRootIDs; // empty array
+		
+		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden);
+		$this->backboneit_navigation_respectGuests && $strConditions .= $this->getQueryPartGuests();
+		$this->backboneit_navigation_respectPublish && $strConditions .= $this->getQueryPartPublish();
+		
+		$strStartConditions = $this->backboneit_navigation_includeStart ? '' : $strConditions;
+		
+		if($this->backboneit_navigation_start > 0) {
+			$arrRootIDs = $this->filterPages($arrRootIDs, $strConditions);
+			for($i = 1, $n = $this->backboneit_navigation_start; $i < $n; $i++)
+				$arrRootIDs = $this->getNextLevel($arrRootIDs, $strConditions);
+			$arrRootIDs = $this->getNextLevel($arrRootIDs, $strStartConditions);
+			
+		} elseif($this->backboneit_navigation_start < 0) {
+			for($i = 0, $n = -$this->backboneit_navigation_start; $i < $n; $i++)
+				$arrRootIDs = $this->getPrevLevel($arrRootIDs);
+			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
+			
+		} else {
+			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
+		}
+		
+		return $arrRootIDs;
 	}
 	
 	/**
