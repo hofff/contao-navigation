@@ -1,5 +1,9 @@
 h1. Changelog
 
+h2. 1.1.0 stable
+
+* 1 *Fix*: Alot of fixes for many configurations.
+
 h2. 1.0.0 stable
 
 * 5 *Feature*: CSS classes are now calculated while rendering the templates, so navigation items hooked in receive the correct css

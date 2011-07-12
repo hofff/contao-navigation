@@ -57,8 +57,11 @@ abstract class AbstractModuleNavigation extends Module {
 	);
 	
 	protected $arrFields = array(); // the fields to use for navigation tpl
-	protected $strJumpToFallbackQuery;
 	protected $strJumpToQuery;
+	protected $objJumpToStmt;
+	protected $strJumpToFallbackQuery;
+	protected $objJumpToFallbackStmt;
+	
 	
 	protected $arrGroups; // set of groups of the current user
 	protected $arrTrail; // same as trail but with current page included
@@ -107,11 +110,13 @@ abstract class AbstractModuleNavigation extends Module {
 		$strPublish = $this->getQueryPartPublish();
 		
 		$this->strJumpToQuery =
-			'SELECT	id, alias, type
+			'SELECT	id, alias, type, jumpTo
 			FROM	tl_page
 			WHERE	id = ?
 			' . $strGuests . $strPublish . '
 			LIMIT	0, 1';
+		
+		$this->objJumpToStmt = $this->Database->prepare($this->strJumpToQuery);
 		
 		$this->strJumpToFallbackQuery =
 			'SELECT	id, alias
@@ -121,6 +126,8 @@ abstract class AbstractModuleNavigation extends Module {
 			' . $strGuests . $strPublish . '
 			ORDER BY sorting
 			LIMIT	0, 1';
+		
+		$this->objJumpToFallbackStmt = $this->Database->prepare($this->strJumpToFallbackQuery);
 	}
 	
 	public function __get($strKey) {
@@ -339,18 +346,20 @@ abstract class AbstractModuleNavigation extends Module {
 		switch($arrPage['type']) {
 			case 'forward':
 				if($blnForwardResolution) {
+//					echo "calc jump for: " . $arrPage['id'];
 					if($arrPage['jumpTo']) {
 						$intFallbackSearchID = $arrPage['id'];
 						$intJumpToID = $arrPage['jumpTo'];
 						do {
-							$objNext = $this->Database->prepare(
-								$this->strJumpToQuery
-							)->execute($intJumpToID);
+//							echo " jump: " . $intJumpToID;
+//							unset($objNext);
+							$objNext = $this->Database->prepare($this->strJumpToQuery)->execute($intJumpToID);//$this->objJumpToStmt->execute($intJumpToID);
+							
+//							print_r($objNext->row());
 							
 							if(!$objNext->numRows) {
-								$objNext = $this->Database->prepare(
-									$this->strJumpToFallbackQuery
-								)->execute($intFallbackSearchID);
+								echo " fail<br/>";
+								$objNext = $this->strJumpToFallbackStmt->execute($intFallbackSearchID);
 								break;
 							}
 							
@@ -359,9 +368,7 @@ abstract class AbstractModuleNavigation extends Module {
 							
 						} while($objNext->type == 'forward');
 					} else {
-						$objNext = $this->Database->prepare(
-							$this->strJumpToFallbackQuery
-						)->execute($arrPage['id']);
+						$objNext = $this->strJumpToFallbackStmt->execute($arrPage['id']);
 					}
 					
 					if(!$objNext->numRows) {
