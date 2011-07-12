@@ -24,16 +24,21 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	}
 	
 	public function addForwardItem($varID, $varTargetID) {
-		$this->arrItems[$varID] = $this->arrItems[$varTargetID];
-		$this->arrItems[$varID]['id'] = $varID;
+		if(is_array($this->arrItems[$varID])) {
+			$this->arrItems[$varID]['href'] = $this->arrItems[$varTargetID]['href'];
+		} else {
+			$this->arrItems[$varID] = $this->arrItems[$varTargetID];
+			$this->arrItems[$varID]['id'] = $varID;
+			unset($this->arrItems[$varID]['pid']);
+		}
 		$this->arrItems[$varID]['tid'] = $varTargetID;
-		unset($this->arrItems[$varID]['pid']);
 	}
 	
 	protected function compile() {
 		$this->Template->request = $this->getIndexFreeRequest(true);
 		$this->Template->skipId = 'skipNavigation' . $this->id;
 		$this->Template->items = $this->strNavigation;
+		$this->backboneit_navigation_addLegacyCss && $this->Template->legacyClass = " mod_navigation";
 	}
 	
 	protected function calculateRootIDs($intStop = PHP_INT_MAX) {
@@ -101,8 +106,9 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$this->fetchItems($arrRootIDs, $intStop, $intHard);
 		}
 		
+		$blnForwardResolution = !$this->backboneit_navigation_noForwardResolution;
 		foreach($this->arrItems as &$arrItem)
-			$arrItem = $this->compileNavigationItem($arrItem);
+			$arrItem = $this->compileNavigationItem($arrItem, $blnForwardResolution);
 	}
 	
 	/**

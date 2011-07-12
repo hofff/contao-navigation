@@ -23,5 +23,7 @@ CREATE TABLE `tl_module` (
   `backboneit_navigation_showProtected` char(1) NOT NULL default '',
   `backboneit_navigation_showHidden` char(1) NOT NULL default '',
   `backboneit_navigation_isSitemap` char(1) NOT NULL default '',
+  `backboneit_navigation_addLegacyCss` char(1) NOT NULL default '',
   `backboneit_navigation_addFields` blob NULL,
+  `backboneit_navigation_noForwardResolution` char(1) NOT NULL default '',
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

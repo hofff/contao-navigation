@@ -38,5 +38,11 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showHidden']
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_isSitemap']
 	= array('Als Sitemap verwenden', 'Es werden die Sichtbarkeitseinstellungen für Sitemaps der Seiten genutzt. Wird ignoriert, wenn "Versteckte Seiten anzeigen" ausgewählt ist.');
 	
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addLegacyCss']
+	= array('CSS-Klasse des originalen Navigationsmodul', 'Fügt die Klasse "mod_navigation" zum div-Container des Moduls hinzu, um dieses Modul als vollkompatiblen Ersatz zu verwenden.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addFields']
 	= array('Zusätzliche Seitenfelder', 'Diese Datenfelder einer Seite werden zusätzlich in das Navigations-Template übergeben.');
+
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_noForwardResolution']
+	= array('Weiterleitungsauflösung deaktivieren', 'Deaktiviert das ersetzen von Weiterleitungs-URLs mit der Ziel-URL, was bei sehr vielen Weiterleitungen oder stark besuchten ungecachten Websiten, die Performance verbessern kann. Zu beachten ist, das <b>verkettete</b> Weiterleitungen, welche die aktuelle Seite als Weiterleitungs<b>end</b>ziel besitzen nicht mehr als aktiv gekennzeichnet werden (kein "isActive" mehr im Template und keine "active" CSS-Klasse).');
+	

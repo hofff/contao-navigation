@@ -16,8 +16,10 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
 	. 'backboneit_navigation_defineHard,'
 	. 'backboneit_navigation_showProtected,backboneit_navigation_showHidden,'
 	. 'backboneit_navigation_isSitemap;'
-	. '{template_legend:hide},navigationTpl,backboneit_navigation_addFields;'
-	. '{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
+	. '{template_legend:hide},navigationTpl,backboneit_navigation_addLegacyCss,'
+	. 'backboneit_navigation_addFields;'
+	. '{protected_legend:hide},protected;'
+	. '{expert_legend:hide},backboneit_navigation_noForwardResolution,guests,cssID,space';
 
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineRoots'] = 'backboneit_navigation_roots';
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineStop'] = 'backboneit_navigation_stop';
@@ -168,6 +170,15 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_isSitemap'] = a
 	)
 );
 
+$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addLegacyCss'] = array(
+	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addLegacyCss'],
+	'exclude'	=> true,
+	'inputType'	=> 'checkbox',
+	'eval'		=> array(
+		'tl_class'		=> 'w50 cbx m12'
+	)
+);
+
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addFields'] = array(
 	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addFields'],
 	'exclude'	=> true,
@@ -176,5 +187,14 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addFields'] = a
 	'eval'		=> array(
 		'multiple'		=> true,
 		'tl_class'		=> 'clr'
+	)
+);
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_noForwardResolution'] = array(
+	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_noForwardResolution'],
+	'exclude'	=> true,
+	'inputType'	=> 'checkbox',
+	'eval'		=> array(
+		'tl_class'		=> 'clr cbx'
 	)
 );

@@ -330,7 +330,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @param array $arrPage The page dataset as an array
 	 * @return array The compiled navigation item array
 	 */
-	public function compileNavigationItem(array $arrPage) {
+	public function compileNavigationItem(array $arrPage, $blnForwardResolution = true) {
 		// fallback for dataset field collisions
 		$arrPage['_pageTitle']		= $arrPage['pageTitle'];
 		$arrPage['_target']			= $arrPage['target'];
@@ -338,38 +338,43 @@ abstract class AbstractModuleNavigation extends Module {
 		
 		switch($arrPage['type']) {
 			case 'forward':
-				if($arrPage['jumpTo']) {
-					$intFallbackSearchID = $arrPage['id'];
-					$intJumpToID = $arrPage['jumpTo'];
-					do {
-						$objNext = $this->Database->prepare(
-							$this->strJumpToQuery
-						)->execute($intJumpToID);
-						
-						if(!$objNext->numRows) {
+				if($blnForwardResolution) {
+					if($arrPage['jumpTo']) {
+						$intFallbackSearchID = $arrPage['id'];
+						$intJumpToID = $arrPage['jumpTo'];
+						do {
 							$objNext = $this->Database->prepare(
-								$this->strJumpToFallbackQuery
-							)->execute($intFallbackSearchID);
-							break;
-						}
-						
-						$intFallbackSearchID = $intJumpToID;
-						$intJumpToID = $objNext->jumpTo;
-						
-					} while($objNext->type == 'forward');
+								$this->strJumpToQuery
+							)->execute($intJumpToID);
+							
+							if(!$objNext->numRows) {
+								$objNext = $this->Database->prepare(
+									$this->strJumpToFallbackQuery
+								)->execute($intFallbackSearchID);
+								break;
+							}
+							
+							$intFallbackSearchID = $intJumpToID;
+							$intJumpToID = $objNext->jumpTo;
+							
+						} while($objNext->type == 'forward');
+					} else {
+						$objNext = $this->Database->prepare(
+							$this->strJumpToFallbackQuery
+						)->execute($arrPage['id']);
+					}
+					
+					if(!$objNext->numRows) {
+						$arrPage['href'] = $this->generateFrontendUrl($arrPage);
+					} elseif($objNext->type == 'redirect') {
+						$arrPage['href'] = $this->encodeEmailURL($objNext->url);
+					} else {
+						$arrPage['tid'] = $objNext->id;
+						$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
+					}
 				} else {
-					$objNext = $this->Database->prepare(
-						$this->strJumpToFallbackQuery
-					)->execute($arrPage['id']);
-				}
-				
-				if(!$objNext->numRows) {
+					$arrPage['tid'] = $arrPage['jumpTo'];
 					$arrPage['href'] = $this->generateFrontendUrl($arrPage);
-				} elseif($objNext->type == 'redirect') {
-					$arrPage['href'] = $this->encodeEmailURL($objNext->url);
-				} else {
-					$arrPage['tid'] = $objNext->id;
-					$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
 				}
 				break;
 				
@@ -379,7 +384,7 @@ abstract class AbstractModuleNavigation extends Module {
 				
 			case 'root':
 				if(!$arrPage['dns']
-				|| preg_replace('/^www\./', '', $arrPage['dns']) ==  preg_replace('/^www\./', '', $this->Environment->httpHost)) {
+				|| preg_replace('/^www\./', '', $arrPage['dns']) == preg_replace('/^www\./', '', $this->Environment->httpHost)) {
 					$arrPage['href'] = $this->Environment->base;
 					break;
 				}
