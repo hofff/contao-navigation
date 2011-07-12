@@ -23,6 +23,13 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		return $this->strNavigation ? parent::generate() : '';
 	}
 	
+	public function addForwardItem($varID, $varTargetID) {
+		$this->arrItems[$varID] = $this->arrItems[$varTargetID];
+		$this->arrItems[$varID]['id'] = $varID;
+		$this->arrItems[$varID]['tid'] = $varTargetID;
+		unset($this->arrItems[$varID]['pid']);
+	}
+	
 	protected function compile() {
 		$this->Template->request = $this->getIndexFreeRequest(true);
 		$this->Template->skipId = 'skipNavigation' . $this->id;

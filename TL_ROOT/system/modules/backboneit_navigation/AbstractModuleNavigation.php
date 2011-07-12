@@ -286,7 +286,7 @@ abstract class AbstractModuleNavigation extends Module {
 				$blnContainsActive = true;
 				$arrItem['isActive'] = true; // nothing else (active class is set in template)
 				
-			} elseif($arrItem['fid'] === $this->varActiveID) {
+			} elseif($arrItem['tid'] === $this->varActiveID) {
 				$arrItem['isActive'] = true; // nothing else (active class is set in template)
 				
 			} elseif($arrItem['isTrail']) {
@@ -368,7 +368,7 @@ abstract class AbstractModuleNavigation extends Module {
 				} elseif($objNext->type == 'redirect') {
 					$arrPage['href'] = $this->encodeEmailURL($objNext->url);
 				} else {
-					$arrPage['fid'] = $objNext->id;
+					$arrPage['tid'] = $objNext->id;
 					$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
 				}
 				break;
