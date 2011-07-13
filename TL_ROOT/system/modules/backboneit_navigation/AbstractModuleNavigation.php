@@ -299,12 +299,18 @@ abstract class AbstractModuleNavigation extends Module {
 			} elseif($arrItem['isTrail']) {
 				$arrItem['class'] .= ' trail';
 			}
-		
-			if($intLevel <= $intHard
-			&& isset($this->arrSubpages[$varID])
-			&& ($intLevel <= $intStop || $arrItem['isTrail'] || $varID === $this->varActiveID)) {
-				$arrItem['class'] .= ' submenu';
+			
+			if($intLevel > $intHard || !isset($this->arrSubpages[$varID])) {
+				$arrItem['class'] .= ' leave';
+						
+			} elseif($intLevel > $intStop && !$arrItem['isTrail'] && $varID !== $this->varActiveID) {
+				$arrItem['class'] .= ' submenu leave';
+			
+			} elseif($this->arrSubpages[$varID]) {
+				$arrItem['class'] .= ' submenu inner';
 				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubpages[$varID], $intStop, $intHard, $intLevel + 1);
+			} else {
+				$arrItem['class'] .= ' submenu leave llll';
 			}
 			
 			$arrItems[] = $arrItem;
@@ -346,19 +352,15 @@ abstract class AbstractModuleNavigation extends Module {
 		switch($arrPage['type']) {
 			case 'forward':
 				if($blnForwardResolution) {
-//					echo "calc jump for: " . $arrPage['id'];
 					if($arrPage['jumpTo']) {
 						$intFallbackSearchID = $arrPage['id'];
 						$intJumpToID = $arrPage['jumpTo'];
 						do {
-//							echo " jump: " . $intJumpToID;
-//							unset($objNext);
-							$objNext = $this->Database->prepare($this->strJumpToQuery)->execute($intJumpToID);//$this->objJumpToStmt->execute($intJumpToID);
-							
-//							print_r($objNext->row());
+							$objNext = $this->objJumpToStmt->prepare($this->strJumpToQuery);
+							$objNext = $this->objJumpToStmt->execute($intJumpToID);
 							
 							if(!$objNext->numRows) {
-								echo " fail<br/>";
+								$objNext = $this->strJumpToFallbackStmt->prepare($this->strJumpToFallbackQuery);
 								$objNext = $this->strJumpToFallbackStmt->execute($intFallbackSearchID);
 								break;
 							}
@@ -367,6 +369,7 @@ abstract class AbstractModuleNavigation extends Module {
 							$intJumpToID = $objNext->jumpTo;
 							
 						} while($objNext->type == 'forward');
+						
 					} else {
 						$objNext = $this->strJumpToFallbackStmt->execute($arrPage['id']);
 					}

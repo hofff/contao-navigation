@@ -122,12 +122,13 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	 */
 	protected function fetchItems(array $arrNextPIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		$intLevel = max(1, $intLevel);
+		$objStmt = $this->Database->prepare('*');
 	
-		$strQueryStart =
+		$strLevelQueryStart =
 			'SELECT	' . implode(',', $this->arrFields) . '
 			FROM	tl_page
 			WHERE	pid IN (';
-		$strQueryEnd = ')
+		$strLevelQueryEnd = ')
 			AND		type != \'root\'
 			AND		type != \'error_403\'
 			AND		type != \'error_404\'
@@ -136,21 +137,43 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			. $this->getQueryPartPublish() . '
 			ORDER BY sorting';
 		
+		$strStopQueryStart =
+			'SELECT	pid, COUNT(*) AS num
+			FROM	tl_page
+			WHERE	pid IN (';
+		$strStopQueryEnd = ')
+			AND		type != \'root\'
+			AND		type != \'error_403\'
+			AND		type != \'error_404\'
+			' . $this->getQueryPartHidden($this->backboneit_navigation_showHidden)
+			. $this->getQueryPartGuests()
+			. $this->getQueryPartPublish() . '
+			GROUP BY pid';
+			
 		while($intLevel <= $intHard) {
 			
 			if($intLevel <= $intStop) {
 				$arrPIDs = $arrNextPIDs;
 			} else {
 				$arrPIDs = array();
-				foreach($arrNextPIDs as $intPID)
-					if(isset($this->arrTrail[$intPID]))
+				$arrStopPIDs = array();
+				foreach($arrNextPIDs as $intPID) {
+					if(isset($this->arrTrail[$intPID])) {
 						$arrPIDs[] = $intPID;
+					} else {
+						$arrStopPIDs[] = $intPID;
+					}
+				}
+				$objStopSubpages = $objStmt->query($strStopQueryStart . implode(',', $arrStopPIDs) . $strStopQueryEnd);
+				while($objStopSubpages->next())
+					if($objStopSubpages->num)
+						$this->arrSubpages[$objStopSubpages->pid] = array();
 			}
 			
 			if(!$arrPIDs)
 				break;
 			
-			$objSubpages = $this->Database->execute($strQueryStart . implode(',', $arrPIDs) . $strQueryEnd);
+			$objSubpages = $objStmt->query($strLevelQueryStart . implode(',', $arrPIDs) . $strLevelQueryEnd);
 			
 			if(!$objSubpages->numRows)
 				break;
