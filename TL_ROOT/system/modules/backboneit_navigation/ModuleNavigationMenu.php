@@ -120,10 +120,15 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	 * @param integer $intLevel (optional, defaults to 1) The level of the roots.
 	 * @return null
 	 */
-	protected function fetchItems(array $arrNextPIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
+	protected function fetchItems(array $arrPIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		$intLevel = max(1, $intLevel);
+		
+		 // nothing todo
+		 // $intLevel == $intHard + 1 requires subitem detection for css class "submenu" calculation
+		if(!$arrPIDs || $intLevel > $intHard + 1)
+			return;
+		
 		$objStmt = $this->Database->prepare('*');
-	
 		$strLevelQueryStart =
 			'SELECT	' . implode(',', $this->arrFields) . '
 			FROM	tl_page
@@ -137,58 +142,39 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			. $this->getQueryPartPublish() . '
 			ORDER BY sorting';
 		
-		$strStopQueryStart =
-			'SELECT	pid, COUNT(*) AS num
-			FROM	tl_page
-			WHERE	pid IN (';
-		$strStopQueryEnd = ')
-			AND		type != \'root\'
-			AND		type != \'error_403\'
-			AND		type != \'error_404\'
-			' . $this->getQueryPartHidden($this->backboneit_navigation_showHidden)
-			. $this->getQueryPartGuests()
-			. $this->getQueryPartPublish() . '
-			GROUP BY pid';
-			
-		while($intLevel <= $intHard) {
-			
-			if($intLevel <= $intStop) {
-				$arrPIDs = $arrNextPIDs;
-			} else {
-				$arrPIDs = array();
-				$arrStopPIDs = array();
-				foreach($arrNextPIDs as $intPID) {
-					if(isset($this->arrTrail[$intPID])) {
-						$arrPIDs[] = $intPID;
-					} else {
-						$arrStopPIDs[] = $intPID;
-					}
-				}
-				$objStopSubpages = $objStmt->query($strStopQueryStart . implode(',', $arrStopPIDs) . $strStopQueryEnd);
-				while($objStopSubpages->next())
-					if($objStopSubpages->num)
-						$this->arrSubpages[$objStopSubpages->pid] = array();
+		while($arrPIDs) {
+			// if $arrEndPIDs == $arrPIDs the next $arrPIDs will be empty -> leave loop
+			if($intLevel > $intHard) {
+				$arrEndPIDs = $arrPIDs;
+				
+			} elseif($intLevel > $intStop) {
+				$arrEndPIDs = array();
+				foreach($arrPIDs as $intPID)
+					if(!isset($this->arrTrail[$intPID]))
+						$arrEndPIDs[$intPID] = true;
 			}
-			
-			if(!$arrPIDs)
-				break;
 			
 			$objSubpages = $objStmt->query($strLevelQueryStart . implode(',', $arrPIDs) . $strLevelQueryEnd);
 			
 			if(!$objSubpages->numRows)
 				break;
 			
-			$arrNextPIDs = array();
+			$arrPIDs = array();
 			while($objSubpages->next()) {
 				if(isset($this->arrItems[$objSubpages->id]))
 					continue;
 					
 				if(!$this->checkProtected($objSubpages))
 					continue;
+				
+				if(!isset($arrEndPIDs[$objSubpages->pid])) {
+					$this->arrSubitems[$objSubpages->pid][] = $objSubpages->id; // for order of items
+					$this->arrItems[$objSubpages->id] = $objSubpages->row(); // item datasets
+					$arrPIDs[] = $objSubpages->id; // ids of current layer (for next layer pids)
 					
-				$this->arrSubpages[$objSubpages->pid][] = $objSubpages->id; // for order of items
-				$this->arrItems[$objSubpages->id] = $objSubpages->row(); // item datasets
-				$arrNextPIDs[] = $objSubpages->id; // ids of current layer (for next layer pids)
+				} elseif(!isset($this->arrSubitems[$objSubpages->pid])) {
+					$this->arrSubitems[$objSubpages->pid] = array();
+				}
 			}
 			
 			$intLevel++;
@@ -228,8 +214,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		 // if we do not want to show the root level
 		$arrFirstIDs = array();
 		foreach($arrRootIDs as $varRootID)
-			if(isset($this->arrSubpages[$varRootID]))
-				$arrFirstIDs = array_merge($arrFirstIDs, $this->arrSubpages[$varRootID]);
+			if(isset($this->arrSubitems[$varRootID]))
+				$arrFirstIDs = array_merge($arrFirstIDs, $this->arrSubitems[$varRootID]);
 				
 		return $arrFirstIDs;
 	}

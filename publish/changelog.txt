@@ -2,7 +2,16 @@ h1. Changelog
 
 h2. 1.1.0 stable
 
-* 1 *Fix*: Alot of fixes for many configurations.
+*Note: If you update from a previous version, please check the module settings for stop and hard limit!*
+
+* 3 *Fix*: It is actually called "leaf", not "leave"
+* 1 *Feature*: New CSS classes "forward", "redirect", "root", "inner" (all nodes with a *rendered* submenu) and "leave" (all nodes without a *rendered* submenu)
+* 1 *Feature*: Option to disable forward resolution, for greater performance
+* 1 *Feature*: Option to add "mod_navigation" CSS class to the modules div container
+* 1 *Change*: Improved hook handling a lot
+* 1 *Change*: The property "arrSubpages" is deprecated, use property "arrSubitems" now
+* 1 *Fix*: CSS class "submenu" behaves now exactly like the core navigation menu uses it
+* 1 *Fix*: Alot of fixes for many configurations
 
 h2. 1.0.0 stable
 

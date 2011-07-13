@@ -69,13 +69,16 @@ abstract class AbstractModuleNavigation extends Module {
 	public $varActiveID; // the id of the active page
 	
 	public $arrItems = array(); // compiled page datasets
-	public $arrSubpages = array(); // ordered IDs of subnavigations
+	public $arrSubitems = array(); // ordered IDs of subnavigations
+	/** @Deprecated */ public $arrSubpages;
 	
 	public function __construct(Database_Result $objModule, $strColumn = 'main') {
 		parent::__construct($objModule, $strColumn);
 		if(TL_MODE == 'BE')
 			return;
 		
+		$this->arrSubpages = &$this->arrSubitems; // for deprecated compat
+			
 		$this->import('Database');
 		
 		$this->varActiveID = $this->backboneit_navigation_isSitemap || $this->Input->get('articles') ? false : $GLOBALS['objPage']->id;
@@ -293,24 +296,31 @@ abstract class AbstractModuleNavigation extends Module {
 				$blnContainsActive = true;
 				$arrItem['isActive'] = true; // nothing else (active class is set in template)
 				
-			} elseif($arrItem['tid'] === $this->varActiveID) {
-				$arrItem['isActive'] = true; // nothing else (active class is set in template)
+			} else { // do not flatten if/else
+				if($arrItem['tid'] === $this->varActiveID)
+					$arrItem['isActive'] = true; // nothing else (active class is set in template)
 				
-			} elseif($arrItem['isTrail']) {
-				$arrItem['class'] .= ' trail';
+				if($arrItem['isTrail'])
+					$arrItem['class'] .= ' trail';
 			}
 			
-			if($intLevel > $intHard || !isset($this->arrSubpages[$varID])) {
-				$arrItem['class'] .= ' leave';
+			if(!isset($this->arrSubitems[$varID])) {
+				$arrItem['class'] .= ' leaf';
+				
+			} elseif($intLevel >= $intHard) {
+				// we are at hard level, never draw submenu
+				$arrItem['class'] .= ' submenu leaf';
 						
-			} elseif($intLevel > $intStop && !$arrItem['isTrail'] && $varID !== $this->varActiveID) {
-				$arrItem['class'] .= ' submenu leave';
+			} elseif($intLevel >= $intStop && !$arrItem['isTrail'] && $varID !== $this->varActiveID) {
+				// we are at stop level and not trail and not active, never draw submenu
+				$arrItem['class'] .= ' submenu leaf';
 			
-			} elseif($this->arrSubpages[$varID]) {
+			} elseif($this->arrSubitems[$varID]) {
 				$arrItem['class'] .= ' submenu inner';
-				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubpages[$varID], $intStop, $intHard, $intLevel + 1);
-			} else {
-				$arrItem['class'] .= ' submenu leave llll';
+				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubitems[$varID], $intStop, $intHard, $intLevel + 1);
+			
+			} else { // should never be reached, if no hooks are used
+				$arrItem['class'] .= ' leaf';
 			}
 			
 			$arrItems[] = $arrItem;
@@ -351,6 +361,7 @@ abstract class AbstractModuleNavigation extends Module {
 		
 		switch($arrPage['type']) {
 			case 'forward':
+				$arrPage['cssClass'] .= ' forward';
 				if($blnForwardResolution) {
 					if($arrPage['jumpTo']) {
 						$intFallbackSearchID = $arrPage['id'];
@@ -389,14 +400,16 @@ abstract class AbstractModuleNavigation extends Module {
 				break;
 				
 			case 'redirect':
+				$arrPage['cssClass'] .= ' redirect';
 				$arrPage['href'] = $this->encodeEmailURL($arrPage['url']);
 				break;
 				
 			case 'root':
+				$arrPage['cssClass'] .= ' root';
 				if(!$arrPage['dns']
 				|| preg_replace('/^www\./', '', $arrPage['dns']) == preg_replace('/^www\./', '', $this->Environment->httpHost)) {
 					$arrPage['href'] = $this->Environment->base;
-					break;
+					break; // we only break on root pages; pages in differenz roots should be handled by DomainLink extension
 				}
 				
 			default:

@@ -29,18 +29,27 @@ einer Individuellen Navigation möglich ist, Kombinationen aus beiden und
 noch einiges mehr. Einfach ausprobieren.</p>
 <h4>Funktionen:</h4>
 <ul>
-<li>Kompatibel zu den Templates für das Standard-Navigationsmenü (einziger Unterschied ist, das Seiten
-die CSS-Klasse "submenu" tatsächlich auch nur dann bekommen, wenn dieses Untermenü gerendert wird)</li>
+<li>Vollständig kompatibel zu den Templates für das Standard-Navigationsmenü (ab Version 1.1.0)</li>
+<li>Zusätzliche CSS-Klassen "forward", "redirect", "root", "inner" (Innerer Knoten) und "leaf" (Blatt)</li>
 <li>Mehrere Referenzseiten (Wurzeln der Navigation)</li>
 <li>Aktuelle Seite als Referenzseite</li>
 <li>Startebene wird relativ zu den Referenzseiten berechnet (negative Startebene möglich)</li>
-<li>Hardlimit flexibel (Anmerkung: Stopebene und Hardlimit beziehen sich relativ zur Startebene –
-diessollte auch durch die geänderten Labels der Moduleinstellungen hervorgehen.</li>
+<li>Hardlimit ("Maximal angezeigte Ebenen") flexibel (Anmerkung: Stoplimit und Hardlimit
+beziehen sich relativ zur Startebene – dies sollte auch durch die geänderten Labels der Moduleinstellungen hervorgehen.</li>
 <li>Versteckte und geschützte Seiten anzeigen</li>
 <li>Als Sitemap verwendbar</li>
 <li>Optimierte Algorithmen: Zum Beispiel wird pro Navigationsebene nur noch
 eine Datenbankabfrage durchgeführt, was vorallem bei einer sehr verzweigten
-Navigation Vorteile bringen sollte.</li>
+Navigation Vorteile bringen sollte</li>
+<li>Dynamisch Erweiterbar durch Hook</li>
 </ul>
 
+
 === Freigabe-Notizen und Änderungs-Log
+<p>siehe Handbuch-Link</p>
+<p><strong>Wenn Sie von einer älteren Version auf die Version 1.1.0 oder höher updaten,
+überprüfen Sie bitte die Einstellungen für "Angezeigte Ebenen" und "Maximal angezeigte Ebenen".</strong></p>
+
+
+=== Handbuch-Link
+http://contao-forge.org/projects/backboneitnavigation/wiki
