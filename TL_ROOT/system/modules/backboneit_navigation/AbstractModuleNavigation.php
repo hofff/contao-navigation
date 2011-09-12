@@ -26,42 +26,42 @@
  * if the field name does not collide with the listed keys.
  * 
  * For the collisions of the Contao core page dataset fields the following keys are available:
+ * _type
+ * _title
  * _pageTitle
  * _target
  * _description
  * 
- * 
- * @author Oliver Hoff
+ * @author Oliver Hoff <oliver@hofff.com>
  */
 abstract class AbstractModuleNavigation extends Module {
 	
 	public static $arrDefaultFields = array(
-		'id'		=> true,
-		'pid'		=> true,
-		'sorting'	=> true,
-		'tstamp'	=> true,
-		'type'		=> true,
-		'alias'		=> true,
-		'title'		=> true,
-		'protected'	=> true,
-		'groups'	=> true,
-		'jumpTo'	=> true,
-		'pageTitle'	=> true,
-		'target'	=> true,
-		'description' => true,
-		'url'		=> true,
-		'robots'	=> true,
-		'cssClass'	=> true,
-		'accesskey'	=> true,
-		'tabindex'	=> true
+		'id',
+		'pid',
+		'sorting',
+		'tstamp',
+		'type',
+		'alias',
+		'title',
+		'protected',
+		'groups',
+		'jumpTo',
+		'pageTitle',
+		'target',
+		'description',
+		'url',
+		'robots',
+		'cssClass',
+		'accesskey',
+		'tabindex'
 	);
 	
 	protected $arrFields = array(); // the fields to use for navigation tpl
 	protected $strJumpToQuery;
-	protected $objJumpToStmt;
 	protected $strJumpToFallbackQuery;
-	protected $objJumpToFallbackStmt;
 	
+	protected $objStmt; // a reusable stmt object
 	
 	protected $arrGroups; // set of groups of the current user
 	protected $arrTrail; // same as trail but with current page included
@@ -80,14 +80,14 @@ abstract class AbstractModuleNavigation extends Module {
 		$this->arrSubpages = &$this->arrSubitems; // for deprecated compat
 			
 		$this->import('Database');
+		$this->import('String');
 		
 		$this->varActiveID = $this->backboneit_navigation_isSitemap || $this->Input->get('articles') ? false : $GLOBALS['objPage']->id;
 		$this->arrTrail = array_flip($GLOBALS['objPage']->trail);
 		
 		if(FE_USER_LOGGED_IN) {
 			$this->import('FrontendUser', 'User');
-			if($this->User->groups)
-				$this->arrGroups = array_flip($this->User->groups);
+			$this->User->groups && $this->arrGroups = $this->User->groups;
 		}
 		
 		if(!strlen($this->navigationTpl))
@@ -99,11 +99,11 @@ abstract class AbstractModuleNavigation extends Module {
 			$this->arrFields[] = '*';
 			
 		} elseif($arrFields) {
-			$arrAddFields = array_merge(array_flip($arrAddFields), self::$arrDefaultFields);
-			
 			foreach($this->Database->listFields('tl_page') as $arrField)
 				if(isset($arrAddFields[$arrField['name']]))
 					$this->arrFields[] = $arrField['name'];
+					
+			$this->arrFields[] = array_merge($this->arrFields[], self::$arrDefaultFields);
 			
 		} else {
 			$this->arrFields = array_keys(self::$arrDefaultFields);
@@ -112,14 +112,14 @@ abstract class AbstractModuleNavigation extends Module {
 		$strGuests = $this->getQueryPartGuests();
 		$strPublish = $this->getQueryPartPublish();
 		
+		$this->objStmt = $this->Database->prepare('*');
+		
 		$this->strJumpToQuery =
-			'SELECT	id, alias, type, jumpTo
+			'SELECT	id, alias, type, jumpTo, url, target
 			FROM	tl_page
 			WHERE	id = ?
 			' . $strGuests . $strPublish . '
 			LIMIT	0, 1';
-		
-		$this->objJumpToStmt = $this->Database->prepare($this->strJumpToQuery);
 		
 		$this->strJumpToFallbackQuery =
 			'SELECT	id, alias
@@ -129,8 +129,6 @@ abstract class AbstractModuleNavigation extends Module {
 			' . $strGuests . $strPublish . '
 			ORDER BY sorting
 			LIMIT	0, 1';
-		
-		$this->objJumpToFallbackStmt = $this->Database->prepare($this->strJumpToFallbackQuery);
 	}
 	
 	public function __get($strKey) {
@@ -157,22 +155,33 @@ abstract class AbstractModuleNavigation extends Module {
 	public function filterPages(array $arrPages, $strConditions = '') {
 		if(!$arrPages)
 			return $arrPages;
-			
-		$objPages = $this->Database->execute(
+		
+		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
+		$objPage = $this->objStmt->prepare(
 			'SELECT	id, pid, protected, groups
 			FROM	tl_page
 			WHERE	id IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
-			' . $strConditions);
+			' . $strConditions
+		)->execute();
+		
+		if(!$this->isPermissionCheckRequired())
+			return array_intersect($arrPages, $objPage->fetchEach('id')); // restore order
 		
 		$arrPIDs = array();
 		$arrValid = array();
-		while($objPages->next()) {
-			if(!$this->checkProtected($objPages))
+		while($arrPage = $objPage->fetchAssoc()) {
+			if($this->isPermissionDenied($arrPage))
 				continue;
 			
-			$arrValid[$objPages->id] = true;
-			if(!$objPages->protected && $objPages->pid != 0)
-				$arrPIDs[$objPages->pid][] = $objPages->id;
+			$arrValid[] = $arrPage['id'];
+			/*
+			 * do not remove the protected check! permission denied checks for
+			 * more, but we need to know, if we must recurse to parent pages,
+			 * for permission check, which must not be done, when this page
+			 * defines access rights.
+			 */ 
+			if(!$arrPage['protected'] && $arrPage['pid'] != 0)
+				$arrPIDs[$arrPage['pid']][] = $arrPage['id'];
 		}
 		
 		// exclude pages which are in a protected path
@@ -180,30 +189,26 @@ abstract class AbstractModuleNavigation extends Module {
 			$arrIDs = $arrPIDs;
 			$arrPIDs = array();
 			
-			$objPages = $this->Database->execute(
+			$objPage = $this->objStmt->prepare(
 				'SELECT id, pid, protected, groups
 				FROM	tl_page
-				WHERE	id IN (' . implode(',', array_keys($arrIDs)) . ')');
+				WHERE	id IN (' . implode(',', array_keys($arrIDs)) . ')'
+			)->execute();
 		
-			while($objPages->next()) {
-				if(!$objPages->protected) {
-					if($objPages->pid != 0) {
-						$arrPIDs[$objPages->pid] = isset($arrPIDs[$objPages->pid])
-							? array_merge($arrPIDs[$objPages->pid], $arrIDs[$objPages->id])
-							: $arrIDs[$objPages->id];
+			while($arrPage = $objPage->fetchAssoc()) {
+				if(!$arrPage['protected']) { // do not remove, see above
+					if($arrPage['pid'] != 0) {
+						$arrPIDs[$arrPage['pid']] = isset($arrPIDs[$arrPage['pid']])
+							? array_merge($arrPIDs[$arrPage['pid']], $arrIDs[$arrPage['id']])
+							: $arrIDs[$arrPage['id']];
 					}
-				} elseif(!$this->checkProtected($objPages)) {
-					$arrValid = array_diff_key($arrValid, array_flip($arrIDs[$objPages->id]));
+				} elseif($this->isPermissionDenied($arrPage)) {
+					$arrValid = array_diff($arrValid, $arrIDs[$arrPage['id']]);
 				}
 			}
 		}
-						
-		$arrFiltered = array();
-		foreach($arrPages as $intID)
-			if($arrValid[$intID])
-				$arrFiltered[] = $intID;
 		
-		return $arrFiltered;
+		return array_intersect($arrPages, $arrValid);
 	}
 	
 	/**
@@ -218,17 +223,24 @@ abstract class AbstractModuleNavigation extends Module {
 		if(!$arrPages)
 			return $arrPages;
 			
-		$objNext = $this->Database->execute(
+		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
+		$objNext = $this->objStmt->prepare(
 			'SELECT	id, pid, protected, groups
 			FROM	tl_page
 			WHERE	pid IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
 			' . $strConditions . '
-			ORDER BY sorting');
+			ORDER BY sorting'
+		)->execute();
 		
 		$arrNext = array();
-		while($objNext->next())
-			if($this->checkProtected($objNext))
-				$arrNext[$objNext->pid][] = $objNext->id;
+		if($this->isPermissionCheckRequired()) {
+			while($arrPage = $objPage->fetchAssoc())
+				if(!$this->isPermissionDenied($arrPage))
+					$arrNext[$objNext['pid']][] = $arrPage['id'];
+		} else {
+			while($arrPage = $objPage->fetchAssoc())
+				$arrNext[$objNext['pid']][] = $arrPage['id'];
+		}
 		
 		$arrNextLevel = array();
 		foreach($arrPages as $intID)
@@ -241,7 +253,8 @@ abstract class AbstractModuleNavigation extends Module {
 	/**
 	 * Retrieves the parents of the given array of page IDs in respect of the
 	 * given conditions, which are added to the WHERE clause of the query.
-	 * Maintains relative order of the input array.
+	 * Maintains relative order of the input array and merges subsequent parent
+	 * IDs.
 	 * 
 	 * @param array $arrPages An array of child IDs
 	 * @return array The parent IDs
@@ -249,21 +262,24 @@ abstract class AbstractModuleNavigation extends Module {
 	public function getPrevLevel(array $arrPages, $strConditions = '') {
 		if(!$arrPages)
 			return $arrPages;
-			
-		$objPrev = $this->Database->execute(
+		
+		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
+		$objPrev = $this->objStmt->prepare(
 			'SELECT	id, pid
 			FROM	tl_page
 			WHERE	id IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
-			' . $strConditions);
+			' . $strConditions
+		)->execute();
 		
 		$arrPrev = array();
 		while($objPrev->next())
 			$arrPrev[$objPrev->id] = $objPrev->pid;
 		
 		$arrPrevLevel = array();
+		$intPID = -1;
 		foreach($arrPages as $intID)
-			if(isset($arrPrev[$intID]))
-				$arrPrevLevel[] = $arrPrev[$intID];
+			if(isset($arrPrev[$intID]) && $arrPrev[$intID] != $intPID)
+				$arrPrevLevel[] = $intPID = $arrPrev[$intID];
 		
 		return $arrPrevLevel;
 	}
@@ -355,24 +371,32 @@ abstract class AbstractModuleNavigation extends Module {
 	 */
 	public function compileNavigationItem(array $arrPage, $blnForwardResolution = true) {
 		// fallback for dataset field collisions
+		$arrPage['_type']			= $arrPage['type'];
+		$arrPage['_title']			= $arrPage['title'];
 		$arrPage['_pageTitle']		= $arrPage['pageTitle'];
 		$arrPage['_target']			= $arrPage['target'];
 		$arrPage['_description']	= $arrPage['description'];
 		
+		$arrPage['link']			= $arrPage['_title'];
+		$arrPage['class']			= $arrPage['cssClass'];
+		$arrPage['title']			= specialchars($arrPage['_title'], true);
+		$arrPage['pageTitle']		= specialchars($arrPage['_pageTitle'], true);
+		$arrPage['nofollow']		= strncmp($arrPage['robots'], 'noindex', 7) === 0;
+		$arrPage['description']		= str_replace(array("\n", "\r"), array(' ' , ''), $arrPage['_description']);
+		$arrPage['isTrail']			= isset($this->arrTrail[$arrPage['id']]);
+		
 		switch($arrPage['type']) {
 			case 'forward':
-				$arrPage['cssClass'] .= ' forward';
+				$arrPage['class'] .= ' forward';
 				if($blnForwardResolution) {
 					if($arrPage['jumpTo']) {
 						$intFallbackSearchID = $arrPage['id'];
 						$intJumpToID = $arrPage['jumpTo'];
 						do {
-							$objNext = $this->objJumpToStmt->prepare($this->strJumpToQuery);
-							$objNext = $this->objJumpToStmt->execute($intJumpToID);
+							$objNext = $this->objStmt->prepare($this->strJumpToQuery)->execute($intJumpToID);
 							
 							if(!$objNext->numRows) {
-								$objNext = $this->strJumpToFallbackStmt->prepare($this->strJumpToFallbackQuery);
-								$objNext = $this->strJumpToFallbackStmt->execute($intFallbackSearchID);
+								$objNext = $this->objStmt->prepare($this->strJumpToFallbackQuery)->execute($intFallbackSearchID);
 								break;
 							}
 							
@@ -382,13 +406,14 @@ abstract class AbstractModuleNavigation extends Module {
 						} while($objNext->type == 'forward');
 						
 					} else {
-						$objNext = $this->strJumpToFallbackStmt->execute($arrPage['id']);
+						$objNext = $this->objStmt->prepare($this->strJumpToFallbackQuery)->execute($arrPage['id']);
 					}
 					
 					if(!$objNext->numRows) {
 						$arrPage['href'] = $this->generateFrontendUrl($arrPage);
 					} elseif($objNext->type == 'redirect') {
 						$arrPage['href'] = $this->encodeEmailURL($objNext->url);
+						$arrPage['target'] = $objNext->target ? LINK_NEW_WINDOW : '';
 					} else {
 						$arrPage['tid'] = $objNext->id;
 						$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
@@ -400,12 +425,13 @@ abstract class AbstractModuleNavigation extends Module {
 				break;
 				
 			case 'redirect':
-				$arrPage['cssClass'] .= ' redirect';
+				$arrPage['class'] .= ' redirect';
 				$arrPage['href'] = $this->encodeEmailURL($arrPage['url']);
+				$arrPage['target'] = $arrPage['_target'] ? LINK_NEW_WINDOW : '';
 				break;
 				
 			case 'root':
-				$arrPage['cssClass'] .= ' root';
+				$arrPage['class'] .= ' root';
 				if(!$arrPage['dns']
 				|| preg_replace('/^www\./', '', $arrPage['dns']) == preg_replace('/^www\./', '', $this->Environment->httpHost)) {
 					$arrPage['href'] = $this->Environment->base;
@@ -417,14 +443,6 @@ abstract class AbstractModuleNavigation extends Module {
 				break;
 		}
 		
-		$arrPage['link']			= $arrPage['title'];
-		$arrPage['class']			= $arrPage['cssClass'];
-		$arrPage['title']			= specialchars($arrPage['title'], true);
-		$arrPage['pageTitle']		= specialchars($arrPage['_pageTitle'], true);
-		$arrPage['nofollow']		= strncmp($arrPage['robots'], 'noindex', 7) === 0;
-		$arrPage['target']			= $arrPage['type'] == 'redirect' && $arrPage['_target'] ? LINK_NEW_WINDOW : '';
-		$arrPage['description']		= str_replace(array("\n", "\r"), array(' ' , ''), $arrPage['_description']);
-		$arrPage['isTrail']			= isset($this->arrTrail[$arrPage['id']]);
 		
 		return $arrPage;
 	}
@@ -442,62 +460,87 @@ abstract class AbstractModuleNavigation extends Module {
 		if(strncasecmp($strHref, 'mailto:', 7) !== 0)
 			return $strHref;
 
-		$this->import('String');
 		return $this->String->encodeEmail($strHref);
+	}
+	
+	public function isPermissionCheckRequired() {
+		return !BE_USER_LOGGED_IN && !$this->backboneit_navigation_showProtected;
+	}
+
+	/**
+	 * Utility method.
+	 * 
+	 * THIS IS NOT THE OPPOSITE OF ::isPermissionGranted()!
+	 * 
+	 * Checks if the current user has no permission to view the page of the
+	 * given page dataset, in regards to the permission requirements of the
+	 * page.
+	 * 
+	 * @param array $arrPage The page dataset of the current page, with at least
+	 * 		groups and protected attributes set.
+	 * 
+	 * @return boolean If the permission is denied true, otherwise false.
+	 */
+	public function isPermissionDenied($arrPage) {
+		if(!$arrPage['protected']) // this page is not protected
+			return false;
+			
+		if(!$this->arrGroups) // the current user is not in any group
+			return true;
+		
+		// check if the current user is not in any group, which is allowed to access the current page  
+		return !array_intersect($this->arrGroups, deserialize($arrPage['groups'], true));
 	}
 	
 	/**
 	 * Utility method.
-	 * Checks if the page of the given page dataset is visible to the current user,
-	 * in regards to the current navigation settings and the permission requirements of the page.
 	 * 
-	 * @param $objPage
-	 * @return unknown_type
+	 * THIS IS NOT THE OPPOSITE OF ::isPermissionDenied()!
+	 * 
+	 * Checks if the current user has permission to view the page of the given
+	 * page dataset, in regards to the current navigation settings and the
+	 * permission requirements of the page.
+	 * 
+	 * Context property: backboneit_navigation_showProtected
+	 * 
+	 * @param array $arrPage The page dataset of the current page, with at least
+	 * 		groups and protected attributes set.
+	 * 
+	 * @return boolean If the permission is granted true, otherwise false.
 	 */
-	public function checkProtected($objPage) {
-		if(BE_USER_LOGGED_IN)
+	public function isPermissionGranted($arrPage) {
+		if(BE_USER_LOGGED_IN) // be users have access everywhere
 			return true;
 			
-		if(!$objPage->protected)
+		if($this->backboneit_navigation_showProtected) // protection is ignored
 			return true;
 			
-		if($this->backboneit_navigation_showProtected)
-			return true;
-			
-		if(!$this->arrGroups)
-			return false;
-			
-		if(array_intersect_key($this->arrGroups, array_flip(deserialize($objPage->groups, true))))
-			return true;
-			
-		return false;
+		return !$this->isPermissionDenied($arrPage);
 	}
 	
 	/**
 	 * Returns the part of the where condition, checking for hidden state of a page.
-	 * The condition is preceded by " AND ".
 	 * 
 	 * @return string The where condition
 	 */
-	public function getQueryPartHidden($blnShowHidden) {
+	public function getQueryPartHidden($blnShowHidden = false, $blnSitemap = false) {
 		if($blnShowHidden) {
 			return '';
-		} elseif($this->backboneit_navigation_isSitemap) {
-			return ' AND (sitemap = \'map_always\' OR (hide != 1 AND sitemap != \'map_never\'))';
+		} elseif($blnSitemap) {
+			return '(sitemap = \'map_always\' OR (hide != 1 AND sitemap != \'map_never\'))';
 		} else {
-			return ' AND hide != 1';
+			return 'hide != 1';
 		}	
 	}
 	
 	/**
 	 * Returns the part of the where condition, checking for guest visibility state of a page.
-	 * The condition is preceded by " AND ".
 	 * 
 	 * @return string The where condition
 	 */
 	public function getQueryPartGuests() {
 		if(FE_USER_LOGGED_IN && !BE_USER_LOGGED_IN) {
-			return ' AND guests != 1';
+			return 'guests != 1';
 		} else {
 			return '';
 		}
@@ -505,7 +548,6 @@ abstract class AbstractModuleNavigation extends Module {
 	
 	/**
 	 * Returns the part of the where condition checking for publication state of a page.
-	 * The condition is preceded by " AND ".
 	 * 
 	 * @return string The where condition
 	 */
@@ -514,7 +556,7 @@ abstract class AbstractModuleNavigation extends Module {
 			return '';
 		} else {
 			static $intTime; if(!$intTime) $intTime = time();
-			return ' AND (start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
+			return '(start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
 		}
 	}
 	

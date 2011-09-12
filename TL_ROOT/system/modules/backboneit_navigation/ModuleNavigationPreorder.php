@@ -38,7 +38,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$this->Template->request = $this->getIndexFreeRequest(true);
 		$this->Template->skipId = 'skipNavigation' . $this->id;
 		$this->Template->items = $this->strNavigation;
-		$this->backboneit_navigation_addLegacyCss && $this->Template->legacyClass = ' mod_navigation';
+		$this->backboneit_navigation_addLegacyCss && $this->Template->legacyClass = " mod_navigation";
 	}
 	
 	protected function calculateRootIDs($intStop = PHP_INT_MAX) {
@@ -48,7 +48,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		
 		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
 		
-		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden, $this->backboneit_navigation_isSitemap);
+		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden);
 		$this->backboneit_navigation_respectGuests && $strConditions .= $this->getQueryPartGuests();
 		$this->backboneit_navigation_respectPublish && $strConditions .= $this->getQueryPartPublish();
 		
@@ -69,8 +69,12 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
 		}
 		
-		if($intStop == 0) { // special case, keep only roots within the current path
-			$arrRootIDs = array_intersect($arrRootIDs, array_keys($this->arrTrail));
+		if($intStop == 0) { // special case, kick all roots outside of current path
+			$arrFilteredIDs = array();
+			foreach($arrRootIDs as $intRootID)
+				if(isset($this->arrTrail[$intRootID]))
+					$arrFilteredIDs[] = $intRootID;
+			$arrRootIDs = $arrFilteredIDs;
 		}
 		
 		return $arrRootIDs;
