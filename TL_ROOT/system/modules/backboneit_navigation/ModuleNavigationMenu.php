@@ -16,22 +16,12 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		
 		$arrRootIDs = $this->calculateRootIDs($intStop);
 		$this->compileNavigationTree($arrRootIDs, $intStop, $intHard);
-		$arrRootIDs = $this->executeHook($arrRootIDs);
+		$this->executeTreeHook();
+		$arrRootIDs = $this->executeMenuHook($arrRootIDs);
 		$arrFirstIDs = $this->getFirstNavigationLevel($arrRootIDs);
 		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, $intStop, $intHard));
 		
 		return $this->strNavigation ? parent::generate() : '';
-	}
-	
-	public function addForwardItem($varID, $varTargetID) {
-		if(is_array($this->arrItems[$varID])) {
-			$this->arrItems[$varID]['href'] = $this->arrItems[$varTargetID]['href'];
-		} else {
-			$this->arrItems[$varID] = $this->arrItems[$varTargetID];
-			$this->arrItems[$varID]['id'] = $varID;
-			unset($this->arrItems[$varID]['pid']);
-		}
-		$this->arrItems[$varID]['tid'] = $varTargetID;
 	}
 	
 	protected function compile() {
@@ -43,14 +33,15 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	
 	protected function calculateRootIDs($intStop = PHP_INT_MAX) {
 		$arrRootIDs = $this->backboneit_navigation_defineRoots
-			? deserialize($this->backboneit_navigation_roots, true)
+			? array_map('intval', deserialize($this->backboneit_navigation_roots, true))
 			: array($GLOBALS['objPage']->rootId);
 		
 		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
 		
-		$strConditions = $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden, $this->backboneit_navigation_isSitemap);
-		$this->backboneit_navigation_respectGuests && $strConditions .= $this->getQueryPartGuests();
-		$this->backboneit_navigation_respectPublish && $strConditions .= $this->getQueryPartPublish();
+		$arrConditions = array($this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden, $this->backboneit_navigation_isSitemap));
+		$this->backboneit_navigation_respectGuests && $arrConditions[] = $this->getQueryPartGuests();
+		$this->backboneit_navigation_respectPublish && $arrConditions[] = $this->getQueryPartPublish();
+		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
 		
 		$strStartConditions = $this->backboneit_navigation_includeStart ? '' : $strConditions;
 		
@@ -70,7 +61,9 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		}
 		
 		if($intStop == 0) { // special case, keep only roots within the current path
-			$arrRootIDs = array_intersect($arrRootIDs, array_keys($this->arrTrail));
+			$arrPath = array_keys($this->arrTrail);
+			$arrPath[] = $this->varActiveID;
+			$arrRootIDs = array_intersect($arrRootIDs, $arrPath);
 		}
 		
 		return $arrRootIDs;
@@ -81,17 +74,24 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			return;
 		
 		$arrRootIDs = array_keys(array_flip($arrRootIDs));
-			
+		
 		if($this->backboneit_navigation_includeStart) {
-			$objRoots = $this->Database->execute(
+			//$arrConditions = array(
+			//	$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
+			//	$this->getQueryPartPublish()
+			//);
+			//!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
+			//$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
+			//$strConditions && $strConditions = 'AND (' . $strConditions . ')';
+		
+			$objRoots = $this->objStmt->query(
 				'SELECT	' . implode(',', $this->arrFields) . '
 				FROM	tl_page
 				WHERE	id IN (' . implode(',', $arrRootIDs) . ')
 				AND		type != \'error_403\'
 				AND		type != \'error_404\'
-				' . $this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden)
-				. $this->getQueryPartGuests()
-				. $this->getQueryPartPublish());
+				'// . $strConditions
+			);
 
 			while($objRoots->next())
 				$this->arrItems[$objRoots->id] = $objRoots->row();
@@ -124,7 +124,14 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		if(!$arrPIDs || $intLevel > $intHard + 1)
 			return;
 		
-		$objStmt = $this->Database->prepare('*');
+		$arrConditions = array(
+			$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
+			$this->getQueryPartPublish()
+		);
+		!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
+		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
+		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
+		
 		$strLevelQueryStart =
 			'SELECT	' . implode(',', $this->arrFields) . '
 			FROM	tl_page
@@ -133,9 +140,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			AND		type != \'root\'
 			AND		type != \'error_403\'
 			AND		type != \'error_404\'
-			' . $this->getQueryPartHidden($this->backboneit_navigation_showHidden)
-			. $this->getQueryPartGuests()
-			. $this->getQueryPartPublish() . '
+			' . $strConditions . '
 			ORDER BY sorting';
 		
 		while($arrPIDs) {
@@ -150,26 +155,26 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 						$arrEndPIDs[$intPID] = true;
 			}
 			
-			$objSubpages = $objStmt->query($strLevelQueryStart . implode(',', $arrPIDs) . $strLevelQueryEnd);
+			$objSubpages = $this->objStmt->query($strLevelQueryStart . implode(',', $arrPIDs) . $strLevelQueryEnd);
 			
 			if(!$objSubpages->numRows)
 				break;
 			
 			$arrPIDs = array();
-			while($objSubpages->next()) {
-				if(isset($this->arrItems[$objSubpages->id]))
+			while($arrPage = $objSubpages->fetchAssoc()) {
+				if(isset($this->arrItems[$arrPage['id']]))
 					continue;
 					
-				if(!$this->checkProtected($objSubpages))
+				if(!$this->isPermissionGranted($arrPage))
 					continue;
 				
-				if(!isset($arrEndPIDs[$objSubpages->pid])) {
-					$this->arrSubitems[$objSubpages->pid][] = $objSubpages->id; // for order of items
-					$this->arrItems[$objSubpages->id] = $objSubpages->row(); // item datasets
-					$arrPIDs[] = $objSubpages->id; // ids of current layer (for next layer pids)
+				if(!isset($arrEndPIDs[$arrPage['pid']])) {
+					$this->arrSubitems[$arrPage['pid']][] = $arrPage['id']; // for order of items
+					$this->arrItems[$arrPage['id']] = $arrPage; // item datasets
+					$arrPIDs[] = $arrPage['id']; // ids of current layer (for next layer pids)
 					
-				} elseif(!isset($this->arrSubitems[$objSubpages->pid])) {
-					$this->arrSubitems[$objSubpages->pid] = array();
+				} elseif(!isset($this->arrSubitems[$arrPage['pid']])) {
+					$this->arrSubitems[$arrPage['pid']] = array();
 				}
 			}
 			
@@ -188,7 +193,9 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	 * @param array $arrRootIDs The root pages before hook execution
 	 * @return array $arrRootIDs The root pages after hook execution
 	 */
-	protected function executeHook(array $arrRootIDs) {
+	protected function executeMenuHook(array $arrRootIDs, $blnForce = false) {
+		if(!$blnForce && $this->backboneit_navigation_disableHooks)
+			return $arrRootIDs;
 		if(!is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_menu']))
 			return $arrRootIDs;
 			

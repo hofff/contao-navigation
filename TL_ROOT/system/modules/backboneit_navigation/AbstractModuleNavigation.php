@@ -37,24 +37,24 @@
 abstract class AbstractModuleNavigation extends Module {
 	
 	public static $arrDefaultFields = array(
-		'id',
-		'pid',
-		'sorting',
-		'tstamp',
-		'type',
-		'alias',
-		'title',
-		'protected',
-		'groups',
-		'jumpTo',
-		'pageTitle',
-		'target',
-		'description',
-		'url',
-		'robots',
-		'cssClass',
-		'accesskey',
-		'tabindex'
+		'id'			=> true,
+		'pid'			=> true,
+		'sorting'		=> true,
+		'tstamp'		=> true,
+		'type'			=> true,
+		'alias'			=> true,
+		'title'			=> true,
+		'protected'		=> true,
+		'groups'		=> true,
+		'jumpTo'		=> true,
+		'pageTitle'		=> true,
+		'target'		=> true,
+		'description'	=> true,
+		'url'			=> true,
+		'robots'		=> true,
+		'cssClass'		=> true,
+		'accesskey'		=> true,
+		'tabindex'		=> true
 	);
 	
 	protected $arrFields = array(); // the fields to use for navigation tpl
@@ -101,24 +101,28 @@ abstract class AbstractModuleNavigation extends Module {
 		} elseif($arrFields) {
 			foreach($this->Database->listFields('tl_page') as $arrField)
 				if(isset($arrAddFields[$arrField['name']]))
-					$this->arrFields[] = $arrField['name'];
+					$this->arrFields[$arrField['name']] = true;
 					
-			$this->arrFields[] = array_merge($this->arrFields[], self::$arrDefaultFields);
+			$this->arrFields = array_keys(array_merge($this->arrFields, self::$arrDefaultFields));
 			
 		} else {
 			$this->arrFields = array_keys(self::$arrDefaultFields);
 		}
-			
-		$strGuests = $this->getQueryPartGuests();
-		$strPublish = $this->getQueryPartPublish();
 		
 		$this->objStmt = $this->Database->prepare('*');
+			
+		$arrConditions = array(
+			$this->getQueryPartGuests(),
+			$this->getQueryPartPublish()
+		);
+		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
+		$strConditions && $strConditions = ' AND (' . $strConditions . ')';
 		
 		$this->strJumpToQuery =
 			'SELECT	id, alias, type, jumpTo, url, target
 			FROM	tl_page
 			WHERE	id = ?
-			' . $strGuests . $strPublish . '
+			' . $strConditions . '
 			LIMIT	0, 1';
 		
 		$this->strJumpToFallbackQuery =
@@ -126,7 +130,7 @@ abstract class AbstractModuleNavigation extends Module {
 			FROM	tl_page
 			WHERE	pid = ?
 			AND		type = \'regular\'
-			' . $strGuests . $strPublish . '
+			' . $strConditions . '
 			ORDER BY sorting
 			LIMIT	0, 1';
 	}
@@ -149,6 +153,9 @@ abstract class AbstractModuleNavigation extends Module {
 	 * this navigations settings.
 	 * Maintains relative order of the input array.
 	 * 
+	 * For permance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+	 * contains no hazardous code.
+	 * 
 	 * @param array $arrPages An array of page IDs to filter
 	 * @return array Filtered array of page IDs
 	 */
@@ -157,12 +164,12 @@ abstract class AbstractModuleNavigation extends Module {
 			return $arrPages;
 		
 		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
-		$objPage = $this->objStmt->prepare(
+		$objPage = $this->objStmt->query(
 			'SELECT	id, pid, protected, groups
 			FROM	tl_page
 			WHERE	id IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
 			' . $strConditions
-		)->execute();
+		);
 		
 		if(!$this->isPermissionCheckRequired())
 			return array_intersect($arrPages, $objPage->fetchEach('id')); // restore order
@@ -189,11 +196,11 @@ abstract class AbstractModuleNavigation extends Module {
 			$arrIDs = $arrPIDs;
 			$arrPIDs = array();
 			
-			$objPage = $this->objStmt->prepare(
+			$objPage = $this->objStmt->query(
 				'SELECT id, pid, protected, groups
 				FROM	tl_page
 				WHERE	id IN (' . implode(',', array_keys($arrIDs)) . ')'
-			)->execute();
+			);
 		
 			while($arrPage = $objPage->fetchAssoc()) {
 				if(!$arrPage['protected']) { // do not remove, see above
@@ -216,6 +223,9 @@ abstract class AbstractModuleNavigation extends Module {
 	 * given conditions, which are added to the WHERE clause of the query.
 	 * Maintains relative order of the input array.
 	 * 
+	 * For permance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+	 * contains no hazardous code.
+	 * 
 	 * @param array $arrPages An array of parent IDs
 	 * @return array The child IDs
 	 */
@@ -224,22 +234,22 @@ abstract class AbstractModuleNavigation extends Module {
 			return $arrPages;
 			
 		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
-		$objNext = $this->objStmt->prepare(
+		$objNext = $this->objStmt->query(
 			'SELECT	id, pid, protected, groups
 			FROM	tl_page
 			WHERE	pid IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
 			' . $strConditions . '
 			ORDER BY sorting'
-		)->execute();
+		);
 		
 		$arrNext = array();
 		if($this->isPermissionCheckRequired()) {
-			while($arrPage = $objPage->fetchAssoc())
+			while($arrPage = $objNext->fetchAssoc())
 				if(!$this->isPermissionDenied($arrPage))
-					$arrNext[$objNext['pid']][] = $arrPage['id'];
+					$arrNext[$arrPage['pid']][] = $arrPage['id'];
 		} else {
-			while($arrPage = $objPage->fetchAssoc())
-				$arrNext[$objNext['pid']][] = $arrPage['id'];
+			while($arrPage = $objNext->fetchAssoc())
+				$arrNext[$arrPage['pid']][] = $arrPage['id'];
 		}
 		
 		$arrNextLevel = array();
@@ -256,6 +266,9 @@ abstract class AbstractModuleNavigation extends Module {
 	 * Maintains relative order of the input array and merges subsequent parent
 	 * IDs.
 	 * 
+	 * For permance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+	 * contains no hazardous code.
+	 * 
 	 * @param array $arrPages An array of child IDs
 	 * @return array The parent IDs
 	 */
@@ -264,12 +277,12 @@ abstract class AbstractModuleNavigation extends Module {
 			return $arrPages;
 		
 		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
-		$objPrev = $this->objStmt->prepare(
+		$objPrev = $this->objStmt->query(
 			'SELECT	id, pid
 			FROM	tl_page
 			WHERE	id IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
 			' . $strConditions
-		)->execute();
+		);
 		
 		$arrPrev = array();
 		while($objPrev->next())
@@ -371,7 +384,6 @@ abstract class AbstractModuleNavigation extends Module {
 	 */
 	public function compileNavigationItem(array $arrPage, $blnForwardResolution = true) {
 		// fallback for dataset field collisions
-		$arrPage['_type']			= $arrPage['type'];
 		$arrPage['_title']			= $arrPage['title'];
 		$arrPage['_pageTitle']		= $arrPage['pageTitle'];
 		$arrPage['_target']			= $arrPage['target'];
@@ -387,7 +399,6 @@ abstract class AbstractModuleNavigation extends Module {
 		
 		switch($arrPage['type']) {
 			case 'forward':
-				$arrPage['class'] .= ' forward';
 				if($blnForwardResolution) {
 					if($arrPage['jumpTo']) {
 						$intFallbackSearchID = $arrPage['id'];
@@ -410,15 +421,21 @@ abstract class AbstractModuleNavigation extends Module {
 					}
 					
 					if(!$objNext->numRows) {
+						$arrPage['class'] .= ' forward';
 						$arrPage['href'] = $this->generateFrontendUrl($arrPage);
+						
 					} elseif($objNext->type == 'redirect') {
+						$arrPage['class'] .= ' redirect';
 						$arrPage['href'] = $this->encodeEmailURL($objNext->url);
 						$arrPage['target'] = $objNext->target ? LINK_NEW_WINDOW : '';
+						
 					} else {
+						$arrPage['class'] .= ' forward';
 						$arrPage['tid'] = $objNext->id;
 						$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
 					}
 				} else {
+					$arrPage['class'] .= ' forward';
 					$arrPage['tid'] = $arrPage['jumpTo'];
 					$arrPage['href'] = $this->generateFrontendUrl($arrPage);
 				}
@@ -576,6 +593,39 @@ abstract class AbstractModuleNavigation extends Module {
 		$objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id=' . $this->id;
 
 		return $objTemplate->parse();
+	}
+	
+	public function addForwardItem($varID, $varTargetID) {
+		if(is_array($this->arrItems[$varID])) {
+			$this->arrItems[$varID]['href'] = $this->arrItems[$varTargetID]['href'];
+		} else {
+			$this->arrItems[$varID] = $this->arrItems[$varTargetID];
+			$this->arrItems[$varID]['id'] = $varID;
+			unset($this->arrItems[$varID]['pid']);
+		}
+		$this->arrItems[$varID]['tid'] = $varTargetID;
+	}
+	
+	/**
+	 * Executes the tree hook, to dynamically add navigations items to the tree
+	 * the navigation is rendered from.
+	 * 
+	 * The callback receives the following parameters:
+	 * $this - This navigation module instance
+	 * 
+	 * @param array $arrRootIDs The root pages before hook execution
+	 * @return array $arrRootIDs The root pages after hook execution
+	 */
+	protected function executeTreeHook($blnForce = false) {
+		if(!$blnForce && $this->backboneit_navigation_disableHooks)
+			return;
+		if(!is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_tree']))
+			return;
+			
+		foreach($GLOBALS['TL_HOOKS']['backboneit_navigation_tree'] as $arrCallback) {
+			$this->import($arrCallback[0]);
+			$this->{$arrCallback[0]}->{$arrCallback[1]}($this);
+		}
 	}
 	
 }
