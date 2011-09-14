@@ -84,15 +84,6 @@ $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineDept
 	
 
 /***** GENERAL FIELDS *********************************************************/
-	
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_currentAsRoot'] = array(
-	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_currentAsRoot'],
-	'exclude'	=> true,
-	'inputType'	=> 'checkbox',
-	'eval'		=> array(
-		'tl_class'		=> 'w50 cbx'
-	)
-);
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = array(
 	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_roots'],
@@ -210,6 +201,15 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_disableHooks'] 
 
 
 /***** NAVIGATION MENU ********************************************************/
+	
+$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_currentAsRoot'] = array(
+	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_currentAsRoot'],
+	'exclude'	=> true,
+	'inputType'	=> 'checkbox',
+	'eval'		=> array(
+		'tl_class'		=> 'w50 cbx'
+	)
+);
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineRoots'] = array(
 	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineRoots'],

@@ -3,7 +3,7 @@ h1. Changelog
 h2. 1.2.0 stable
 
 * 1 *Feature*: Added a generic tree hook "backboneit_navigation_tree", which allows to modify the navigation tree for tree-based navigation.
-* 1 *Feature*: New navigation module: Sequential preorder navigation
+* 1 *Feature*: New navigation module: navigation chain
 * 1 *Change*: The "backboneit_navigation_menu" hook should only be used to modify the root pages of the navigation menu module and overwrite different settings. Though tree modifications are still supported, it is recommended to use the new "backboneit_navigation_tree" hook.
 * 1 *Change*: Lot of performance optimizations
 * 1 *Fix*: Subsequent identical parent pages are canonicalized, if start level is negative 
