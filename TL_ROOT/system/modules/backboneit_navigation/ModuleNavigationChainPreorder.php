@@ -2,7 +2,7 @@
 
 class ModuleNavigationChainPreorder extends AbstractModuleNavigation {
 	
-	protected $strTemplate = 'mod_backboneit_navigation_chain_preorder';
+	protected $strTemplate = 'mod_bbit_navi_chain_preorder';
 	
 	protected $strNavigation;
 	
@@ -32,7 +32,7 @@ class ModuleNavigationChainPreorder extends AbstractModuleNavigation {
 	 * @return array $arrRootIDs The root pages after hook execution
 	 */
 	protected function executeChainHook(array $arrChainIDs, $blnForce = false) {
-		if(!$blnForce && $this->backboneit_navigation_disableHooks)
+		if(!$blnForce && $this->bbit_navi_disableHooks)
 			return $arrChainIDs;
 		if(!is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_chain']))
 			return $arrChainIDs;

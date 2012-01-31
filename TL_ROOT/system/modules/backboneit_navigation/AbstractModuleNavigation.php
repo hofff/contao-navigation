@@ -69,7 +69,8 @@ abstract class AbstractModuleNavigation extends Module {
 	public $varActiveID; // the id of the active page
 	
 	public $arrItems = array(); // compiled page datasets
-	public $arrSubitems = array(); // ordered IDs of subnavigations
+	public $arrTree = array(); // map parent ID => ordered children IDs
+	/** @Deprecated */ public $arrSubitems;
 	/** @Deprecated */ public $arrSubpages;
 	
 	public function __construct(Database_Result $objModule, $strColumn = 'main') {
@@ -77,12 +78,13 @@ abstract class AbstractModuleNavigation extends Module {
 		if(TL_MODE == 'BE')
 			return;
 		
-		$this->arrSubpages = &$this->arrSubitems; // for deprecated compat
+		$this->arrSubpages = &$this->arrTree; // for deprecated compat
+		$this->arrSubitems = &$this->arrTree; // for deprecated compat
 			
 		$this->import('Database');
 		$this->import('String');
 		
-		$this->varActiveID = $this->backboneit_navigation_isSitemap || $this->Input->get('articles') ? false : $GLOBALS['objPage']->id;
+		$this->varActiveID = $this->bbit_navi_isSitemap || $this->Input->get('articles') ? false : $GLOBALS['objPage']->id;
 		$this->arrTrail = array_flip($GLOBALS['objPage']->trail);
 		
 		if(FE_USER_LOGGED_IN) {
@@ -93,7 +95,7 @@ abstract class AbstractModuleNavigation extends Module {
 		if(!strlen($this->navigationTpl))
 			$this->navigationTpl = 'nav_default';
 		
-		$arrAddFields = deserialize($this->backboneit_navigation_addFields, true);
+		$arrAddFields = deserialize($this->bbit_navi_addFields, true);
 		
 		if(count($arrFields) > 10) {
 			$this->arrFields[] = '*';
@@ -112,8 +114,8 @@ abstract class AbstractModuleNavigation extends Module {
 		$this->objStmt = $this->Database->prepare('*');
 			
 		$arrConditions = array(
-			$this->getQueryPartGuests(),
-			$this->getQueryPartPublish()
+			self::getQueryPartGuests(),
+			self::getQueryPartPublish()
 		);
 		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
 		$strConditions && $strConditions = ' AND (' . $strConditions . ')';
@@ -333,7 +335,7 @@ abstract class AbstractModuleNavigation extends Module {
 					$arrItem['class'] .= ' trail';
 			}
 			
-			if(!isset($this->arrSubitems[$varID])) {
+			if(!isset($this->arrTree[$varID])) {
 				$arrItem['class'] .= ' leaf';
 				
 			} elseif($intLevel >= $intHard) {
@@ -344,9 +346,9 @@ abstract class AbstractModuleNavigation extends Module {
 				// we are at stop level and not trail and not active, never draw submenu
 				$arrItem['class'] .= ' submenu leaf';
 			
-			} elseif($this->arrSubitems[$varID]) {
+			} elseif($this->arrTree[$varID]) {
 				$arrItem['class'] .= ' submenu inner';
-				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubitems[$varID], $intStop, $intHard, $intLevel + 1);
+				$arrItem['subitems'] = $this->renderNavigationTree($this->arrTree[$varID], $intStop, $intHard, $intLevel + 1);
 			
 			} else { // should never be reached, if no hooks are used
 				$arrItem['class'] .= ' leaf';
@@ -481,7 +483,7 @@ abstract class AbstractModuleNavigation extends Module {
 	}
 	
 	public function isPermissionCheckRequired() {
-		return !BE_USER_LOGGED_IN && !$this->backboneit_navigation_showProtected;
+		return !BE_USER_LOGGED_IN && !$this->bbit_navi_showProtected;
 	}
 
 	/**
@@ -518,7 +520,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * page dataset, in regards to the current navigation settings and the
 	 * permission requirements of the page.
 	 * 
-	 * Context property: backboneit_navigation_showProtected
+	 * Context property: bbit_navi_showProtected
 	 * 
 	 * @param array $arrPage The page dataset of the current page, with at least
 	 * 		groups and protected attributes set.
@@ -529,52 +531,10 @@ abstract class AbstractModuleNavigation extends Module {
 		if(BE_USER_LOGGED_IN) // be users have access everywhere
 			return true;
 			
-		if($this->backboneit_navigation_showProtected) // protection is ignored
+		if($this->bbit_navi_showProtected) // protection is ignored
 			return true;
 			
 		return !$this->isPermissionDenied($arrPage);
-	}
-	
-	/**
-	 * Returns the part of the where condition, checking for hidden state of a page.
-	 * 
-	 * @return string The where condition
-	 */
-	public function getQueryPartHidden($blnShowHidden = false, $blnSitemap = false) {
-		if($blnShowHidden) {
-			return '';
-		} elseif($blnSitemap) {
-			return '(sitemap = \'map_always\' OR (hide != 1 AND sitemap != \'map_never\'))';
-		} else {
-			return 'hide != 1';
-		}	
-	}
-	
-	/**
-	 * Returns the part of the where condition, checking for guest visibility state of a page.
-	 * 
-	 * @return string The where condition
-	 */
-	public function getQueryPartGuests() {
-		if(FE_USER_LOGGED_IN && !BE_USER_LOGGED_IN) {
-			return 'guests != 1';
-		} else {
-			return '';
-		}
-	}
-	
-	/**
-	 * Returns the part of the where condition checking for publication state of a page.
-	 * 
-	 * @return string The where condition
-	 */
-	public function getQueryPartPublish() {
-		if(BE_USER_LOGGED_IN) {
-			return '';
-		} else {
-			static $intTime; if(!$intTime) $intTime = time();
-			return '(start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
-		}
 	}
 	
 	/**
@@ -617,14 +577,56 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @return array $arrRootIDs The root pages after hook execution
 	 */
 	protected function executeTreeHook($blnForce = false) {
-		if(!$blnForce && $this->backboneit_navigation_disableHooks)
+		if(!$blnForce && $this->bbit_navi_disableHooks)
 			return;
-		if(!is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_tree']))
+		if(!is_array($GLOBALS['TL_HOOKS']['bbit_navi_tree']))
 			return;
 			
-		foreach($GLOBALS['TL_HOOKS']['backboneit_navigation_tree'] as $arrCallback) {
+		foreach($GLOBALS['TL_HOOKS']['bbit_navi_tree'] as $arrCallback) {
 			$this->import($arrCallback[0]);
 			$this->{$arrCallback[0]}->{$arrCallback[1]}($this);
+		}
+	}
+	
+	/**
+	 * Returns the part of the where condition, checking for hidden state of a page.
+	 * 
+	 * @return string The where condition
+	 */
+	public static function getQueryPartHidden($blnShowHidden = false, $blnSitemap = false) {
+		if($blnShowHidden) {
+			return '';
+		} elseif($blnSitemap) {
+			return '(sitemap = \'map_always\' OR (hide != 1 AND sitemap != \'map_never\'))';
+		} else {
+			return 'hide != 1';
+		}	
+	}
+	
+	/**
+	 * Returns the part of the where condition, checking for guest visibility state of a page.
+	 * 
+	 * @return string The where condition
+	 */
+	public static function getQueryPartGuests() {
+		if(FE_USER_LOGGED_IN && !BE_USER_LOGGED_IN) {
+			return 'guests != 1';
+		} else {
+			return '';
+		}
+	}
+	
+	/**
+	 * Returns the part of the where condition checking for publication state of a page.
+	 * 
+	 * @return string The where condition
+	 */
+	public static function getQueryPartPublish() {
+		if(BE_USER_LOGGED_IN) {
+			return '';
+		} else {
+			static $intTime; if(!$intTime) $intTime = time();
+			return '(start = \'\' OR start < ' . $intTime . ') AND (stop = \'\' OR stop > ' . $intTime . ') AND published = 1';
 		}
 	}
 	

@@ -3,7 +3,7 @@
 
 class ModuleNavigationMenu extends AbstractModuleNavigation {
 	
-	protected $strTemplate = 'mod_backboneit_navigation_menu';
+	protected $strTemplate = 'mod_bbit_navi_menu';
 	
 	protected $strNavigation;
 	
@@ -11,8 +11,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		if(TL_MODE == 'BE')
 			return $this->generateBE('NAVIGATION MENU');
 			
-		$intStop = $this->backboneit_navigation_defineStop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
-		$intHard = $this->backboneit_navigation_defineHard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
+		$intStop = $this->bbit_navi_defineStop ? $this->bbit_navi_stop : PHP_INT_MAX;
+		$intHard = $this->bbit_navi_defineHard ? $this->bbit_navi_hard : PHP_INT_MAX;
 		
 		$arrRootIDs = $this->calculateRootIDs($intStop);
 		$this->compileNavigationTree($arrRootIDs, $intStop, $intHard);
@@ -28,31 +28,31 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$this->Template->request = $this->getIndexFreeRequest(true);
 		$this->Template->skipId = 'skipNavigation' . $this->id;
 		$this->Template->items = $this->strNavigation;
-		$this->backboneit_navigation_addLegacyCss && $this->Template->legacyClass = ' mod_navigation';
+		$this->bbit_navi_addLegacyCss && $this->Template->legacyClass = ' mod_navigation';
 	}
 	
 	protected function calculateRootIDs($intStop = PHP_INT_MAX) {
-		$arrRootIDs = $this->backboneit_navigation_defineRoots
-			? array_map('intval', deserialize($this->backboneit_navigation_roots, true))
+		$arrRootIDs = $this->bbit_navi_defineRoots
+			? array_map('intval', deserialize($this->bbit_navi_roots, true))
 			: array($GLOBALS['objPage']->rootId);
 		
-		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
+		$this->bbit_navi_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
 		
-		$arrConditions = array($this->getQueryPartHidden(!$this->backboneit_navigation_respectHidden, $this->backboneit_navigation_isSitemap));
-		$this->backboneit_navigation_respectGuests && $arrConditions[] = $this->getQueryPartGuests();
-		$this->backboneit_navigation_respectPublish && $arrConditions[] = $this->getQueryPartPublish();
+		$arrConditions = array(self::getQueryPartHidden(!$this->bbit_navi_respectHidden, $this->bbit_navi_isSitemap));
+		$this->bbit_navi_respectGuests && $arrConditions[] = self::getQueryPartGuests();
+		$this->bbit_navi_respectPublish && $arrConditions[] = self::getQueryPartPublish();
 		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
 		
-		$strStartConditions = $this->backboneit_navigation_includeStart ? '' : $strConditions;
+		$strStartConditions = $this->bbit_navi_includeStart ? '' : $strConditions;
 		
-		if($this->backboneit_navigation_start > 0) {
+		if($this->bbit_navi_start > 0) {
 			$arrRootIDs = $this->filterPages($arrRootIDs, $strConditions);
-			for($i = 1, $n = $this->backboneit_navigation_start; $i < $n; $i++)
+			for($i = 1, $n = $this->bbit_navi_start; $i < $n; $i++)
 				$arrRootIDs = $this->getNextLevel($arrRootIDs, $strConditions);
 			$arrRootIDs = $this->getNextLevel($arrRootIDs, $strStartConditions);
 			
-		} elseif($this->backboneit_navigation_start < 0) {
-			for($i = 0, $n = -$this->backboneit_navigation_start; $i < $n; $i++)
+		} elseif($this->bbit_navi_start < 0) {
+			for($i = 0, $n = -$this->bbit_navi_start; $i < $n; $i++)
 				$arrRootIDs = $this->getPrevLevel($arrRootIDs);
 			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
 			
@@ -75,12 +75,12 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		
 		$arrRootIDs = array_keys(array_flip($arrRootIDs));
 		
-		if($this->backboneit_navigation_includeStart) {
+		if($this->bbit_navi_includeStart) {
 			//$arrConditions = array(
-			//	$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
-			//	$this->getQueryPartPublish()
+			//	self::getQueryPartHidden($this->bbit_navi_showHidden, $this->bbit_navi_isSitemap),
+			//	self::getQueryPartPublish()
 			//);
-			//!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
+			//!$this->bbit_navi_showGuests && $arrConditions[] = self::getQueryPartGuests();
 			//$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
 			//$strConditions && $strConditions = 'AND (' . $strConditions . ')';
 		
@@ -96,13 +96,13 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			while($objRoots->next())
 				$this->arrItems[$objRoots->id] = $objRoots->row();
 			
-			$this->fetchItems($arrRootIDs, $intStop, $intHard, 2);
+			$this->fetchTree($arrRootIDs, $intStop, $intHard, 2);
 			
 		} else {
-			$this->fetchItems($arrRootIDs, $intStop, $intHard);
+			$this->fetchTree($arrRootIDs, $intStop, $intHard);
 		}
 		
-		$blnForwardResolution = !$this->backboneit_navigation_noForwardResolution;
+		$blnForwardResolution = !$this->bbit_navi_noForwardResolution;
 		foreach($this->arrItems as &$arrItem)
 			$arrItem = $this->compileNavigationItem($arrItem, $blnForwardResolution);
 	}
@@ -116,7 +116,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	 * @param integer $intLevel (optional, defaults to 1) The level of the roots.
 	 * @return null
 	 */
-	protected function fetchItems(array $arrPIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
+	protected function fetchTree(array $arrPIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		$intLevel = max(1, $intLevel);
 		
 		 // nothing todo
@@ -125,10 +125,10 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			return;
 		
 		$arrConditions = array(
-			$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
-			$this->getQueryPartPublish()
+			self::getQueryPartHidden($this->bbit_navi_showHidden, $this->bbit_navi_isSitemap),
+			self::getQueryPartPublish()
 		);
-		!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
+		!$this->bbit_navi_showGuests && $arrConditions[] = self::getQueryPartGuests();
 		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
 		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
 		
@@ -169,12 +169,12 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 					continue;
 				
 				if(!isset($arrEndPIDs[$arrPage['pid']])) {
-					$this->arrSubitems[$arrPage['pid']][] = $arrPage['id']; // for order of items
+					$this->arrTree[$arrPage['pid']][] = $arrPage['id']; // for order of items
 					$this->arrItems[$arrPage['id']] = $arrPage; // item datasets
 					$arrPIDs[] = $arrPage['id']; // ids of current layer (for next layer pids)
 					
-				} elseif(!isset($this->arrSubitems[$arrPage['pid']])) {
-					$this->arrSubitems[$arrPage['pid']] = array();
+				} elseif(!isset($this->arrTree[$arrPage['pid']])) {
+					$this->arrTree[$arrPage['pid']] = array();
 				}
 			}
 			
@@ -194,7 +194,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	 * @return array $arrRootIDs The root pages after hook execution
 	 */
 	protected function executeMenuHook(array $arrRootIDs, $blnForce = false) {
-		if(!$blnForce && $this->backboneit_navigation_disableHooks)
+		if(!$blnForce && $this->bbit_navi_disableHooks)
 			return $arrRootIDs;
 		if(!is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_menu']))
 			return $arrRootIDs;
@@ -203,7 +203,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$this->import($arrCallback[0]);
 			$arrNewRoots = $this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrRootIDs);
 			
-			if($arrNewRoots !== null)
+			if(is_array($arrNewRoots))
 				$arrRootIDs = $arrNewRoots;
 		}
 		
@@ -211,14 +211,15 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	}
 	
 	protected function getFirstNavigationLevel(array $arrRootIDs) {
-		if($this->backboneit_navigation_includeStart)
+		if($this->bbit_navi_includeStart)
 			return $arrRootIDs;
 			
 		 // if we do not want to show the root level
 		$arrFirstIDs = array();
 		foreach($arrRootIDs as $varRootID)
-			if(isset($this->arrSubitems[$varRootID]))
-				$arrFirstIDs = array_merge($arrFirstIDs, $this->arrSubitems[$varRootID]);
+			if($this->arrTree[$varRootID])
+				foreach($this->arrTree[$varRootID] as $intID)
+					$arrFirstIDs[] = $intID;
 				
 		return $arrFirstIDs;
 	}
