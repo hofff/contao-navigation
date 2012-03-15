@@ -394,6 +394,7 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrPage['class']			= $arrPage['cssClass'];
 		$arrPage['title']			= specialchars($arrPage['_title'], true);
 		$arrPage['pageTitle']		= specialchars($arrPage['_pageTitle'], true);
+		$arrPage['target']			= ''; // overwrite DB value
 		$arrPage['nofollow']		= strncmp($arrPage['robots'], 'noindex', 7) === 0;
 		$arrPage['description']		= str_replace(array("\n", "\r"), array(' ' , ''), $arrPage['_description']);
 		$arrPage['isTrail']			= isset($this->arrTrail[$arrPage['id']]);
