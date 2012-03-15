@@ -1,8 +1,9 @@
 h1. Changelog
 
-h2. 1.2.0 stable
+h2. 1.2.1 stable
 
-* 1 *Feature*: New navigation module: navigation chain
+* 1 *Fix*: Fixed "target" DB value getting raw into the template
+* 1 *Fix*: Fixed some variable name confusions
 
 h2. 1.2.0 beta1
 
