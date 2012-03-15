@@ -1,7 +1,7 @@
 /*
-!.gitignore
-!TL_ROOT/
-!dev/
-!ext/
-!publish/
-!build.xml
+!/.gitignore
+!/TL_ROOT/
+!/dev/
+!/ext/
+!/publish/
+!/build.xml
