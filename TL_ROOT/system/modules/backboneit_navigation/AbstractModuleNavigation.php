@@ -95,14 +95,15 @@ abstract class AbstractModuleNavigation extends Module {
 		if(!strlen($this->navigationTpl))
 			$this->navigationTpl = 'nav_default';
 		
-		$arrAddFields = deserialize($this->bbit_navi_addFields, true);
+		$arrFields = deserialize($this->bbit_navi_addFields, true);
 		
 		if(count($arrFields) > 10) {
 			$this->arrFields[] = '*';
 			
 		} elseif($arrFields) {
+			$arrFields = array_flip($arrFields);
 			foreach($this->Database->listFields('tl_page') as $arrField)
-				if(isset($arrAddFields[$arrField['name']]))
+				if(isset($arrFields[$arrField['name']]))
 					$this->arrFields[$arrField['name']] = true;
 					
 			$this->arrFields = array_keys(array_merge($this->arrFields, self::$arrDefaultFields));
@@ -395,6 +396,7 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrPage['class']			= $arrPage['cssClass'];
 		$arrPage['title']			= specialchars($arrPage['_title'], true);
 		$arrPage['pageTitle']		= specialchars($arrPage['_pageTitle'], true);
+		$arrPage['target']			= ''; // overwrite DB value
 		$arrPage['nofollow']		= strncmp($arrPage['robots'], 'noindex', 7) === 0;
 		$arrPage['description']		= str_replace(array("\n", "\r"), array(' ' , ''), $arrPage['_description']);
 		$arrPage['isTrail']			= isset($this->arrTrail[$arrPage['id']]);
