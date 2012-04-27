@@ -1,10 +1,10 @@
 <?php
 
-$GLOBALS['TL_DCA']['tl_bbit_navi_injection'] = array(
+$GLOBALS['TL_DCA']['tl_bbit_nav_injection'] = array(
 
 	'config' => array(
 		'dataContainer'		=> 'Table',
-		'ptable'			=> 'tl_bbit_navi_hook',
+		'ptable'			=> 'tl_bbit_nav_hook',
 		'enableVersioning'	=> true,
 		'onload_callback'	=> array(
 		),
@@ -30,23 +30,23 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_injection'] = array(
 		),
 		'operations' => array(
 			'edit' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['edit'],
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['edit'],
 				'href'	=> 'act=edit',
 				'icon'	=> 'edit.gif'
 			),
 			'copy' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['copy'],
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['copy'],
 				'href'	=> 'act=paste&amp;mode=copy',
 				'icon'	=> 'copy.gif'
 			),
 			'delete' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['delete'],
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['delete'],
 				'href'	=> 'act=delete',
 				'icon'	=> 'delete.gif',
 				'attributes' => 'onclick="if (!confirm(\'' . $GLOBALS['TL_LANG']['MSC']['deleteConfirm'] . '\')) return false; Backend.getScrollOffset();"'
 			),
 			'show' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['show'],
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['show'],
 				'href'	=> 'act=show',
 				'icon'	=> 'show.gif'
 			)
@@ -65,19 +65,19 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_injection'] = array(
 	
 	'fields' => array(
 		'injectMode' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['injectMode'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['injectMode'],
 			'inputType'		=> 'select',
 			'exclude'		=> true,
 			'default'		=> 'page',
 			'options'		=> array('page'),
-			'reference'		=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['injectModeOptions'],
+			'reference'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['injectModeOptions'],
 			'eval'			=> array(
 				'mandatory'		=> true,
 				'tl_class'		=> 'clr w50',
 			)
 		),
 		'publish' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['publish'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['publish'],
 			'inputType'		=> 'checkbox',
 			'exclude'		=> true,
 			'filter'		=> true,
@@ -86,7 +86,7 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_injection'] = array(
 			)
 		),
 		'pages' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['pages'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['pages'],
 			'inputType'		=> 'pageTree',
 			'exclude'		=> true,
 			'eval'			=> array(
@@ -96,12 +96,12 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_injection'] = array(
 			)
 		),
 		'injection' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['injection'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['injection'],
 			'inputType'		=> 'select',
 			'exclude'		=> true,
 			'default'		=> 'bottom',
 			'options'		=> array('before', 'top', 'bottom', 'after'),
-			'reference'		=> &$GLOBALS['TL_LANG']['tl_bbit_navi_injection']['injectionOptions'],
+			'reference'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['injectionOptions'],
 			'eval'			=> array(
 				'mandatory'		=> true,
 				'tl_class'		=> 'w50',

@@ -84,7 +84,7 @@ abstract class AbstractModuleNavigation extends Module {
 		$this->import('Database');
 		$this->import('String');
 		
-		$this->varActiveID = $this->bbit_navi_isSitemap || $this->Input->get('articles') ? false : $GLOBALS['objPage']->id;
+		$this->varActiveID = $this->bbit_nav_isSitemap || $this->Input->get('articles') ? false : $GLOBALS['objPage']->id;
 		$this->arrTrail = array_flip($GLOBALS['objPage']->trail);
 		
 		if(FE_USER_LOGGED_IN) {
@@ -95,7 +95,7 @@ abstract class AbstractModuleNavigation extends Module {
 		if(!strlen($this->navigationTpl))
 			$this->navigationTpl = 'nav_default';
 		
-		$arrFields = deserialize($this->bbit_navi_addFields, true);
+		$arrFields = deserialize($this->bbit_nav_addFields, true);
 		
 		if(count($arrFields) > 10) {
 			$this->arrFields[] = '*';
@@ -485,7 +485,7 @@ abstract class AbstractModuleNavigation extends Module {
 	}
 	
 	public function isPermissionCheckRequired() {
-		return !BE_USER_LOGGED_IN && !$this->bbit_navi_showProtected;
+		return !BE_USER_LOGGED_IN && !$this->bbit_nav_showProtected;
 	}
 
 	/**
@@ -522,7 +522,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * page dataset, in regards to the current navigation settings and the
 	 * permission requirements of the page.
 	 * 
-	 * Context property: bbit_navi_showProtected
+	 * Context property: bbit_nav_showProtected
 	 * 
 	 * @param array $arrPage The page dataset of the current page, with at least
 	 * 		groups and protected attributes set.
@@ -533,7 +533,7 @@ abstract class AbstractModuleNavigation extends Module {
 		if(BE_USER_LOGGED_IN) // be users have access everywhere
 			return true;
 			
-		if($this->bbit_navi_showProtected) // protection is ignored
+		if($this->bbit_nav_showProtected) // protection is ignored
 			return true;
 			
 		return !$this->isPermissionDenied($arrPage);
@@ -579,12 +579,12 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @return array $arrRootIDs The root pages after hook execution
 	 */
 	protected function executeTreeHook($blnForce = false) {
-		if(!$blnForce && $this->bbit_navi_disableHooks)
+		if(!$blnForce && $this->bbit_nav_disableHooks)
 			return;
-		if(!is_array($GLOBALS['TL_HOOKS']['bbit_navi_tree']))
+		if(!is_array($GLOBALS['TL_HOOKS']['bbit_nav_tree']))
 			return;
 			
-		foreach($GLOBALS['TL_HOOKS']['bbit_navi_tree'] as $arrCallback) {
+		foreach($GLOBALS['TL_HOOKS']['bbit_nav_tree'] as $arrCallback) {
 			$this->import($arrCallback[0]);
 			$this->{$arrCallback[0]}->{$arrCallback[1]}($this);
 		}

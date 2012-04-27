@@ -1,10 +1,10 @@
 <?php
 
-$GLOBALS['TL_DCA']['tl_bbit_navi_hook'] = array(
+$GLOBALS['TL_DCA']['tl_bbit_nav_hook'] = array(
 
 	'config' => array(
 		'dataContainer'		=> 'Table',
-		'ctable'			=> array('tl_bbit_navi_injection'),
+		'ctable'			=> array('tl_bbit_nav_injection'),
 		'enableVersioning'	=> true,
 		'onload_callback'	=> array(
 		),
@@ -34,28 +34,28 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_hook'] = array(
 		),
 		'operations' => array(
 			'injections' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['injections'],
-				'href'	=> 'table=tl_bbit_navi_injection',
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['injections'],
+				'href'	=> 'table=tl_bbit_nav_injection',
 				'icon'	=> 'edit.gif'
 			),
 			'edit' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['edit'],
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['edit'],
 				'href'	=> 'act=edit',
 				'icon'	=> 'header.gif'
 			),
 			'copy' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['copy'],
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['copy'],
 				'href'	=> 'act=paste&amp;mode=copy',
 				'icon'	=> 'copy.gif'
 			),
 			'delete' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['delete'],
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['delete'],
 				'href'	=> 'act=delete',
 				'icon'	=> 'delete.gif',
 				'attributes' => 'onclick="if (!confirm(\'' . $GLOBALS['TL_LANG']['MSC']['deleteConfirm'] . '\')) return false; Backend.getScrollOffset();"'
 			),
 			'show' => array(
-				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['show'],
+				'label'	=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['show'],
 				'href'	=> 'act=show',
 				'icon'	=> 'show.gif'
 			)
@@ -76,7 +76,7 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_hook'] = array(
 	
 	'fields' => array(
 		'title' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['title'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['title'],
 			'inputType' 	=> 'text',
 			'exclude'		=> true,
 			'eval' => array(
@@ -86,7 +86,7 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_hook'] = array(
 			)
 		),
 		'publish' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['publish'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['publish'],
 			'inputType'		=> 'checkbox',
 			'exclude'		=> true,
 			'filter'		=> true,
@@ -95,12 +95,12 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_hook'] = array(
 			)
 		),
 		'hookType' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['hookType'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['hookType'],
 			'inputType'		=> 'select',
 			'exclude'		=> true,
 			'default'		=> 'tree',
 			'options'		=> array('tree', 'entries'),
-			'reference'		=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['hookTypeOptions'],
+			'reference'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['hookTypeOptions'],
 			'eval'			=> array(
 				'mandatory'		=> true,
 				'submitOnChange'=> true,
@@ -109,7 +109,7 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_hook'] = array(
 		),
 		
 		'tree' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['tree'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['tree'],
 			'inputType'		=> 'pageTree',
 			'exclude'		=> true,
 			'eval'			=> array(
@@ -120,29 +120,29 @@ $GLOBALS['TL_DCA']['tl_bbit_navi_hook'] = array(
 		),
 		
 		'entries' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['entries'],
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['entries'],
 			'inputType' 	=> 'multiColumnWizard',
 			'exclude' 		=> true,
 			'eval' 			=> array(
 				'mandatory'		=> true,
 				'columnFields'	=> array(
 					'link' => array(
-						'label'		=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['entries_link'],
+						'label'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['entries_link'],
 						'inputType'	=> 'text',
 						'eval'		=> array('mandatory' => true, 'maxlength' => 255, 'style' => 'width:200px')
 					),
 					'href' => array(
-						'label'		=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['entries_href'],
+						'label'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['entries_href'],
 						'inputType'	=> 'text',
 						'eval'		=> array('mandatory' => true, 'maxlength' => 255, 'rgxp' => 'url', 'style' => 'width:350px')
 					),
 					'target' => array(
-						'label'		=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['entries_target'],
+						'label'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['entries_target'],
 						'inputType'	=> 'checkbox',
 						'eval'		=> array('style' => 'width:50px')
 					),
 					'css' => array(
-						'label'		=> &$GLOBALS['TL_LANG']['tl_bbit_navi_hook']['entries_css'],
+						'label'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_hook']['entries_css'],
 						'inputType'	=> 'text',
 						'eval'		=> array('maxlength' => 255, 'style' => 'width:100px')
 					),
