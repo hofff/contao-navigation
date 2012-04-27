@@ -54,9 +54,9 @@ $GLOBALS['TL_DCA']['tl_bbit_nav_injection'] = array(
 	),
 	
 	'palettes'=> array(
-		'__selector__'	=> array('injectMode'),
-		'default'		=> '{general_legend},injectMode;',
-		'page'			=> '{general_legend},injectMode,publish;'
+		'__selector__'	=> array('injectionType'),
+		'default'		=> '{general_legend},injectionType;',
+		'page'			=> '{general_legend},injectionType,publish;'
 			. '{injection_legend},pages,injection;'
 	),
 	
@@ -64,13 +64,13 @@ $GLOBALS['TL_DCA']['tl_bbit_nav_injection'] = array(
 	),
 	
 	'fields' => array(
-		'injectMode' => array(
-			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['injectMode'],
+		'injectionType' => array(
+			'label'			=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['injectionType'],
 			'inputType'		=> 'select',
 			'exclude'		=> true,
 			'default'		=> 'page',
 			'options'		=> array('page'),
-			'reference'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['injectModeOptions'],
+			'reference'		=> &$GLOBALS['TL_LANG']['tl_bbit_nav_injection']['injectionTypeOptions'],
 			'eval'			=> array(
 				'mandatory'		=> true,
 				'tl_class'		=> 'clr w50',

@@ -68,7 +68,7 @@ CREATE TABLE `tl_bbit_nav_injection` (
   `pid` int(10) unsigned NOT NULL default '0',
   `tstamp` int(10) unsigned NOT NULL default '0',
   
-  `injectMode` varchar(255) NOT NULL default '',
+  `injectionType` varchar(255) NOT NULL default '',
   `publish` char(1) NOT NULL default '',
   
   `pages` blob NULL,
