@@ -1,6 +1,6 @@
 <?php
 
-class PageInjector extends AbstractNavigationInjector {
+class PageInjector extends AbstractNavigationInjection {
 	
 	protected function calculateInjectionPoints() {
 		foreach(deserialize($this->arrConfig['pages'], true) as $intID) {

@@ -1,17 +1,18 @@
 <?php
 
-interface NavigationInjector {
+class NavigationInjector extends Backend {
 	
-	public function getConfig();
+	protected function __construct() {
+		parent::__construct();
+	}
 	
-	public function setConfig(array $arrConfig = null);
+	private static $objInstance;
 	
-	public function hasInjectsFor(array $arrTree, array $arrItems);
-	
-	public function setInjects(array $arrMounts = null, array $arrTree = null, array $arrItems = null);
-	
-	public function injectInto(array &$arrTree, array &$arrItems);
-	
-	public function getInjectionPoints($blnRecalculate = false);
+	public static function getInstance() {
+		if(!isset(self::$objInstance))
+			self::$objInstance = new self();
+			
+		return self::$objInstance;
+	}
 	
 }

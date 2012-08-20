@@ -1,38 +1,17 @@
 <?php
 
-class NavigationDCA extends Backend {
+interface NavigationInjection {
 	
-	public function callbackInjectionRecord() {
-		return '';
-	}
+	public function getConfig();
 	
-	public function callbackAddFieldsOptions() {
-		$this->loadLanguageFile('tl_page');
-		$this->loadDataContainer('tl_page');
-		
-		$arrFields = array();
-		
-		foreach($GLOBALS['TL_DCA']['tl_page']['fields'] as $strField => $arrConfig)
-			if(!isset(AbstractModuleNavigation::$arrDefaultFields[$strField]))
-				$arrFields[$strField] = &$arrConfig['label'][0];
-		
-				
-		asort($arrFields);
-		
-		return $arrFields;
-	}
+	public function setConfig(array $arrConfig = null);
 	
-	protected function __construct() {
-		parent::__construct();
-	}
+	public function hasInjectsFor(array $arrTree, array $arrItems);
 	
-	private static $objInstance;
+	public function setInjects(array $arrMounts = null, array $arrTree = null, array $arrItems = null);
 	
-	public static function getInstance() {
-		if(!isset(self::$objInstance))
-			self::$objInstance = new self();
-			
-		return self::$objInstance;
-	}
+	public function injectInto(array &$arrTree, array &$arrItems);
+	
+	public function getInjectionPoints($blnRecalculate = false);
 	
 }
