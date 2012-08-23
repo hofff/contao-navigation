@@ -367,7 +367,7 @@ abstract class AbstractModuleNavigation extends Module {
 		foreach($arrItems as &$arrItem)
 			$arrItem['class'] = trim($arrItem['class']);
 
-		$strTemplate = ($arrItem['template'] !='') ? $arrItem['template'] : $this->navigationTpl;
+		$strTemplate = strlen($arrItem['template']) ? $arrItem['template'] : $this->navigationTpl;
 		$objTemplate = new FrontendTemplate($strTemplate);
 		$objTemplate->setData(array(
 			'level' => 'level_' . $intLevel,
