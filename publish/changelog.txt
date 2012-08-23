@@ -1,5 +1,11 @@
 h1. Changelog
 
+h2. 1.3.0 stable
+
+* 1 *Feature*: Possibility to overwrite navigation template for a single level in its parent item
+* 1 *Feature*: Added an optional compile navigation item hook "bbit_navi_item" for non-core page types
+* 1 *Change*: Always add page type token to css classes
+
 h2. 1.2.1 stable
 
 * 1 *Fix*: Fixed "target" DB value getting raw into the template
