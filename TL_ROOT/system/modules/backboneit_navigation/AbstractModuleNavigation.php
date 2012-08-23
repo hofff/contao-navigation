@@ -76,6 +76,9 @@ abstract class AbstractModuleNavigation extends Module {
 	public $arrSubitems = array(); // ordered IDs of subnavigations
 	/** @Deprecated */ public $arrSubpages;
 	
+	protected $blnTreeHook = false; // execute tree hook?
+	protected $blnItemHook = false; // execute item hook?
+	
 	public function __construct(Database_Result $objModule, $strColumn = 'main') {
 		parent::__construct($objModule, $strColumn);
 		if(TL_MODE == 'BE')
@@ -138,6 +141,11 @@ abstract class AbstractModuleNavigation extends Module {
 			' . $strConditions . '
 			ORDER BY sorting
 			LIMIT	0, 1';
+		
+		if(!$this->backboneit_navigation_disableHooks) {
+			$this->blnTreeHook = is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_tree']);
+			$this->blnItemHook = is_array($GLOBALS['TL_HOOKS']['bbit_navi_item']);
+		}
 	}
 	
 	public function __get($strKey) {
@@ -628,26 +636,22 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @return array $arrRootIDs The root pages after hook execution
 	 */
 	protected function executeTreeHook($blnForce = false) {
-		if(!$blnForce && $this->backboneit_navigation_disableHooks)
+		if(!$blnForce && !$this->blnTreeHook) {
 			return;
-		if(!is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_tree']))
-			return;
+		}
 			
-		foreach($GLOBALS['TL_HOOKS']['backboneit_navigation_tree'] as $arrCallback) {
+		foreach((array) $GLOBALS['TL_HOOKS']['backboneit_navigation_tree'] as $arrCallback) {
 			$this->import($arrCallback[0]);
 			$this->{$arrCallback[0]}->{$arrCallback[1]}($this);
 		}
 	}
 	
 	protected function executeItemHook(array &$arrPage, $blnForce = false) {
-		if(!$blnForce && $this->backboneit_navigation_disableHooks) {
-			return false;
-		}
-		if(!is_array($GLOBALS['TL_HOOKS']['bbit_navi_item'])) {
+		if(!$blnForce && !$this->blnItemHook) {
 			return false;
 		}
 		
-		foreach($GLOBALS['TL_HOOKS']['bbit_navi_item'] as $arrCallback) {
+		foreach((array) $GLOBALS['TL_HOOKS']['bbit_navi_item'] as $arrCallback) {
 			$this->import($arrCallback[0]);
 			if($this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrPage)) {
 				return true;
