@@ -365,7 +365,7 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrItems[count($arrItems) - 1]['class'] .= ' last';
 
 		foreach($arrItems as &$arrItem)
-			$arrItem['class'] = trim($arrItem['class']);
+			$arrItem['class'] = ltrim($arrItem['class']);
 
 		$strTemplate = strlen($arrItem['template']) ? $arrItem['template'] : $this->navigationTpl;
 		$objTemplate = new FrontendTemplate($strTemplate);
