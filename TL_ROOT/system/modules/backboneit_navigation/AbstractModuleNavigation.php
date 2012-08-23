@@ -35,6 +35,10 @@
  * @author Oliver Hoff <oliver@hofff.com>
  */
 abstract class AbstractModuleNavigation extends Module {
+
+	const HOOK_DISABLE = 0;
+	const HOOK_ENABLE = 1;
+	const HOOK_FORCE = 2;
 	
 	public static $arrDefaultFields = array(
 		'id'			=> true,
@@ -384,7 +388,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @param array $arrPage The page dataset as an array
 	 * @return array The compiled navigation item array
 	 */
-	public function compileNavigationItem(array $arrPage, $blnForwardResolution = true) {
+	public function compileNavigationItem(array $arrPage, $blnForwardResolution = true, $intItemHook = self::HOOK_DISABLE) {
 		// fallback for dataset field collisions
 		$arrPage['_title']			= $arrPage['title'];
 		$arrPage['_pageTitle']		= $arrPage['pageTitle'];
@@ -392,7 +396,7 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrPage['_description']	= $arrPage['description'];
 		
 		$arrPage['link']			= $arrPage['_title'];
-		$arrPage['class']			= $arrPage['cssClass'];
+		$arrPage['class']			= $arrPage['cssClass'] . ' ' . $arrPage['type'];
 		$arrPage['title']			= specialchars($arrPage['_title'], true);
 		$arrPage['pageTitle']		= specialchars($arrPage['_pageTitle'], true);
 		$arrPage['target']			= ''; // overwrite DB value
@@ -424,41 +428,45 @@ abstract class AbstractModuleNavigation extends Module {
 					}
 					
 					if(!$objNext->numRows) {
-						$arrPage['class'] .= ' forward';
 						$arrPage['href'] = $this->generateFrontendUrl($arrPage);
 						
 					} elseif($objNext->type == 'redirect') {
-						$arrPage['class'] .= ' redirect';
 						$arrPage['href'] = $this->encodeEmailURL($objNext->url);
 						$arrPage['target'] = $objNext->target ? LINK_NEW_WINDOW : '';
 						
 					} else {
-						$arrPage['class'] .= ' forward';
 						$arrPage['tid'] = $objNext->id;
 						$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
 					}
 				} else {
-					$arrPage['class'] .= ' forward';
 					$arrPage['tid'] = $arrPage['jumpTo'];
 					$arrPage['href'] = $this->generateFrontendUrl($arrPage);
 				}
 				break;
 				
 			case 'redirect':
-				$arrPage['class'] .= ' redirect';
 				$arrPage['href'] = $this->encodeEmailURL($arrPage['url']);
 				$arrPage['target'] = $arrPage['_target'] ? LINK_NEW_WINDOW : '';
 				break;
 				
 			case 'root':
-				$arrPage['class'] .= ' root';
 				if(!$arrPage['dns']
 				|| preg_replace('/^www\./', '', $arrPage['dns']) == preg_replace('/^www\./', '', $this->Environment->httpHost)) {
 					$arrPage['href'] = $this->Environment->base;
-					break; // we only break on root pages; pages in differenz roots should be handled by DomainLink extension
+					break; // we only break on root pages; pages in different roots should be handled by DomainLink extension
 				}
 				
 			default:
+				if($intItemHook != self::HOOK_DISABLE) {
+					if($this->executeItemHook($arrPage, $intItemHook == self::HOOK_FORCE)) {
+						break;
+					}
+				}
+				// do not break
+			
+			case 'regular':
+			case 'error_403':
+			case 'error_404':
 				$arrPage['href'] = $this->generateFrontendUrl($arrPage);
 				break;
 		}
@@ -629,6 +637,24 @@ abstract class AbstractModuleNavigation extends Module {
 			$this->import($arrCallback[0]);
 			$this->{$arrCallback[0]}->{$arrCallback[1]}($this);
 		}
+	}
+	
+	protected function executeItemHook(array &$arrPage, $blnForce = false) {
+		if(!$blnForce && $this->backboneit_navigation_disableHooks) {
+			return false;
+		}
+		if(!is_array($GLOBALS['TL_HOOKS']['bbit_navi_item'])) {
+			return false;
+		}
+		
+		foreach($GLOBALS['TL_HOOKS']['bbit_navi_item'] as $arrCallback) {
+			$this->import($arrCallback[0]);
+			if($this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrPage)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 }

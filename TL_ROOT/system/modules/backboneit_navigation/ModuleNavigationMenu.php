@@ -104,7 +104,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		
 		$blnForwardResolution = !$this->backboneit_navigation_noForwardResolution;
 		foreach($this->arrItems as &$arrItem)
-			$arrItem = $this->compileNavigationItem($arrItem, $blnForwardResolution);
+			$arrItem = $this->compileNavigationItem($arrItem, $blnForwardResolution, self::HOOK_ENABLE);
 	}
 	
 	/**
