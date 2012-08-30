@@ -11,8 +11,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		if(TL_MODE == 'BE')
 			return $this->generateBE('NAVIGATION MENU');
 			
-		$intStop = $this->backboneit_navigation_defineStop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
-		$intHard = $this->backboneit_navigation_defineHard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
+		$intStop = $this->getStop();
+		$intHard = $this->getHard();
 		
 		$arrRootIDs = $this->calculateRootIDs($intStop);
 		$this->compileNavigationTree($arrRootIDs, $intStop, $intHard);
@@ -22,6 +22,14 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, $intStop, $intHard));
 		
 		return $this->strNavigation ? parent::generate() : '';
+	}
+	
+	public function getStop() {
+		return $this->backboneit_navigation_defineStop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
+	}
+	
+	public function getHard() {
+		return $this->backboneit_navigation_defineHard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
 	}
 	
 	protected function compile() {
@@ -69,7 +77,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		return $arrRootIDs;
 	}
 	
-	protected function compileNavigationTree(array $arrRootIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX) {
+	public function compileNavigationTree(array $arrRootIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX) {
 		if(!$arrRootIDs)
 			return;
 		
@@ -92,19 +100,24 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				AND		type != \'error_404\'
 				'// . $strConditions
 			);
-
-			while($objRoots->next())
+		
+			$arrFetched = array();
+			while($objRoots->next()) {
 				$this->arrItems[$objRoots->id] = $objRoots->row();
+				$arrFetched[$objRoots->id] = true;
+			}
 			
-			$this->fetchItems($arrRootIDs, $intStop, $intHard, 2);
+			$arrFetched = array_merge($arrFetched, $this->fetchItems($arrRootIDs, $intStop, $intHard, 2));
+				
 			
 		} else {
-			$this->fetchItems($arrRootIDs, $intStop, $intHard);
+			$arrFetched = $this->fetchItems($arrRootIDs, $intStop, $intHard);
 		}
-		
+	
 		$blnForwardResolution = !$this->backboneit_navigation_noForwardResolution;
-		foreach($this->arrItems as &$arrItem)
-			$arrItem = $this->compileNavigationItem($arrItem, $blnForwardResolution, self::HOOK_ENABLE);
+		foreach($arrFetched as $intID => $_) {
+			$this->arrItems[$intID] = $this->compileNavigationItem($this->arrItems[$intID], $blnForwardResolution, self::HOOK_ENABLE);
+		}
 	}
 	
 	/**
@@ -143,6 +156,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			' . $strConditions . '
 			ORDER BY sorting';
 		
+		$arrFetched = array();
+		
 		while($arrPIDs) {
 			// if $arrEndPIDs == $arrPIDs the next $arrPIDs will be empty -> leave loop
 			if($intLevel > $intHard) {
@@ -150,9 +165,12 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				
 			} elseif($intLevel > $intStop) {
 				$arrEndPIDs = array();
-				foreach($arrPIDs as $intPID)
-					if(!isset($this->arrTrail[$intPID]))
-						$arrEndPIDs[$intPID] = true;
+				foreach($arrPIDs as $intPID) if(!isset($this->arrTrail[$intPID])) {
+					$arrEndPIDs[$intPID] = true;
+				}
+						
+			} else {
+				$arrEndPIDs = array();
 			}
 			
 			$objSubpages = $this->objStmt->query($strLevelQueryStart . implode(',', $arrPIDs) . $strLevelQueryEnd);
@@ -172,6 +190,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 					$this->arrSubitems[$arrPage['pid']][] = $arrPage['id']; // for order of items
 					$this->arrItems[$arrPage['id']] = $arrPage; // item datasets
 					$arrPIDs[] = $arrPage['id']; // ids of current layer (for next layer pids)
+					$arrFetched[$arrPage['id']] = true; // fetched in this method
 					
 				} elseif(!isset($this->arrSubitems[$arrPage['pid']])) {
 					$this->arrSubitems[$arrPage['pid']] = array();
@@ -180,6 +199,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			
 			$intLevel++;
 		}
+		
+		return $arrFetched;
 	}
 	
 	/**
