@@ -465,15 +465,9 @@ abstract class AbstractModuleNavigation extends Module {
 					$arrPage['href'] = $this->Environment->base;
 					break; // we only break on root pages; pages in different roots should be handled by DomainLink extension
 				}
+				// do not break
 				
 			default:
-				if($intItemHook != self::HOOK_DISABLE) {
-					if($this->executeItemHook($arrPage, $intItemHook == self::HOOK_FORCE)) {
-						break;
-					}
-				}
-				// do not break
-			
 			case 'regular':
 			case 'error_403':
 			case 'error_404':
@@ -481,6 +475,9 @@ abstract class AbstractModuleNavigation extends Module {
 				break;
 		}
 		
+		if($intItemHook != self::HOOK_DISABLE) {
+			$this->executeItemHook($arrPage, $intItemHook == self::HOOK_FORCE);
+		}
 		
 		return $arrPage;
 	}
@@ -650,17 +647,13 @@ abstract class AbstractModuleNavigation extends Module {
 	
 	protected function executeItemHook(array &$arrPage, $blnForce = false) {
 		if(!$blnForce && !$this->blnItemHook) {
-			return false;
+			return;
 		}
 		
 		foreach((array) $GLOBALS['TL_HOOKS']['bbit_navi_item'] as $arrCallback) {
 			$this->import($arrCallback[0]);
-			if($this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrPage)) {
-				return true;
-			}
+			$this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrPage);
 		}
-		
-		return false;
 	}
 	
 }
