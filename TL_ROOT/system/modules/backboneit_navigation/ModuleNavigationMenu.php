@@ -100,20 +100,18 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				AND		type != \'error_404\'
 				'// . $strConditions
 			);
-		
-			$arrFetched = array();
+			
+			$arrFetched = $this->fetchItems($arrRootIDs, $intStop, $intHard, 2);
+			
 			while($objRoots->next()) {
 				$this->arrItems[$objRoots->id] = $objRoots->row();
 				$arrFetched[$objRoots->id] = true;
 			}
 			
-			$arrFetched = array_merge($arrFetched, $this->fetchItems($arrRootIDs, $intStop, $intHard, 2));
-				
-			
 		} else {
 			$arrFetched = $this->fetchItems($arrRootIDs, $intStop, $intHard);
 		}
-	
+		
 		$blnForwardResolution = !$this->backboneit_navigation_noForwardResolution;
 		foreach($arrFetched as $intID => $_) {
 			$this->arrItems[$intID] = $this->compileNavigationItem($this->arrItems[$intID], $blnForwardResolution, self::HOOK_ENABLE);
