@@ -322,7 +322,7 @@ abstract class AbstractModuleNavigation extends Module {
 	 * @param integer $intLevel (optional, defaults to 1) The current level of this navigation layer
 	 * @return string The parsed navigation template, could be empty string.
 	 */
-	protected function renderNavigationTree(array $arrIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
+	protected function renderNavigationTree(array $arrIDs, $strTemplate, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		if(!$arrIDs)
 			return '';
 			
@@ -359,7 +359,9 @@ abstract class AbstractModuleNavigation extends Module {
 			
 			} elseif($this->arrSubitems[$varID]) {
 				$arrItem['class'] .= ' submenu inner';
-				$arrItem['subitems'] = $this->renderNavigationTree($this->arrSubitems[$varID], $intStop, $intHard, $intLevel + 1);
+				$arrItem['subitems'] = $this->renderNavigationTree(
+					$this->arrSubitems[$varID], $arrItem['template'], $intStop, $intHard, $intLevel + 1
+				);
 			
 			} else { // should never be reached, if no hooks are used
 				$arrItem['class'] .= ' leaf';
@@ -379,7 +381,7 @@ abstract class AbstractModuleNavigation extends Module {
 		foreach($arrItems as &$arrItem)
 			$arrItem['class'] = ltrim($arrItem['class']);
 
-		$strTemplate = strlen($arrItem['template']) ? $arrItem['template'] : $this->navigationTpl;
+		strlen($strTemplate) || $strTemplate = $this->navigationTpl;
 		$objTemplate = new FrontendTemplate($strTemplate);
 		$objTemplate->setData(array(
 			'level' => 'level_' . $intLevel,

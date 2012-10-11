@@ -19,7 +19,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$this->executeTreeHook();
 		$arrRootIDs = $this->executeMenuHook($arrRootIDs);
 		$arrFirstIDs = $this->getFirstNavigationLevel($arrRootIDs);
-		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, $intStop, $intHard));
+		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, null, $intStop, $intHard));
 		
 		return $this->strNavigation ? parent::generate() : '';
 	}
