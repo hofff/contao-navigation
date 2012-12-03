@@ -84,13 +84,13 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$arrRootIDs = array_keys(array_flip($arrRootIDs));
 		
 		if($this->backboneit_navigation_includeStart) {
-			//$arrConditions = array(
+			$arrConditions = array(
 			//	$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
-			//	$this->getQueryPartPublish()
-			//);
-			//!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
-			//$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
-			//$strConditions && $strConditions = 'AND (' . $strConditions . ')';
+				$this->getQueryPartPublish()
+			);
+			!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
+			$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
+			$strConditions && $strConditions = 'AND (' . $strConditions . ')';
 		
 			$objRoots = $this->objStmt->query(
 				'SELECT	' . implode(',', $this->arrFields) . '
