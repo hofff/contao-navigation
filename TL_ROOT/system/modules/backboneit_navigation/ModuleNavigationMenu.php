@@ -100,7 +100,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				WHERE	id IN (' . implode(',', $arrRootIDs) . ')
 				AND		type != \'error_403\'
 				AND		type != \'error_404\'
-				'// . $strConditions
+				' . $strConditions
 			);
 			
 			$arrFetched = $this->fetchItems($arrRootIDs, $intStop, $intHard, 2);
