@@ -12,22 +12,30 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	public function generate() {
 		if(TL_MODE == 'BE')
 			return $this->generateBE('NAVIGATION MENU');
-			
-		$intStop = $this->getStop();
+		
+		$arrStop = $this->getStop();
 		$intHard = $this->getHard();
 		
-		$arrRootIDs = $this->calculateRootIDs($intStop);
-		$this->compileNavigationTree($arrRootIDs, $intStop, $intHard);
+		$arrRootIDs = $this->calculateRootIDs($arrStop);
+		$this->compileNavigationTree($arrRootIDs, $arrStop, $intHard);
 		$this->executeTreeHook();
 		$arrRootIDs = $this->executeMenuHook($arrRootIDs);
 		$arrFirstIDs = $this->getFirstNavigationLevel($arrRootIDs);
-		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, $this->strFirstLevelTemplate, $intStop, $intHard));
+		$arrStop[0] == 0 && array_shift($arrStop); // special case renderNavigationTree cannot handle
+		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, $this->strFirstLevelTemplate, $arrStop, $intHard));
 		
 		return $this->strNavigation ? parent::generate() : '';
 	}
 	
 	public function getStop() {
-		return $this->backboneit_navigation_defineStop ? $this->backboneit_navigation_stop : PHP_INT_MAX;
+		if(!$this->backboneit_navigation_defineStop) {
+			return array(PHP_INT_MAX);
+		}
+		$intMin = -1;
+		foreach(array_map('intval', explode(',', $this->backboneit_navigation_stop)) as $intLevel) if($intLevel > $intMin) {
+			$arrStop[] = $intMin = $intLevel;
+		}
+		return $arrStop ? $arrStop : array(PHP_INT_MAX);
 	}
 	
 	public function getHard() {
@@ -41,7 +49,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$this->backboneit_navigation_addLegacyCss && $this->Template->legacyClass = ' mod_navigation';
 	}
 	
-	protected function calculateRootIDs($intStop = PHP_INT_MAX) {
+	protected function calculateRootIDs($arrStop = PHP_INT_MAX) {
 		$arrRootIDs = $this->backboneit_navigation_defineRoots
 			? array_map('intval', deserialize($this->backboneit_navigation_roots, true))
 			: array($GLOBALS['objPage']->rootId);
@@ -70,7 +78,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
 		}
 		
-		if($intStop == 0) { // special case, keep only roots within the current path
+		$arrStop = (array) $arrStop;
+		if($arrStop[0] == 0) { // special case, keep only roots within the current path
 			$arrPath = array_keys($this->arrTrail);
 			$arrPath[] = $this->varActiveID;
 			$arrRootIDs = array_intersect($arrRootIDs, $arrPath);
@@ -79,11 +88,12 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		return $arrRootIDs;
 	}
 	
-	public function compileNavigationTree(array $arrRootIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX) {
+	public function compileNavigationTree(array $arrRootIDs, $arrStop = PHP_INT_MAX, $intHard = PHP_INT_MAX) {
 		if(!$arrRootIDs)
 			return;
 		
 		$arrRootIDs = array_keys(array_flip($arrRootIDs));
+		$arrStop = (array) $arrStop;
 		
 		if($this->backboneit_navigation_includeStart) {
 			$arrConditions = array(
@@ -103,7 +113,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				' . $strConditions
 			);
 			
-			$arrFetched = $this->fetchItems($arrRootIDs, $intStop, $intHard, 2);
+			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
 			
 			while($objRoots->next()) {
 				$this->arrItems[$objRoots->id] = $objRoots->row();
@@ -111,7 +121,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			}
 			
 		} else {
-			$arrFetched = $this->fetchItems($arrRootIDs, $intStop, $intHard);
+			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard);
 		}
 		
 		$blnForwardResolution = !$this->backboneit_navigation_noForwardResolution;
@@ -123,18 +133,19 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 	/**
 	 * Fetches page data for all navigation items below the given roots.
 	 * 
-	 * @param integer $arrRootIDs The root pages of the navigation.
+	 * @param integer $arrPIDs The root pages of the navigation.
 	 * @param integer $intStop (optional, defaults to PHP_INT_MAX) The soft limit of depth.
 	 * @param integer $intHard (optional, defaults to PHP_INT_MAX) The hard limit of depth.
-	 * @param integer $intLevel (optional, defaults to 1) The level of the roots.
+	 * @param integer $intLevel (optional, defaults to 1) The level of the PIDs.
 	 * @return null
 	 */
-	protected function fetchItems(array $arrPIDs, $intStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
+	protected function fetchItems(array $arrPIDs, $arrStop = PHP_INT_MAX, $intHard = PHP_INT_MAX, $intLevel = 1) {
 		$intLevel = max(1, $intLevel);
+		$arrStop = (array) $arrStop;
 		
 		 // nothing todo
 		 // $intLevel == $intHard + 1 requires subitem detection for css class "submenu" calculation
-		if(!$arrPIDs || $intLevel > $intHard + 1)
+		if(!$arrPIDs || $intLevel - 1 > $intHard)
 			return;
 		
 		$arrConditions = array(
@@ -163,7 +174,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			if($intLevel > $intHard) {
 				$arrEndPIDs = $arrPIDs;
 				
-			} elseif($intLevel > $intStop) {
+			} elseif($intLevel > $arrStop[0]) {
+				count($arrStop) > 1 && array_shift($arrStop);
 				$arrEndPIDs = array();
 				foreach($arrPIDs as $intPID) if(!isset($this->arrTrail[$intPID])) {
 					$arrEndPIDs[$intPID] = true;

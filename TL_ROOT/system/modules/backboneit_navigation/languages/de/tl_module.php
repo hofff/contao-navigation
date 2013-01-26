@@ -24,13 +24,13 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectPublish']
 	= array('Unveröffentlichte Seiten beachten', 'Nur Relevant für die Ermittlung der Startebene.');
 	
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineStop']
-	= array('Anzahl angezeigter Ebenen anpassen', 'Anzahl der Ebenen die immer angezeigt werden festlegen.');
+	= array('Stop-Ebenen anpassen', 'Ebenen die tiefer als die Stop-Ebenen liegen werden nur dann angezeigt, wenn diese sich im aktuellen Navigationspfad befinden.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_stop']
-	= array('Angezeigte Ebenen', 'Anzahl der Ebenen die immer angezeigt werden. (Größer oder gleich 0)');
+	= array('Stop-Ebenen', 'Stop-Ebenen als nicht-negative Ganzzahl (0, 1, 2, ...). Es können mehrere Stop-Ebenen als aufsteigend sortierte, Komma-separierte Liste angegeben werden. Angaben sind relativ zur Startebene.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineHard']
-	= array('Anzahl maximal angezeigter Ebenen anpassen', 'Obergrenze der sichbaren Ebenen festlegen.');
+	= array('Anzahl maximal auszugebender Ebenen anpassen', 'Es werden keine Ebenen ausgegeben die tiefer liegen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_hard']
-	= array('Maximal angezeigte Ebenen', 'Obergrenze der sichbaren Ebenen. (Größer oder gleich 1)');
+	= array('Maximal auszugebende Ebenen', 'Angabe als positive Ganzzahl (1, 2, 3, ...). Angaben sind relativ zur Startebene.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showProtected']
 	= array('Geschützte Seiten anzeigen', 'Seiten und Unterseiten mit Mitgliedergruppen-Beschränkung anzeigen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showHidden']

@@ -15,6 +15,14 @@ class NavigationDCA extends Backend {
 		return $arrFields;
 	}
 	
+	public function saveStop($varValue) {
+		$intMin = -1;
+		foreach(array_map('intval', explode(',', strval($varValue))) as $intLevel) if($intLevel > $intMin) {
+			$arrStop[] = $intMin = $intLevel;
+		}
+		return implode(',', $arrStop);
+	}
+	
 	protected function __construct() {
 		parent::__construct();
 	}

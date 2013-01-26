@@ -236,10 +236,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_stop'] = array(
 	'exclude'	=> true,
 	'inputType'	=> 'text',
 	'eval'		=> array(
-		'maxlength'		=> 5,
-		'rgxp'			=> 'digit',
+		'maxlength'		=> 255,
 		'tl_class'		=> 'w50'
-	)
+	),
+	'save_callback' => array(
+		array('NavigationDCA', 'saveStop'),
+	),
 );
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineHard'] = array(

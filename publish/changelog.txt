@@ -1,5 +1,9 @@
 h1. Changelog
 
+h2. 1.4.0 stable
+
+* 1 *Feature*: Allow multiple stop levels
+
 h2. 1.3.0 stable
 
 * 1 *Feature*: Possibility to overwrite navigation template for a single level in its parent item
