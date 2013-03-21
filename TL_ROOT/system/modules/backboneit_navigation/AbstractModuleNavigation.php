@@ -79,7 +79,7 @@ abstract class AbstractModuleNavigation extends Module {
 	protected $blnTreeHook = false; // execute tree hook?
 	protected $blnItemHook = false; // execute item hook?
 	
-	public function __construct(Database_Result $objModule, $strColumn = 'main') {
+	public function __construct($objModule, $strColumn = 'main') {
 		parent::__construct($objModule, $strColumn);
 		if(TL_MODE == 'BE')
 			return;
