@@ -1,6 +1,5 @@
 <?php
 
-
 class ModuleNavigationMenu extends AbstractModuleNavigation {
 	
 	protected $strTemplate = 'mod_backboneit_navigation_menu';
