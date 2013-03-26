@@ -598,6 +598,14 @@ abstract class AbstractModuleNavigation extends Module {
 		}
 	}
 	
+	public function getQueryPartErrorPages($blnShowErrorPages = false) {
+		if($blnShowErrorPages) {
+			return '';
+		} else {
+			return 'AND type != \'error_403\ AND type != \'error_404\'';
+		}
+	}
+	
 	/**
 	 * A helper method to generate BE wildcard.
 	 * 

@@ -101,7 +101,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		if($this->backboneit_navigation_includeStart) {
 			$arrConditions = array(
 			//	$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
-				$this->getQueryPartPublish()
+				$this->getQueryPartPublish(),
+				$this->getQueryPartErrorPages($this->backboneit_navigation_showErrorPages),
 			);
 			!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
 			$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
@@ -110,10 +111,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$objRoots = $this->objStmt->query(
 				'SELECT	' . implode(',', $this->arrFields) . '
 				FROM	tl_page
-				WHERE	id IN (' . implode(',', $arrRootIDs) . ')'.
-				(($this->backboneit_navigation_showErrorPages)? '' : ' AND		type != \'error_403\'
-				AND		type != \'error_404\''). 
-                $strConditions
+				WHERE	id IN (' . implode(',', $arrRootIDs) . ')
+				' . $strConditions
 			);
 			
 			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
@@ -153,7 +152,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		
 		$arrConditions = array(
 			$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
-			$this->getQueryPartPublish()
+			$this->getQueryPartPublish(),
+			$this->getQueryPartErrorPages($this->backboneit_navigation_showErrorPages),
 		);
 		!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
 		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
@@ -164,10 +164,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			FROM	tl_page
 			WHERE	pid IN (';
 		$strLevelQueryEnd = ')
-			AND		type != \'root\''.
-            (($this->backboneit_navigation_showErrorPages)? '' : ' AND		type != \'error_403\'
-            AND		type != \'error_404\''). 
-			$strConditions . '
+			AND		type != \'root\'
+			' . $strConditions . '
 			ORDER BY sorting';
 		
 		$arrFetched = array();
