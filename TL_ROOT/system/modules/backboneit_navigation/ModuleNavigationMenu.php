@@ -110,10 +110,10 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$objRoots = $this->objStmt->query(
 				'SELECT	' . implode(',', $this->arrFields) . '
 				FROM	tl_page
-				WHERE	id IN (' . implode(',', $arrRootIDs) . ')
-				AND		type != \'error_403\'
-				AND		type != \'error_404\'
-				' . $strConditions
+				WHERE	id IN (' . implode(',', $arrRootIDs) . ')'.
+				(($this->backboneit_navigation_showErrorPages)? '' : ' AND		type != \'error_403\'
+				AND		type != \'error_404\''). 
+                $strConditions
 			);
 			
 			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
@@ -164,10 +164,10 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			FROM	tl_page
 			WHERE	pid IN (';
 		$strLevelQueryEnd = ')
-			AND		type != \'root\'
-			AND		type != \'error_403\'
-			AND		type != \'error_404\'
-			' . $strConditions . '
+			AND		type != \'root\''.
+            (($this->backboneit_navigation_showErrorPages)? '' : ' AND		type != \'error_403\'
+            AND		type != \'error_404\''). 
+			$strConditions . '
 			ORDER BY sorting';
 		
 		$arrFetched = array();

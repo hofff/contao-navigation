@@ -47,6 +47,8 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addFields']
 
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_noForwardResolution']
 	= array('Weiterleitungsauflösung deaktivieren', 'Deaktiviert das ersetzen von Weiterleitungs-URLs mit der Ziel-URL, was bei sehr vielen Weiterleitungen oder stark besuchten ungecachten Websiten, die Performance verbessern kann. Zu beachten ist, das <b>verkettete</b> Weiterleitungen, welche die aktuelle Seite als Weiterleitungs<b>end</b>ziel besitzen nicht mehr als aktiv gekennzeichnet werden (kein "isActive" mehr im Template und keine "active" CSS-Klasse).');
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showErrorPages']
+	= array('Fehlerseiten anzeigen', 'Fehlerseiten vom Typ "403" und "404" werden in der Navigation angezeigt.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_disableHooks']
 	= array('Hooks deaktivieren', 'Deaktiviert das Ausführen der Navigations-Hooks. Kann zu einer besseren Performance führen, wenn Hooks für diese Navigation nicht notwendig sind.');
 	
