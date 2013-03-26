@@ -21,6 +21,7 @@ CREATE TABLE `tl_module` (
   `backboneit_navigation_showGuests` char(1) NOT NULL default '',
   `backboneit_navigation_addFields` blob NULL,
   `backboneit_navigation_noForwardResolution` char(1) NOT NULL default '',
+  `backboneit_navigation_showErrorPages` char(1) NOT NULL default '',
   `backboneit_navigation_disableHooks` char(1) NOT NULL default '',
   
 -- navigation menu fields
