@@ -94,6 +94,10 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$arrRootIDs = array_keys(array_flip($arrRootIDs));
 		$arrStop = (array) $arrStop;
 		
+		foreach($arrRootIDs as $intRootID) {
+			$this->arrItems[$intRootID] = (array) $this->arrItems[$intRootID];
+		}
+		
 		if($this->backboneit_navigation_includeStart) {
 			$arrConditions = array(
 			//	$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),

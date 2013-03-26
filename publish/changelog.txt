@@ -1,5 +1,9 @@
 h1. Changelog
 
+h2. 1.5.0 stable
+
+* 1 Always create subitem arrays for root ids, for easier hook integration
+
 h2. 1.5.0 rc1
 
 * 1 Add Contao 3 support
