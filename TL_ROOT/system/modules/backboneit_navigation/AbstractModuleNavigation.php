@@ -332,8 +332,9 @@ abstract class AbstractModuleNavigation extends Module {
 		$arrItems = array();
 
 		foreach($arrIDs as $varID) {
-			if(!isset($this->arrItems[$varID]))
+			if(!$this->arrItems[$varID]) {
 				continue;
+			}
 
 			$arrItem = $this->arrItems[$varID];
 
