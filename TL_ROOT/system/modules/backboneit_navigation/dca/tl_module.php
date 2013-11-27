@@ -25,7 +25,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chain']
 	= '{title_legend},name,type,backboneit_navigation_rootSelectionType';
-	
+
 $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chainsingle']
 	= '{title_legend},name,headline,type;'
 	. '{backboneit_navigation_root_legend},'
@@ -40,7 +40,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chainsingle']
 	. 'backboneit_navigation_addFields;'
 	. '{protected_legend:hide},protected;'
 	. '{expert_legend:hide},backboneit_navigation_noForwardResolution,backboneit_navigation_showErrorPages,backboneit_navigation_disableHooks,guests,cssID,space';
-	
+
 $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chainsubtrees']
 	= '{title_legend},name,headline,type;'
 	. '{backboneit_navigation_root_legend},'
@@ -58,7 +58,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chainsubtrees
 	. 'backboneit_navigation_addFields;'
 	. '{protected_legend:hide},protected;'
 	. '{expert_legend:hide},backboneit_navigation_noForwardResolution,backboneit_navigation_showErrorPages,backboneit_navigation_disableHooks,guests,cssID,space';
-	
+
 $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chaincurrent']
 	= '{title_legend},name,headline,type;'
 	. '{backboneit_navigation_root_legend},'
@@ -71,7 +71,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chaincurrent'
 	. 'backboneit_navigation_addFields;'
 	. '{protected_legend:hide},protected;'
 	. '{expert_legend:hide},backboneit_navigation_noForwardResolution,backboneit_navigation_showErrorPages,backboneit_navigation_disableHooks,guests,cssID,space';
-	
+
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineRoots']
 	= 'backboneit_navigation_roots';
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineStop']
@@ -81,7 +81,7 @@ $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineHard
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineDepth']
 	= 'backboneit_navigation_depth';
 
-	
+
 
 /***** GENERAL FIELDS *********************************************************/
 
@@ -90,6 +90,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = array
 	'exclude'	=> true,
 	'inputType'	=> 'pageTree',
 	'eval'		=> array(
+		'multiple'		=> true,
 		'fieldType'		=> 'checkbox',
 		'tl_class'		=> 'clr'
 	)
@@ -210,7 +211,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_disableHooks'] 
 
 
 /***** NAVIGATION MENU ********************************************************/
-	
+
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_currentAsRoot'] = array(
 	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_currentAsRoot'],
 	'exclude'	=> true,
