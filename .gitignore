@@ -5,3 +5,5 @@
 !/ext/
 !/publish/
 !/build.xml
+!/README.md
+!/composer.json
