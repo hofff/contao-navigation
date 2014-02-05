@@ -15,14 +15,14 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineRoots']
 	= array('Referenzseiten festlegen', 'Wurzelseiten der Navigation auswählen. Standardmäßig wird immer der Startpunkt des aktuellen Seitenbaums verwendet. Leere Auswahl kann sinnvoll in Verbindung mit der Option "Aktuelle Seite als Referenzseite" sein.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_roots']
 	= array('Referenzseiten', 'Ausgewählte Seiten als Wurzelseiten der Navigation benutzen. Leere Auswahl kann sinnvoll in Verbindung mit der Option "Aktuelle Seite als Referenzseite" sein.');
-	
+
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectGuests']
 	= array('"Nur für Gäste sichtbar" beachten', 'Nur Relevant für die Ermittlung der Startebene.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectHidden']
 	= array('Versteckte Seiten beachten', 'Nur Relevant für die Ermittlung der Startebene.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectPublish']
 	= array('Unveröffentlichte Seiten beachten', 'Nur Relevant für die Ermittlung der Startebene.');
-	
+
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineStop']
 	= array('Stop-Ebenen anpassen', 'Ebenen die tiefer als die Stop-Ebenen liegen werden nur dann angezeigt, wenn diese sich im aktuellen Navigationspfad befinden.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_stop']
@@ -39,7 +39,7 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showGuests']
 	= array('"Nur für Gäste sichtbar" ignorieren', 'Seiten und Unterseiten mit der Option "Nur für Gäste sichtbar" auch angemeldeten Benutzern anzeigen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_isSitemap']
 	= array('Als Sitemap verwenden', 'Es werden die Sichtbarkeitseinstellungen für Sitemaps der Seiten genutzt. Wird ignoriert, wenn "Versteckte Seiten anzeigen" ausgewählt ist.');
-	
+
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addLegacyCss']
 	= array('CSS-Klasse des originalen Navigationsmodul', 'Fügt die Klasse "mod_navigation" zum div-Container des Moduls hinzu, um dieses Modul als vollkompatiblen Ersatz zu verwenden.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addFields']
@@ -51,4 +51,3 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showErrorPages']
 	= array('Fehlerseiten anzeigen', 'Fehlerseiten vom Typ "403" und "404" werden in der Navigation angezeigt.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_disableHooks']
 	= array('Hooks deaktivieren', 'Deaktiviert das Ausführen der Navigations-Hooks. Kann zu einer besseren Performance führen, wenn Hooks für diese Navigation nicht notwendig sind.');
-	
