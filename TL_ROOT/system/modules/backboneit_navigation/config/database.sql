@@ -16,6 +16,7 @@ CREATE TABLE `tl_module` (
   `backboneit_navigation_respectHidden` char(1) NOT NULL default '',
   `backboneit_navigation_respectPublish` char(1) NOT NULL default '',
   `backboneit_navigation_respectGuests` char(1) NOT NULL default '',
+  `backboneit_navigation_showHiddenStart` char(1) NOT NULL default '',
   `backboneit_navigation_showHidden` char(1) NOT NULL default '',
   `backboneit_navigation_showProtected` char(1) NOT NULL default '',
   `backboneit_navigation_showGuests` char(1) NOT NULL default '',

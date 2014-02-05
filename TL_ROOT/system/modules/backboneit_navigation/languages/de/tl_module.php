@@ -7,8 +7,6 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_legend']
 
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_start']
 	= array('Startebene', 'Relativ zu den Referenzseiten. Negative Werte sind möglich.');
-$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_includeStart']
-	= array('Startebene anzeigen', 'Rendert die Startebene in die Navigation.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_currentAsRoot']
 	= array('Aktuelle Seite als Referenzseite', 'Fügt die aktuelle Seite zu den Referenzseiten hinzu.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineRoots']
@@ -23,6 +21,10 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectHidden']
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectPublish']
 	= array('Unveröffentlichte Seiten beachten', 'Nur Relevant für die Ermittlung der Startebene.');
 
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_includeStart']
+	= array('Startebene anzeigen', 'Rendert die Startebene in die Navigation.');
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showHiddenStart']
+	= array('Versteckte Seiten anzeigen (Startebene)', 'Seiten in der Startebene mit der Option "Im Menü verstecken" trotzdem anzeigen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineStop']
 	= array('Stop-Ebenen anpassen', 'Ebenen die tiefer als die Stop-Ebenen liegen werden nur dann angezeigt, wenn diese sich im aktuellen Navigationspfad befinden.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_stop']

@@ -100,7 +100,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 
 		if($this->backboneit_navigation_includeStart) {
 			$arrConditions = array(
-			//	$this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
+				$this->getQueryPartHidden($this->backboneit_navigation_showHiddenStart, $this->backboneit_navigation_isSitemap),
 				$this->getQueryPartPublish(),
 				$this->getQueryPartErrorPages($this->backboneit_navigation_showErrorPages),
 			);
