@@ -60,7 +60,17 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$this->backboneit_navigation_respectPublish && $arrConditions[] = $this->getQueryPartPublish();
 		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
 
-		$strStartConditions = $this->backboneit_navigation_includeStart ? '' : $strConditions;
+		if($this->backboneit_navigation_includeStart) {
+			$arrStartConditions = array(
+				$this->getQueryPartHidden($this->backboneit_navigation_showHiddenStart, $this->backboneit_navigation_isSitemap),
+				$this->getQueryPartPublish(),
+				$this->getQueryPartErrorPages($this->backboneit_navigation_showErrorPages),
+			);
+			!$this->backboneit_navigation_showGuests && $arrStartConditions[] = $this->getQueryPartGuests();
+			$strStartConditions = implode(' AND ', array_filter($arrStartConditions, 'strlen'));
+		} else {
+			$strStartConditions = $strConditions;
+		}
 
 		if($this->backboneit_navigation_start > 0) {
 			$arrRootIDs = $this->filterPages($arrRootIDs, $strConditions);
@@ -99,23 +109,13 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		}
 
 		if($this->backboneit_navigation_includeStart) {
-			$arrConditions = array(
-				$this->getQueryPartHidden($this->backboneit_navigation_showHiddenStart, $this->backboneit_navigation_isSitemap),
-				$this->getQueryPartPublish(),
-				$this->getQueryPartErrorPages($this->backboneit_navigation_showErrorPages),
-			);
-			!$this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
-			$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
-			$strConditions && $strConditions = 'AND (' . $strConditions . ')';
+			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
 
 			$objRoots = $this->objStmt->query(
 				'SELECT	' . implode(',', $this->arrFields) . '
 				FROM	tl_page
-				WHERE	id IN (' . implode(',', $arrRootIDs) . ')
-				' . $strConditions
+				WHERE	id IN (' . implode(',', $arrRootIDs) . ')'
 			);
-
-			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
 
 			while($objRoots->next()) {
 				$this->arrItems[$objRoots->id] = $objRoots->row();
