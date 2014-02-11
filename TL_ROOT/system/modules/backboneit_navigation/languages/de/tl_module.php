@@ -41,6 +41,8 @@ $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showGuests']
 	= array('"Nur für Gäste sichtbar" ignorieren', 'Seiten und Unterseiten mit der Option "Nur für Gäste sichtbar" auch angemeldeten Benutzern anzeigen.');
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_isSitemap']
 	= array('Als Sitemap verwenden', 'Es werden die Sichtbarkeitseinstellungen für Sitemaps der Seiten genutzt. Wird ignoriert, wenn "Versteckte Seiten anzeigen" ausgewählt ist.');
+$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_hideSingleLevel']
+	= array('Nur Multiebenen Navigationen anzeigen', 'Diese Navigation nur dann ausgeben, wenn mehrere Navigationsebenen vorhanden sind.');
 
 $GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addLegacyCss']
 	= array('CSS-Klasse des originalen Navigationsmodul', 'Fügt die Klasse "mod_navigation" zum div-Container des Moduls hinzu, um dieses Modul als vollkompatiblen Ersatz zu verwenden.');

@@ -20,6 +20,19 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$this->executeTreeHook();
 		$arrRootIDs = $this->executeMenuHook($arrRootIDs);
 		$arrFirstIDs = $this->getFirstNavigationLevel($arrRootIDs);
+
+		if($this->backboneit_navigation_hideSingleLevel) {
+			foreach($arrFirstIDs as $id) {
+				if($this->arrSubitems[$id]) {
+					$hasMultipleLevels = true;
+					break;
+				}
+			}
+			if(!$hasMultipleLevels) {
+				return '';
+			}
+		}
+
 		$arrStop[0] == 0 && array_shift($arrStop); // special case renderNavigationTree cannot handle
 		$this->strNavigation = trim($this->renderNavigationTree($arrFirstIDs, $this->strFirstLevelTemplate, $arrStop, $intHard));
 

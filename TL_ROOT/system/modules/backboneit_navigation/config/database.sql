@@ -33,6 +33,7 @@ CREATE TABLE `tl_module` (
   `backboneit_navigation_defineHard` char(1) NOT NULL default '',
   `backboneit_navigation_hard` smallint(5) unsigned NOT NULL default '0',
   `backboneit_navigation_isSitemap` char(1) NOT NULL default '',
+  `backboneit_navigation_hideSingleLevel` char(1) NOT NULL default '',
   `backboneit_navigation_addLegacyCss` char(1) NOT NULL default '',
 
 -- navigation preorder fields
