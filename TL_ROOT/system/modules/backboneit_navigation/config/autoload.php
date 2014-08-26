@@ -17,5 +17,6 @@ ClassLoader::addClasses(array
  */
 TemplateLoader::addFiles(array
 (
-	'mod_backboneit_navigation_menu'   => 'system/modules/backboneit_navigation/templates',
+	'mod_backboneit_navigation_menu' => 'system/modules/backboneit_navigation/templates',
+	'nav_bbit'                       => 'system/modules/backboneit_navigation/templates',
 ));
