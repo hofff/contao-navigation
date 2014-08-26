@@ -6,7 +6,7 @@
       class="<?php if($item['isActive']) echo 'active '; if($item['class']) echo $item['class']; ?>"
       <?php if($item['accesskey'] != ''): ?>accesskey="<?php echo $item['accesskey']; ?>"<?php endif; ?>
       <?php if($item['tabindex']): ?>tabindex="<?php echo $item['tabindex']; ?>"<?php endif; ?>
-      rel="<?php if($item['isActive']) echo 'self '; if($item['nofollow']) echo 'nofollow'; ?>"
+      <?php if($item['isActive']): ?>rel="nofollow"<?php endif; ?>
       <?php echo $item['target']; ?>
     ><?php echo $item['link'];
   ?></a
