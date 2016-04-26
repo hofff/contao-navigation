@@ -87,7 +87,6 @@ abstract class AbstractModuleNavigation extends Module {
 		$this->arrSubpages = &$this->arrSubitems; // for deprecated compat
 
 		$this->import('Database');
-		$this->import('String');
 
 		$this->varActiveID = $this->backboneit_navigation_isSitemap || $this->Input->get('articles') ? false : $GLOBALS['objPage']->id;
 		$this->arrTrail = array_flip($GLOBALS['objPage']->trail);
@@ -499,8 +498,12 @@ abstract class AbstractModuleNavigation extends Module {
 	public function encodeEmailURL($strHref) {
 		if(strncasecmp($strHref, 'mailto:', 7) !== 0)
 			return $strHref;
-
-		return $this->String->encodeEmail($strHref);
+			
+		if (version_compare(VERSION . '.' . BUILD, '3.5.5', '>=')) {
+                	return \StringUtil::encodeEmail($strHref);
+            	} else {
+                	return \String::encodeEmail($strHref);
+            	}
 	}
 
 	public function isPermissionCheckRequired() {
