@@ -337,12 +337,12 @@ abstract class AbstractModuleNavigation extends Module {
 
 			$arrItem = $this->arrItems[$varID];
 
-			if($varID === $this->varActiveID) {
+			if($varID == $this->varActiveID) {
 				$blnContainsActive = true;
 				$arrItem['isActive'] = true; // nothing else (active class is set in template)
 
 			} else { // do not flatten if/else
-				if($arrItem['tid'] === $this->varActiveID)
+				if($arrItem['tid'] == $this->varActiveID)
 					$arrItem['isActive'] = true; // nothing else (active class is set in template)
 
 				if($arrItem['isTrail'])
