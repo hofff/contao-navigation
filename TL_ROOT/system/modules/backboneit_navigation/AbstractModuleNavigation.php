@@ -442,7 +442,7 @@ abstract class AbstractModuleNavigation extends Module {
 					}
 
 					if(!$objNext->numRows) {
-						$arrPage['href'] = $this->generateFrontendUrl($arrPage);
+						$arrPage['href'] = $this->generateFrontendUrl($arrPage, null, null, true);
 
 					} elseif($objNext->type == 'redirect') {
 						$arrPage['href'] = $this->encodeEmailURL($objNext->url);
@@ -450,11 +450,11 @@ abstract class AbstractModuleNavigation extends Module {
 
 					} else {
 						$arrPage['tid'] = $objNext->id;
-						$arrPage['href'] = $this->generateFrontendUrl($objNext->row());
+						$arrPage['href'] = $this->generateFrontendUrl($objNext->row(), null, null, true);
 					}
 				} else {
 					$arrPage['tid'] = $arrPage['jumpTo'];
-					$arrPage['href'] = $this->generateFrontendUrl($arrPage);
+					$arrPage['href'] = $this->generateFrontendUrl($arrPage, null, null, true);
 				}
 				break;
 
@@ -475,7 +475,7 @@ abstract class AbstractModuleNavigation extends Module {
 			case 'regular':
 			case 'error_403':
 			case 'error_404':
-				$arrPage['href'] = $this->generateFrontendUrl($arrPage);
+				$arrPage['href'] = $this->generateFrontendUrl($arrPage, null, null, true);
 				break;
 		}
 
