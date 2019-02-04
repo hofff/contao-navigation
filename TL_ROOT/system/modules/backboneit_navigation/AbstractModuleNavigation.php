@@ -473,6 +473,7 @@ abstract class AbstractModuleNavigation extends Module {
 
 			default:
 			case 'regular':
+			case 'error_401':
 			case 'error_403':
 			case 'error_404':
 				$arrPage['href'] = $this->generateFrontendUrl($arrPage, null, null, true);
@@ -498,12 +499,12 @@ abstract class AbstractModuleNavigation extends Module {
 	public function encodeEmailURL($strHref) {
 		if(strncasecmp($strHref, 'mailto:', 7) !== 0)
 			return $strHref;
-			
+
 		if (version_compare(VERSION . '.' . BUILD, '3.5.5', '>=')) {
-                	return \StringUtil::encodeEmail($strHref);
-            	} else {
-                	return \String::encodeEmail($strHref);
-            	}
+			return \StringUtil::encodeEmail($strHref);
+		} else {
+			return \String::encodeEmail($strHref);
+		}
 	}
 
 	public function isPermissionCheckRequired() {
@@ -607,7 +608,7 @@ abstract class AbstractModuleNavigation extends Module {
 		if($blnShowErrorPages) {
 			return '';
 		} else {
-			return 'type != \'error_403\' AND type != \'error_404\'';
+			return 'type != \'error_401\' AND type != \'error_403\' AND type != \'error_404\'';
 		}
 	}
 
