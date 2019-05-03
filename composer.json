@@ -16,7 +16,7 @@
 			"email": "nick@hofff.com",
 			"homepage": "https://www.hofff.com/",
 			"role": "Maintainer"
-    },
+		}
 	],
 	"support": {
 		"issues": "https://github.com/hofff/contao-navigation/issues",
