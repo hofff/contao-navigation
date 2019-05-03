@@ -1,5 +1,5 @@
 {
-	"name": "backboneit/contao-navigation",
+	"name": "hofff/contao-navigation",
 	"description": "Advanced navigation module for Contao CMS",
 	"keywords": [ "navigation", "module", "page", "contao" ],
 	"type": "contao-module",
@@ -8,15 +8,19 @@
 		{
 			"name": "Oliver Hoff",
 			"email": "oliver@hofff.com",
-			"homepage": "http://hofff.com/",
+			"homepage": "https://www.hofff.com/",
 			"role": "Developer"
-		}
+		},
+		{
+			"name": "Nicky Hoff",
+			"email": "nick@hofff.com",
+			"homepage": "https://www.hofff.com/",
+			"role": "Maintainer"
+    },
 	],
 	"support": {
-		"issues": "https://github.com/backbone87/contao-navigation/issues",
-		"forum": "https://community.contao.org/de/showthread.php?18755-backboneit_navigation-Navigationselemente",
-		"irc": "irc://irc.freenode.org/contao.dev",
-		"source": "https://github.com/backbone87/contao-navigation"
+		"issues": "https://github.com/hofff/contao-navigation/issues",
+		"source": "https://github.com/hofff/contao-navigation"
 	},
 	"require": {
 		"php": "^5.3 || ^7.0",
@@ -24,7 +28,8 @@
 		"contao-community-alliance/composer-plugin": "^2.0 || ^3.0"
 	},
 	"replace": {
-		"contao-legacy/backboneit_navigation": "*"
+		"contao-legacy/backboneit_navigation": "*",
+		"backboneit/contao-navigation": "*"
 	},
 	"extra": {
 		"contao": {
