@@ -28,8 +28,8 @@
 		"contao-community-alliance/composer-plugin": "^2.0 || ^3.0"
 	},
 	"replace": {
-		"contao-legacy/backboneit_navigation": "*",
-		"backboneit/contao-navigation": "*"
+		"contao-legacy/backboneit_navigation": "self.version",
+		"backboneit/contao-navigation": "self.version"
 	},
 	"extra": {
 		"contao": {
