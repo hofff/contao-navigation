@@ -339,14 +339,29 @@ abstract class AbstractModuleNavigation extends Module {
 
 			if($varID == $this->varActiveID) {
 				$blnContainsActive = true;
-				$arrItem['isActive'] = true; // nothing else (active class is set in template)
+
+				if ($arrItem['href'] === Environment::get('request')) {
+					$arrItem['isActive'] = true; // nothing else (active class is set in template)
+					$arrItem['isTrail']  = false;
+				} else {
+					$arrItem['isActive'] = false; // nothing else (active class is set in template)
+					$arrItem['isTrail']  = true;
+				}
 
 			} else { // do not flatten if/else
-				if($arrItem['tid'] == $this->varActiveID)
-					$arrItem['isActive'] = true; // nothing else (active class is set in template)
+				if($arrItem['tid'] == $this->varActiveID) {
+					if ($arrItem['href'] === Environment::get('request')) {
+						$arrItem['isActive'] = true; // nothing else (active class is set in template)
+						$arrItem['isTrail']  = false;
+					} else {
+						$arrItem['isActive'] = false; // nothing else (active class is set in template)
+						$arrItem['isTrail']  = true;
+					}
+				}
+			}
 
-				if($arrItem['isTrail'])
-					$arrItem['class'] .= ' trail';
+			if($arrItem['isTrail']) {
+				$arrItem['class'] .= ' trail';
 			}
 
 			if(!isset($this->arrSubitems[$varID])) {
