@@ -371,7 +371,7 @@ abstract class AbstractModuleNavigation extends Module {
 				// we are at hard level, never draw submenu
 				$arrItem['class'] .= ' submenu leaf';
 
-			} elseif($intLevel >= $intStop && !$arrItem['isTrail'] && $varID !== $this->varActiveID) {
+			} elseif($intLevel >= $intStop && !$arrItem['isTrail'] && $varID !== $this->varActiveID && $arrItem['tid'] != $this->varActiveID) {
 				// we are at stop level and not trail and not active, never draw submenu
 				$arrItem['class'] .= ' submenu leaf';
 
