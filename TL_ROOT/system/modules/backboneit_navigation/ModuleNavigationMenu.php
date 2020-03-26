@@ -123,9 +123,14 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 
 		if($this->backboneit_navigation_includeStart) {
 			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
-
+			
+			$arrFields = [];
+            		foreach($this->arrFields as $fieldname) {
+                		$arrFields[] = '`'.$fieldname.'`';
+            		}
+			
 			$objRoots = $this->objStmt->query(
-				'SELECT	' . implode(',', $this->arrFields) . '
+				'SELECT	' . implode(',', $arrFields) . '
 				FROM	tl_page
 				WHERE	id IN (' . implode(',', $arrRootIDs) . ')'
 			);
@@ -172,8 +177,13 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
 		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
 
+		$arrFields = [];
+        	foreach($this->arrFields as $fieldname) {
+            		$arrFields[] = '`'.$fieldname.'`';
+        	}
+		
 		$strLevelQueryStart =
-			'SELECT	' . implode(',', $this->arrFields) . '
+			'SELECT	' . implode(',', $arrFields) . '
 			FROM	tl_page
 			WHERE	pid IN (';
 		$strLevelQueryEnd = ')
