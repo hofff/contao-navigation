@@ -125,7 +125,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
 
 			$objRoots = $this->objStmt->query(
-				'SELECT	' . $this->getQuotedFieldsPart(['id', 'pid', 'protected', 'groups']) . '
+				'SELECT	' . $this->getQuotedFieldsPart($this->arrFields) . '
 				FROM	tl_page
 				WHERE	id IN (' . implode(',', $arrRootIDs) . ')'
 			);
