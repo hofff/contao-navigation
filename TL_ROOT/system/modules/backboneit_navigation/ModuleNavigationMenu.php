@@ -125,7 +125,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 			$arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
 
 			$objRoots = $this->objStmt->query(
-				'SELECT	' . implode(',', $this->arrFields) . '
+				'SELECT	' . $this->getQuotedFieldsPart(['id', 'pid', 'protected', 'groups']) . '
 				FROM	tl_page
 				WHERE	id IN (' . implode(',', $arrRootIDs) . ')'
 			);
@@ -173,7 +173,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
 
 		$strLevelQueryStart =
-			'SELECT	' . implode(',', $this->arrFields) . '
+			'SELECT	' . $this->getQuotedFieldsPart($this->arrFields) . '
 			FROM	tl_page
 			WHERE	pid IN (';
 		$strLevelQueryEnd = ')

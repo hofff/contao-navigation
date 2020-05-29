@@ -177,7 +177,7 @@ abstract class AbstractModuleNavigation extends Module {
 
 		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
 		$objPage = $this->objStmt->query(
-			'SELECT	id, pid, protected, groups
+			'SELECT ' . $this->getQuotedFieldsPart(['id', 'pid', 'protected', 'groups']) . '
 			FROM	tl_page
 			WHERE	id IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
 			' . $strConditions
@@ -209,7 +209,7 @@ abstract class AbstractModuleNavigation extends Module {
 			$arrPIDs = array();
 
 			$objPage = $this->objStmt->query(
-				'SELECT id, pid, protected, groups
+				'SELECT ' . $this->getQuotedFieldsPart(['id', 'pid', 'protected', 'groups']) . '
 				FROM	tl_page
 				WHERE	id IN (' . implode(',', array_keys($arrIDs)) . ')'
 			);
@@ -247,7 +247,7 @@ abstract class AbstractModuleNavigation extends Module {
 
 		$strConditions && $strConditions = 'AND (' . $strConditions . ')';
 		$objNext = $this->objStmt->query(
-			'SELECT	id, pid, protected, groups
+			'SELECT	' . $this->getQuotedFieldsPart(['id', 'pid', 'protected', 'groups']) . '
 			FROM	tl_page
 			WHERE	pid IN (' . implode(',', array_keys(array_flip($arrPages))) . ')
 			' . $strConditions . '
@@ -626,6 +626,11 @@ abstract class AbstractModuleNavigation extends Module {
 			return 'type != \'error_401\' AND type != \'error_403\' AND type != \'error_404\'';
 		}
 	}
+
+	protected function getQuotedFieldsPart(array $fields) : string
+    {
+        return implode(', ', array_map([$this->Database, 'quoteIdentifier'], $fields));
+    }
 
 	/**
 	 * A helper method to generate BE wildcard.
