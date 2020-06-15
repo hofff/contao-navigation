@@ -63,7 +63,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 
 	protected function calculateRootIDs($arrStop = PHP_INT_MAX) {
 		$arrRootIDs = $this->backboneit_navigation_defineRoots
-			? array_map('intval', deserialize($this->backboneit_navigation_roots, true))
+			? $this->getRootIds()
 			: array($GLOBALS['objPage']->rootId);
 
 		$this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
@@ -268,6 +268,21 @@ class ModuleNavigationMenu extends AbstractModuleNavigation {
 				$arrFirstIDs = array_merge($arrFirstIDs, $this->arrSubitems[$varRootID]);
 
 		return $arrFirstIDs;
+	}
+
+	protected function getRootIds()
+	{
+		return array_map(
+			'intval',
+			array_values(
+				array_unique(
+					array_merge(
+						\Contao\StringUtil::deserialize($this->backboneit_navigation_roots_order, true),
+						\Contao\StringUtil::deserialize($this->backboneit_navigation_roots, true)
+					)
+				)
+			)
+		);
 	}
 
 }
