@@ -96,8 +96,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = array
 	'eval'		=> array(
 		'multiple'		=> true,
 		'fieldType'		=> 'checkbox',
-		'tl_class'		=> 'clr'
+		'tl_class'		=> 'clr',
+		'orderField'	=> 'backboneit_navigation_roots_order'
 	)
+);
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots_order'] = array(
+	'label'		=> &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_roots_order'],
 );
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_start'] = array(

@@ -11,6 +11,7 @@ CREATE TABLE `tl_module` (
 
 -- general fields
   `backboneit_navigation_roots` blob NULL,
+  `backboneit_navigation_roots_order` blob NULL,
   `backboneit_navigation_start` smallint(5) NOT NULL default '0',
   `backboneit_navigation_includeStart` char(1) NOT NULL default '',
   `backboneit_navigation_respectHidden` char(1) NOT NULL default '',
