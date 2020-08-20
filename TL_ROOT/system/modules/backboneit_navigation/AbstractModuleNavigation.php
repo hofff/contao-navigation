@@ -126,14 +126,14 @@ abstract class AbstractModuleNavigation extends Module {
 		$strConditions && $strConditions = ' AND (' . $strConditions . ')';
 
 		$this->strJumpToQuery =
-			'SELECT	id, alias, type, jumpTo, url, target
+			'SELECT	*
 			FROM	tl_page
 			WHERE	id = ?
 			' . $strConditions . '
 			LIMIT	0, 1';
 
 		$this->strJumpToFallbackQuery =
-			'SELECT	id, alias
+			'SELECT	*
 			FROM	tl_page
 			WHERE	pid = ?
 			AND		type = \'regular\'
