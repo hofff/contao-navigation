@@ -697,7 +697,7 @@ abstract class AbstractModuleNavigation extends Module {
 	{
 		$pageModel = \Contao\PageModel::findByPk($arrPage['id']);
 		if ($pageModel) {
-			$pageModel->getFrontendUrl();
+			return $pageModel->getFrontendUrl();
 		}
 
 		return null;
