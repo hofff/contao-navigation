@@ -457,7 +457,7 @@ abstract class AbstractModuleNavigation extends Module {
 					}
 
 					if(!$objNext->numRows) {
-						$arrPage['href'] = $this->generateFrontendUrl($arrPage, null, null, true);
+						$arrPage['href'] = $this->generatePageUrl($arrPage);
 
 					} elseif($objNext->type == 'redirect') {
 						$arrPage['href'] = $this->encodeEmailURL($objNext->url);
@@ -465,11 +465,11 @@ abstract class AbstractModuleNavigation extends Module {
 
 					} else {
 						$arrPage['tid'] = $objNext->id;
-						$arrPage['href'] = $this->generateFrontendUrl($objNext->row(), null, null, true);
+						$arrPage['href'] = $this->generatePageUrl($objNext->row());
 					}
 				} else {
 					$arrPage['tid'] = $arrPage['jumpTo'];
-					$arrPage['href'] = $this->generateFrontendUrl($arrPage, null, null, true);
+					$arrPage['href'] = $this->generatePageUrl($arrPage);
 				}
 				break;
 
@@ -491,7 +491,7 @@ abstract class AbstractModuleNavigation extends Module {
 			case 'error_401':
 			case 'error_403':
 			case 'error_404':
-				$arrPage['href'] = $this->generateFrontendUrl($arrPage, null, null, true);
+				$arrPage['href'] = $this->generatePageUrl($arrPage);
 				break;
 		}
 
@@ -693,4 +693,13 @@ abstract class AbstractModuleNavigation extends Module {
 		}
 	}
 
+	private function generatePageUrl(array $arrPage)
+	{
+		$pageModel = \Contao\PageModel::findByPk($arrPage['id']);
+		if ($pageModel) {
+			$pageModel->getFrontendUrl();
+		}
+
+		return null;
+	}
 }
