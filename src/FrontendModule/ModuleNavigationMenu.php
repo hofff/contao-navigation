@@ -7,15 +7,25 @@ use Contao\System;
 use Hofff\Contao\Navigation\Items\PageItemsLoader;
 use Hofff\Contao\Navigation\Renderer\NavigationRenderer;
 
-use function assert;
-
 final class ModuleNavigationMenu extends AbstractModuleNavigation
 {
     protected $strTemplate = 'mod_hofff_navigation_menu';
 
-    protected $strNavigation;
+    protected string $strNavigation = '';
 
-    public function generate()
+    private PageItemsLoader $loader;
+
+    private NavigationRenderer $renderer;
+
+    public function __construct($objModule, $strColumn = 'main')
+    {
+        parent::__construct($objModule, $strColumn);
+
+        $this->loader   = System::getContainer()->get(PageItemsLoader::class);
+        $this->renderer = System::getContainer()->get(NavigationRenderer::class);
+    }
+
+    public function generate(): string
     {
         if (TL_MODE === 'BE') {
             return $this->generateBE('NAVIGATION MENU');
@@ -23,17 +33,18 @@ final class ModuleNavigationMenu extends AbstractModuleNavigation
 
         $stopLevels = $this->getStopLevels();
         $hardLevel  = $this->getHardLevel();
-        $arrRootIDs = $this->calculateRootIDs($stopLevels);
+        $rootIds    = $this->calculateRootIDs($stopLevels);
 
-        $loader = System::getContainer()->get(PageItemsLoader::class);
-        assert($loader instanceof PageItemsLoader);
+        $items = $this->loader->load($this->objModel, $rootIds, $this->arrFields, $stopLevels, $hardLevel);
 
-        $renderer = System::getContainer()->get(NavigationRenderer::class);
-        assert($renderer instanceof NavigationRenderer);
-
-        $items = $loader->load($this->objModel, $arrRootIDs, $this->arrFields, $stopLevels, $hardLevel);
-
-        $this->strNavigation = $renderer->render($this->objModel, $items, $arrRootIDs, $stopLevels, $hardLevel, $this->varActiveID);
+        $this->strNavigation = $this->renderer->render(
+            $this->objModel,
+            $items,
+            $rootIds,
+            $stopLevels,
+            $hardLevel,
+            $this->varActiveID
+        );
 
         return $this->strNavigation ? parent::generate() : '';
     }
@@ -61,7 +72,7 @@ final class ModuleNavigationMenu extends AbstractModuleNavigation
         return $this->hofff_navigation_defineHard ? $this->hofff_navigation_hard : PHP_INT_MAX;
     }
 
-    protected function compile()
+    protected function compile(): void
     {
         $this->Template->request = $this->getIndexFreeRequest(true);
         $this->Template->skipId  = 'skipNavigation' . $this->id;
