@@ -9,7 +9,6 @@ use Contao\FrontendTemplate;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
-use Doctrine\DBAL\Connection;
 use Hofff\Contao\Navigation\Event\ItemEvent;
 use Hofff\Contao\Navigation\Event\MenuEvent;
 use Hofff\Contao\Navigation\Event\TreeEvent;
@@ -108,8 +107,9 @@ final class NavigationRenderer
             return '';
         }
 
-        $intStop       = $currentLevel >= $stopLimit[0] ? array_shift($stopLimit) : $stopLimit[0];
-        $renderedItems = [];
+        $intStop        = $currentLevel >= $stopLimit[0] ? array_shift($stopLimit) : $stopLimit[0];
+        $renderedItems  = [];
+        $containsActive = false;
 
         foreach ($itemIds as $itemId) {
             if (! isset($items->items[$itemId])) {
@@ -119,7 +119,7 @@ final class NavigationRenderer
             $item = $items->items[$itemId];
 
             if ($itemId == $activeId) {
-                $blnContainsActive = true;
+                $containsActive = true;
 
                 if ($item['href'] === Environment::get('request')) {
                     $item['isActive'] = true; // nothing else (active class is set in template)
@@ -169,7 +169,7 @@ final class NavigationRenderer
             $renderedItems[] = $item;
         }
 
-        if ($blnContainsActive) {
+        if ($containsActive) {
             foreach ($renderedItems as &$item) {
                 if (! $item['isActive']) {
                     $item['class'] .= ' sibling';
@@ -186,7 +186,7 @@ final class NavigationRenderer
         }
         unset($item);
 
-        $objTemplate = new FrontendTemplate($moduleModel->navigationTpl ?: 'nav_hofff');
+        $objTemplate = new FrontendTemplate($moduleModel->navigationTpl ?: 'nav_default');
         $objTemplate->setData([
             'module' => $moduleModel->row(),
             'level'  => 'level_' . $currentLevel,
@@ -306,26 +306,26 @@ final class NavigationRenderer
      * If the given URL starts with "mailto:", the E-Mail is encoded,
      * otherwise nothing is done.
      *
-     * @param string $strHref The URL to check and possibly encode
+     * @param string $href The URL to check and possibly encode
      *
      * @return string The modified URL
      */
-    private function encodeEmailURL(string $strHref): string
+    private function encodeEmailURL(string $href): string
     {
-        if (strncasecmp($strHref, 'mailto:', 7) !== 0) {
-            return $strHref;
+        if (strncasecmp($href, 'mailto:', 7) !== 0) {
+            return $href;
         }
 
-        return StringUtil::encodeEmail($strHref);
+        return StringUtil::encodeEmail($href);
     }
 
-    private function dispatchItemEvent(ModuleModel $moduleModel, array $arrPage): array
+    private function dispatchItemEvent(ModuleModel $moduleModel, array $page): array
     {
         if (! $moduleModel->hofff_navigation_disableHooks) {
-            return $arrPage;
+            return $page;
         }
 
-        $event = new ItemEvent($moduleModel, $arrPage);
+        $event = new ItemEvent($moduleModel, $page);
         $this->eventDispatcher->dispatch($event);
 
         return $event->item();
@@ -383,37 +383,38 @@ final class NavigationRenderer
         $arrFirstIDs = [];
         foreach ($arrRootIDs as $varRootID) {
             if (isset($items->subItems[$varRootID])) {
-                $arrFirstIDs = array_merge($arrFirstIDs, $items->subItems[$varRootID]);
+                $arrFirstIDs[] = $items->subItems[$varRootID];
             }
         }
 
-        return $arrFirstIDs;
+        return array_merge(... $arrFirstIDs);
     }
 
     private function getRedirectPage(array $arrPage): array
     {
-        if ($arrPage['jumpTo']) {
-            $intFallbackSearchID = $arrPage['id'];
-            $intJumpToID         = $arrPage['jumpTo'];
-            do {
-                $query = $this->redirectPageQueryBuilder->createJumpToQuery((int) $intJumpToID);
-                $query->setParameter('id', $intJumpToID);
-                $result = $query->execute();
-                $next   = $result->fetchAssociative();
-
-                if (! $result->rowCount()) {
-                    $query = $this->redirectPageQueryBuilder->createFallbackQuery((int) $intFallbackSearchID);
-                    $next = $query->execute()->fetchAssociative();
-                    break;
-                }
-
-                $intFallbackSearchID = $intJumpToID;
-                $intJumpToID         = $next['jumpTo'] ?? 0;
-            } while ($next['type'] === 'forward');
-        } else {
+        if (! $arrPage['jumpTo']) {
             $query = $this->redirectPageQueryBuilder->createFallbackQuery((int) $arrPage['id']);
-            $next  = $query->execute()->fetchAssociative();
+
+            return $query->execute()->fetchAssociative();
         }
+
+        $intFallbackSearchID = $arrPage['id'];
+        $intJumpToID         = $arrPage['jumpTo'];
+        do {
+            $query = $this->redirectPageQueryBuilder->createJumpToQuery((int) $intJumpToID);
+            $query->setParameter('id', $intJumpToID);
+            $result = $query->execute();
+            $next   = $result->fetchAssociative();
+
+            if (! $result->rowCount()) {
+                $query = $this->redirectPageQueryBuilder->createFallbackQuery((int) $intFallbackSearchID);
+                $next  = $query->execute()->fetchAssociative();
+                break;
+            }
+
+            $intFallbackSearchID = $intJumpToID;
+            $intJumpToID         = $next['jumpTo'] ?? 0;
+        } while ($next['type'] === 'forward');
 
         return $next;
     }

@@ -1,13 +1,8 @@
-<!-- indexer::stop -->
-<nav class="<?php echo $this->class, $this->legacyClass; ?> block"<?php echo $this->cssID; ?><?php if ($this->style): ?> style="<?php echo $this->style; ?>"<?php endif; ?>>
+<?php $this->extend('block_unsearchable') ?>
 
-<?php if ($this->headline): ?>
-<<?php echo $this->hl; ?>><?php echo $this->headline; ?></<?php echo $this->hl; ?>>
-<?php endif; ?>
-
-<a href="<?php echo $this->request, '#', $this->skipId; ?>" class="invisible"><?php echo \Contao\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['skipNavigation']); ?></a>
+<?php $this->block('content') ?>
+<a href="<?php echo $this->request, '#', $this->skipId; ?>" class="invisible"><?= \Contao\StringUtil::specialchars($this->trans('MSC.skipNavigation', [], 'contao_default')) ?></a>
 <?php echo $this->items; ?>
 <a id="<?php echo $this->skipId; ?>" class="invisible">&nbsp;</a>
+<?php $this->endblock() ?>
 
-</nav>
-<!-- indexer::continue -->
