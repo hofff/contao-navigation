@@ -18,7 +18,6 @@ use Hofff\Contao\Navigation\QueryBuilder\RedirectPageQueryBuilder;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-use function array_merge;
 use function array_shift;
 use function count;
 use function ltrim;
@@ -87,7 +86,9 @@ final class NavigationRenderer
         $event = new MenuEvent($moduleModel, $itemIds);
         $this->dispatchEvent($event);
         $itemIds  = $event->rootIds();
-        $firstIds = $this->getFirstNavigationLevel($itemIds);
+        $firstIds = $this->moduleModel->hofff_navigation_includeStart
+            ? $itemIds
+            : $this->items->getFirstNavigationLevel($itemIds);
 
         if ($moduleModel->hofff_navigation_hideSingleLevel) {
             $hasMultipleLevels = false;
@@ -351,30 +352,6 @@ final class NavigationRenderer
         }
 
         return StringUtil::encodeEmail($href);
-    }
-
-    /**
-     * @param list<int> $rootIds
-     *
-     * @return list<int>
-     */
-    private function getFirstNavigationLevel(array $rootIds): array
-    {
-        if ($this->moduleModel->hofff_navigation_includeStart) {
-            return $rootIds;
-        }
-
-        // if we do not want to show the root level
-        $firstIds = [];
-        foreach ($rootIds as $rootId) {
-            if (! isset($this->items->subItems[$rootId])) {
-                continue;
-            }
-
-            $firstIds[] = $this->items->subItems[$rootId];
-        }
-
-        return array_merge(...$firstIds);
     }
 
     /**
