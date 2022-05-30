@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<psalm
+        errorLevel="1"
+        hideExternalErrors="true"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://getpsalm.org/schema/config"
+        xsi:schemaLocation="https://getpsalm.org/schema/config https://getpsalm.org/schema/config"
+>
+    <projectFiles>
+        <directory name="src"/>
+        <ignoreFiles>
+            <directory name="src/Resources/contao/dca"/>
+            <directory name="src/Resources/contao/languages"/>
+        </ignoreFiles>
+    </projectFiles>
+</psalm>

@@ -8,5 +8,4 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 final class HofffContaoNavigationBundle extends Bundle
 {
-
 }

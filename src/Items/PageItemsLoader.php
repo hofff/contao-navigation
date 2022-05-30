@@ -22,11 +22,13 @@ use function array_shift;
 use function array_unique;
 use function array_unshift;
 use function array_values;
+use function count;
 use function in_array;
 use function max;
 
 use const PHP_INT_MAX;
 
+/** @SuppressWarnings(PHPMD.ExcessiveClassComplexity) */
 final class PageItemsLoader
 {
     private Connection $connection;
@@ -39,6 +41,7 @@ final class PageItemsLoader
 
     private ModuleModel $moduleModel;
 
+    /** @var list<int> */
     private array $stopLevels = [PHP_INT_MAX];
 
     private int $hardLevel = PHP_INT_MAX;
@@ -47,17 +50,22 @@ final class PageItemsLoader
 
     public function __construct(Connection $connection, Security $security)
     {
-        $this->connection       = $connection;
-        $this->security         = $security;
+        $this->connection = $connection;
+        $this->security   = $security;
     }
 
+    /**
+     * @param list<int> $stopLevels
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     */
     public function load(
         ModuleModel $moduleModel,
         array $stopLevels = [PHP_INT_MAX],
         int $hardLevel = PHP_INT_MAX,
         ?int $activeId = null
     ): PageItems {
-        $this->items = new PageItems();
+        $this->items        = new PageItems();
         $this->items->trail = array_flip(isset($GLOBALS['objPage']) ? $GLOBALS['objPage']->trail : []);
 
         $this->pageQueryBuilder = new PageQueryBuilder($this->connection, $this->security, $moduleModel);
@@ -93,9 +101,13 @@ final class PageItemsLoader
     /**
      * Fetches page data for all navigation items below the given roots.
      *
-     * @param integer $level (optional, defaults to 1) The level of the PIDs.
+     * @param list<int|string> $parentIds
+     * @param int              $level     (optional, defaults to 1) The level of the PIDs.
      *
      * @return array<int,bool>
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     protected function fetchItems(array $parentIds, int $level = 1): array
     {
@@ -107,7 +119,7 @@ final class PageItemsLoader
             return [];
         }
 
-        $fetched = [];
+        $fetched    = [];
         $stopLevels = $this->stopLevels;
 
         while ($parentIds) {
@@ -118,9 +130,11 @@ final class PageItemsLoader
                 count($stopLevels) > 1 && array_shift($stopLevels);
                 $arrEndPIDs = [];
                 foreach ($parentIds as $intPID) {
-                    if (!$this->items->isInTrail((int) $intPID)) {
-                        $arrEndPIDs[$intPID] = true;
+                    if ($this->items->isInTrail((int) $intPID)) {
+                        continue;
                     }
+
+                    $arrEndPIDs[$intPID] = true;
                 }
             } else {
                 $arrEndPIDs = [];
@@ -146,9 +160,9 @@ final class PageItemsLoader
                         $this->items->subItems[(int) $page['pid']][] = (int) $page['id']; // for order of items
                     }
 
-                    $this->items->items[(int) $page['id']]       = $page; // item datasets
-                    $parentIds[]                                 = $page['id']; // ids of current layer (for next layer pids)
-                    $fetched[$page['id']]                        = true; // fetched in this method
+                    $this->items->items[(int) $page['id']] = $page; // item datasets
+                    $parentIds[]                           = $page['id']; // ids of current layer (for next layer pids)
+                    $fetched[$page['id']]                  = true; // fetched in this method
                 } elseif (! isset($items->subItems[(int) $page['pid']])) {
                     $this->items->subItems[(int) $page['pid']] = [];
                 }
@@ -160,6 +174,11 @@ final class PageItemsLoader
         return $fetched;
     }
 
+    /**
+     * @return list<int|string>
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     */
     protected function calculateRootIDs(): array
     {
         $rootIds = $this->getRootIds();
@@ -172,18 +191,20 @@ final class PageItemsLoader
             for ($i = 1, $n = $this->moduleModel->hofff_navigation_start; $i < $n; $i++) {
                 $rootIds = $this->getNextLevel($rootIds, $this->pageQueryBuilder->createRootIdsQuery());
             }
+
             $rootIds = $this->getNextLevel($rootIds, $this->pageQueryBuilder->createStartRootIdsQuery());
         } elseif ($this->moduleModel->hofff_navigation_start < 0) {
             for ($i = 0, $n = -$this->moduleModel->hofff_navigation_start; $i < $n; $i++) {
                 $rootIds = $this->getPrevLevel($rootIds);
             }
+
             $rootIds = $this->filterPages($rootIds, $this->pageQueryBuilder->createStartRootIdsQuery());
         } else {
             $rootIds = $this->filterPages($rootIds, $this->pageQueryBuilder->createStartRootIdsQuery());
         }
 
         $stopLevels = $this->stopLevels;
-        if ($stopLevels[0] == 0) { // special case, keep only roots within the current path
+        if ($stopLevels[0] === 0) { // special case, keep only roots within the current path
             $path    = $GLOBALS['objPage']->trail;
             $path[]  = $this->activeId;
             $rootIds = array_intersect($rootIds, $path);
@@ -208,12 +229,12 @@ final class PageItemsLoader
      *
      * Context property: hofff_navigation_showProtected
      *
-     * @param array $arrPage The page dataset of the current page, with at least
-     *                       groups and protected attributes set.
+     * @param array<string,mixed> $page The page dataset of the current page, with at least
+     *                                  groups and protected attributes set.
      *
-     * @return boolean If the permission is granted true, otherwise false.
+     * @return bool If the permission is granted true, otherwise false.
      */
-    public function isPermissionGranted(ModuleModel $model, array $arrPage): bool
+    public function isPermissionGranted(ModuleModel $model, array $page): bool
     {
         // be users have access everywhere
         if ($this->security->isGranted('ROLE_USER')) {
@@ -225,7 +246,7 @@ final class PageItemsLoader
             return true;
         }
 
-        return ! $this->isPermissionDenied($arrPage);
+        return ! $this->isPermissionDenied($page);
     }
 
     /**
@@ -237,15 +258,15 @@ final class PageItemsLoader
      * given page dataset, in regards to the permission requirements of the
      * page.
      *
-     * @param array $arrPage The page dataset of the current page, with at least
-     *                       groups and protected attributes set.
+     * @param array<string,mixed> $page The page dataset of the current page, with at least
+     *                                  groups and protected attributes set.
      *
-     * @return boolean If the permission is denied true, otherwise false.
+     * @return bool If the permission is denied true, otherwise false.
      */
-    public function isPermissionDenied(array $arrPage): bool
+    public function isPermissionDenied(array $page): bool
     {
         // this page is not protected
-        if (! $arrPage['protected']) {
+        if (! $page['protected']) {
             return false;
         }
 
@@ -260,9 +281,14 @@ final class PageItemsLoader
         }
 
         // check if the current user is not in any group, which is allowed to access the current page
-        return ! array_intersect((array) $user->groups, StringUtil::deserialize($arrPage['groups'], true));
+        return ! array_intersect((array) $user->groups, StringUtil::deserialize($page['groups'], true));
     }
 
+    /**
+     * @return list<int>
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     */
     protected function getRootIds(): array
     {
         if (! $this->moduleModel->hofff_navigation_defineRoots) {
@@ -291,11 +317,13 @@ final class PageItemsLoader
      * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
-     * @param array $arrPages An array of page IDs to filter
+     * @param list<int|string> $arrPages An array of page IDs to filter
      *
-     * @return array Filtered array of page IDs
+     * @return list<int|string> Filtered array of page IDs
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    public function filterPages(array $arrPages, QueryBuilder $queryBuilder)
+    public function filterPages(array $arrPages, QueryBuilder $queryBuilder): array
     {
         if (! $arrPages) {
             return $arrPages;
@@ -309,7 +337,7 @@ final class PageItemsLoader
         if (! $this->isPermissionCheckRequired()) {
             return array_intersect(
                 $arrPages,
-                array_map(static fn(array $row): int => (int) $row['id'], $result->fetchAllAssociative())
+                array_map(static fn (array $row): int => (int) $row['id'], $result->fetchAllAssociative())
             );
         } // restore order
 
@@ -327,9 +355,11 @@ final class PageItemsLoader
              * for permission check, which must not be done, when this page
              * defines access rights.
              */
-            if (! $arrPage['protected'] && $arrPage['pid'] != 0) {
-                $arrPIDs[$arrPage['pid']][] = $arrPage['id'];
+            if ($arrPage['protected'] || $arrPage['pid'] === 0) {
+                continue;
             }
+
+            $arrPIDs[$arrPage['pid']][] = $arrPage['id'];
         }
 
         // exclude pages which are in a protected path
@@ -342,7 +372,7 @@ final class PageItemsLoader
 
             while ($arrPage = $result->fetchAssociative()) {
                 if (! $arrPage['protected']) { // do not remove, see above
-                    if ($arrPage['pid'] != 0) {
+                    if ($arrPage['pid'] !== 0) {
                         $arrPIDs[$arrPage['pid']] = isset($arrPIDs[$arrPage['pid']])
                             ? array_merge($arrPIDs[$arrPage['pid']], $arrIDs[$arrPage['id']])
                             : $arrIDs[$arrPage['id']];
@@ -364,9 +394,9 @@ final class PageItemsLoader
      * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
-     * @param array $arrPages An array of parent IDs
+     * @param list<int|string> $arrPages An array of parent IDs
      *
-     * @return array The child IDs
+     * @return list<int|string> The child IDs
      */
     public function getNextLevel(array $arrPages, QueryBuilder $queryBuilder): array
     {
@@ -380,9 +410,11 @@ final class PageItemsLoader
         $arrNext = [];
         if ($this->isPermissionCheckRequired()) {
             while ($arrPage = $result->fetchAssociative()) {
-                if (! $this->isPermissionDenied($arrPage)) {
-                    $arrNext[$arrPage['pid']][] = $arrPage['id'];
+                if ($this->isPermissionDenied($arrPage)) {
+                    continue;
                 }
+
+                $arrNext[$arrPage['pid']][] = $arrPage['id'];
             }
         } else {
             while ($arrPage = $result->fetchAssociative()) {
@@ -392,9 +424,11 @@ final class PageItemsLoader
 
         $arrNextLevel = [];
         foreach ($arrPages as $intID) {
-            if (isset($arrNext[$intID])) {
-                $arrNextLevel = array_merge($arrNextLevel, $arrNext[$intID]);
+            if (! isset($arrNext[$intID])) {
+                continue;
             }
+
+            $arrNextLevel = array_merge($arrNextLevel, $arrNext[$intID]);
         }
 
         return $arrNextLevel;
@@ -409,9 +443,9 @@ final class PageItemsLoader
      * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
-     * @param array $arrPages An array of child IDs
+     * @param list<int|string> $arrPages An array of child IDs
      *
-     * @return array The parent IDs
+     * @return list<int|string> The parent IDs
      */
     public function getPrevLevel(array $arrPages): array
     {
@@ -419,7 +453,7 @@ final class PageItemsLoader
             return $arrPages;
         }
 
-        $result = $this->pageQueryBuilder->createPreviousLevelQuery(array_keys(array_flip($arrPages)))->execute();
+        $result  = $this->pageQueryBuilder->createPreviousLevelQuery(array_keys(array_flip($arrPages)))->execute();
         $arrPrev = [];
         while ($row = $result->fetchAssociative()) {
             $arrPrev[$row['id']] = $row['pid'];
@@ -428,9 +462,11 @@ final class PageItemsLoader
         $arrPrevLevel = [];
         $intPID       = -1;
         foreach ($arrPages as $intID) {
-            if (isset($arrPrev[$intID]) && $arrPrev[$intID] != $intPID) {
-                $arrPrevLevel[] = $intPID = $arrPrev[$intID];
+            if (! isset($arrPrev[$intID]) || $arrPrev[$intID] === $intPID) {
+                continue;
             }
+
+            $arrPrevLevel[] = $intPID = $arrPrev[$intID];
         }
 
         return $arrPrevLevel;

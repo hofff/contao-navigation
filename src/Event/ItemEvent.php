@@ -8,8 +8,10 @@ use Contao\ModuleModel;
 
 final class ItemEvent extends Event
 {
+    /** @var array<string,mixed> */
     private array $item;
 
+    /** @param array<string,mixed> $item */
     public function __construct(ModuleModel $moduleModel, array $item)
     {
         parent::__construct($moduleModel);
@@ -17,11 +19,13 @@ final class ItemEvent extends Event
         $this->item = $item;
     }
 
+    /** @param array<string,mixed> $item */
     public function changeItem(array $item): void
     {
         $this->item = $item;
     }
 
+    /** @return array<string,mixed> */
     public function item(): array
     {
         return $this->item;

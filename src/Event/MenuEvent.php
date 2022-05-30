@@ -8,8 +8,10 @@ use Contao\ModuleModel;
 
 final class MenuEvent extends Event
 {
+    /** @var list<int|string> */
     private array $rootIds;
 
+    /** @param list<int|string> $rootIds */
     public function __construct(ModuleModel $moduleModel, array $rootIds)
     {
         parent::__construct($moduleModel);
@@ -17,11 +19,13 @@ final class MenuEvent extends Event
         $this->rootIds = $rootIds;
     }
 
+    /** @param list<int|string> $rootIds */
     public function changeRootIds(array $rootIds): void
     {
         $this->rootIds = $rootIds;
     }
 
+    /** @return list<int|string> */
     public function rootIds(): array
     {
         return $this->rootIds;

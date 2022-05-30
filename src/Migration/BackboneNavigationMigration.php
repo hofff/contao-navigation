@@ -7,7 +7,9 @@ namespace Hofff\Contao\Navigation\Migration;
 use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;
 use Doctrine\DBAL\Connection;
+
 use function is_int;
+use function sprintf;
 
 final class BackboneNavigationMigration extends AbstractMigration
 {
@@ -17,7 +19,6 @@ final class BackboneNavigationMigration extends AbstractMigration
 
     private const NEW_PREFIX = 'hofff_navigation_';
 
-    /** @var array<int|string,string> */
     private const FIELDS = [
         'roots_order',
         'start',
@@ -32,6 +33,7 @@ final class BackboneNavigationMigration extends AbstractMigration
         'addFields',
         'noForwardResolution',
         'showErrorPages',
+        // phpcs:ignore Squiz.Arrays.ArrayDeclaration.KeySpecified
         'disableHooks' => 'disableEvents',
         'currentAsRoot',
         'defineRoots',

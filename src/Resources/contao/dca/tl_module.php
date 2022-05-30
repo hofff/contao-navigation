@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Doctrine\DBAL\Types\Types;
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_rootSelectionType';
@@ -9,8 +11,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigatio
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineHard';
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineDepth';
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_menu']
-    = ';{title_legend},name,headline,type'
+$GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_menu'] = ';{title_legend},name,headline,type'
     . ';{hofff_navigation_root_legend}'
     . ',hofff_navigation_currentAsRoot,hofff_navigation_defineRoots'
     . ',hofff_navigation_start,hofff_navigation_respectHidden'
@@ -28,14 +29,10 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_menu']
     . ';{expert_legend:hide},cssID,hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages'
     . ',hofff_navigation_disableEvents';
 
-$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineRoots']
-    = 'hofff_navigation_roots';
-$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_includeStart']
-    = 'hofff_navigation_showHiddenStart';
-$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineStop']
-    = 'hofff_navigation_stop';
-$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineHard']
-    = 'hofff_navigation_hard';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineRoots']  = 'hofff_navigation_roots';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_includeStart'] = 'hofff_navigation_showHiddenStart';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineStop']   = 'hofff_navigation_stop';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineHard']   = 'hofff_navigation_hard';
 
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_roots'] = [

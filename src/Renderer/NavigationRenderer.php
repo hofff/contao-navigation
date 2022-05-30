@@ -18,7 +18,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 use function array_merge;
 use function array_shift;
-use function get_class;
+use function count;
 use function ltrim;
 use function preg_replace;
 use function str_replace;
@@ -26,21 +26,23 @@ use function strncasecmp;
 use function strncmp;
 use function trim;
 
-use const LINK_NEW_WINDOW;
 use const PHP_INT_MAX;
 
+/**
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ */
 final class NavigationRenderer
 {
-    private RedirectPageQueryBuilder $redirectPageQueryBuilder;
+    private RedirectPageQueryBuilder $redirectQueryBuilder;
 
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
-        RedirectPageQueryBuilder $redirectPageQueryBuilder
+        RedirectPageQueryBuilder $redirectQueryBuilder
     ) {
-        $this->redirectPageQueryBuilder = $redirectPageQueryBuilder;
-        $this->eventDispatcher          = $eventDispatcher;
+        $this->redirectQueryBuilder = $redirectQueryBuilder;
+        $this->eventDispatcher      = $eventDispatcher;
     }
 
     /**
@@ -48,10 +50,10 @@ final class NavigationRenderer
      * Adds CSS classes "first" and "last" to the appropriate navigation item arrays.
      * If the given array is empty, the empty string is returned.
      *
-     * @param array   $arrIDs       The navigation items arrays
-     * @param array   $stopLimit    (optional, defaults to PHP_INT_MAX) The soft limit of depth.
-     * @param integer $intHard      (optional, defaults to PHP_INT_MAX) The hard limit of depth.
-     * @param integer $currentLevel (optional, defaults to 1) The current level of this navigation layer
+     * @param list<int|string> $itemIds      The navigation items arrays
+     * @param list<int>        $stopLimit    (optional, defaults to PHP_INT_MAX) The soft limit of depth.
+     * @param int              $intHard      (optional, defaults to PHP_INT_MAX) The hard limit of depth.
+     * @param int              $currentLevel (optional, defaults to 1) The current level of this navigation layer
      *
      * @return string The parsed navigation template, could be empty string.
      */
@@ -71,7 +73,7 @@ final class NavigationRenderer
         $this->compileTree($moduleModel, $items);
         $this->dispatchTreeEvent($moduleModel, $items);
 
-        $itemIds = $this->dispatchMenuEvent($moduleModel, $itemIds);
+        $itemIds  = $this->dispatchMenuEvent($moduleModel, $itemIds);
         $firstIds = $this->getFirstNavigationLevel($moduleModel, $items, $itemIds);
 
         if ($moduleModel->hofff_navigation_hideSingleLevel) {
@@ -87,13 +89,21 @@ final class NavigationRenderer
             }
         }
 
-        if ($stopLimit[0] == 0) {
+        if ($stopLimit[0] === 0) {
             array_shift($stopLimit); // special case renderNavigationTree cannot handle
         }
 
         return trim($this->renderTree($moduleModel, $items, $firstIds, $stopLimit, $intHard, $currentLevel, $activeId));
     }
 
+    /**
+     * @param list<string|int> $itemIds
+     * @param list<int>        $stopLimit
+     *
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     */
     private function renderTree(
         ModuleModel $moduleModel,
         PageItems $items,
@@ -118,24 +128,24 @@ final class NavigationRenderer
 
             $item = $items->items[$itemId];
 
-            if ($itemId == $activeId) {
+            if ($itemId === $activeId) {
                 $containsActive = true;
 
                 if ($item['href'] === Environment::get('request')) {
-                    $item['isActive'] = true; // nothing else (active class is set in template)
-                    $item['isInTrail']  = false;
+                    $item['isActive']  = true; // nothing else (active class is set in template)
+                    $item['isInTrail'] = false;
                 } else {
-                    $item['isActive'] = false; // nothing else (active class is set in template)
-                    $item['isInTrail']  = true;
+                    $item['isActive']  = false; // nothing else (active class is set in template)
+                    $item['isInTrail'] = true;
                 }
             } else { // do not flatten if/else
-                if ($item['tid'] == $activeId) {
+                if ($item['tid'] === $activeId) {
                     if ($item['href'] === Environment::get('request')) {
-                        $item['isActive'] = true; // nothing else (active class is set in template)
-                        $item['isInTrail']  = false;
+                        $item['isActive']  = true; // nothing else (active class is set in template)
+                        $item['isInTrail'] = false;
                     } else {
-                        $item['isActive'] = false; // nothing else (active class is set in template)
-                        $item['isInTrail']  = true;
+                        $item['isActive']  = false; // nothing else (active class is set in template)
+                        $item['isInTrail'] = true;
                     }
                 }
             }
@@ -149,11 +159,15 @@ final class NavigationRenderer
             } elseif ($currentLevel >= $intHard) {
                 // we are at hard level, never draw submenu
                 $item['class'] .= ' submenu leaf';
-            } elseif ($currentLevel >= $intStop && ! $item['isInTrail'] && $itemId !== $activeId && $item['tid'] != $activeId) {
+            } elseif (
+                $currentLevel >= $intStop
+                && ! $item['isInTrail'] && $itemId !== $activeId
+                && $item['tid'] !== $activeId
+            ) {
                 // we are at stop level and not trail and not active, never draw submenu
                 $item['class'] .= ' submenu leaf';
             } elseif ($items->subItems[$itemId]) {
-                $item['class']    .= ' submenu inner';
+                $item['class']   .= ' submenu inner';
                 $item['subitems'] = $this->renderTree(
                     $moduleModel,
                     $items,
@@ -171,19 +185,23 @@ final class NavigationRenderer
 
         if ($containsActive) {
             foreach ($renderedItems as &$item) {
-                if (! $item['isActive']) {
-                    $item['class'] .= ' sibling';
+                if ($item['isActive']) {
+                    continue;
                 }
+
+                $item['class'] .= ' sibling';
             }
+
             unset($item);
         }
 
-        $renderedItems[0]['class']                    .= ' first';
+        $renderedItems[0]['class']                         .= ' first';
         $renderedItems[count($renderedItems) - 1]['class'] .= ' last';
 
         foreach ($renderedItems as &$item) {
             $item['class'] = ltrim($item['class']);
         }
+
         unset($item);
 
         $objTemplate = new FrontendTemplate($moduleModel->navigationTpl ?: 'nav_default');
@@ -191,7 +209,7 @@ final class NavigationRenderer
             'module' => $moduleModel->row(),
             'level'  => 'level_' . $currentLevel,
             'items'  => $renderedItems,
-            'type'   => get_class($this),
+            'type'   => static::class,
         ]);
 
         return $objTemplate->parse();
@@ -217,9 +235,11 @@ final class NavigationRenderer
     /**
      * Compiles a navigation item array from a page dataset with the given subnavi
      *
-     * @param array $page The page dataset as an array
+     * @param array<string,mixed> $page The page dataset as an array
      *
-     * @return array The compiled navigation item array
+     * @return array<string,mixed> The compiled navigation item array
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function compileNavigationItem(
         ModuleModel $moduleModel,
@@ -250,7 +270,7 @@ final class NavigationRenderer
                         $page['href'] = $this->generatePageUrl($page);
                     } elseif ($redirectPage['type'] === 'redirect') {
                         $page['href']   = $this->encodeEmailURL($redirectPage['url']);
-                        $page['target'] = $redirectPage['target'] ? LINK_NEW_WINDOW : '';
+                        $page['target'] = $redirectPage['target'] ? 'target="_blank"' : '';
                     } else {
                         $page['tid']  = $redirectPage['id'];
                         $page['href'] = $this->generatePageUrl($redirectPage);
@@ -259,25 +279,28 @@ final class NavigationRenderer
                     $page['tid']  = $page['jumpTo'];
                     $page['href'] = $this->generatePageUrl($page);
                 }
+
                 break;
 
             case 'redirect':
                 $page['href']   = $this->encodeEmailURL($page['url']);
-                $page['target'] = $page['_target'] ? LINK_NEW_WINDOW : '';
+                $page['target'] = $page['_target'] ? 'target="_blank"' : '';
                 break;
 
             case 'root':
-                if (! $page['dns']
-                    || preg_replace('/^www\./', '', $page['dns']) == preg_replace(
+                if (
+                    ! $page['dns']
+                    || preg_replace('/^www\./', '', $page['dns']) === preg_replace(
                         '/^www\./',
                         '',
                         Environment::get('httpHost')
-                    )) {
+                    )
+                ) {
                     $page['href'] = Environment::get('base');
-                    break; // we only break on root pages; pages in different roots should be handled by DomainLink extension
+                    // we only break on root pages; pages in different roots should be handled by DomainLink extension
+                    break;
                 }
             // do not break
-
             default:
             case 'regular':
             case 'error_401':
@@ -290,9 +313,10 @@ final class NavigationRenderer
         return $this->dispatchItemEvent($moduleModel, $page);
     }
 
-    private function generatePageUrl(array $arrPage): ?string
+    /** @param array<string,mixed> $page */
+    private function generatePageUrl(array $page): ?string
     {
-        $pageModel = PageModel::findByPk($arrPage['id']);
+        $pageModel = PageModel::findByPk($page['id']);
         if ($pageModel) {
             return $pageModel->getFrontendUrl();
         }
@@ -319,6 +343,11 @@ final class NavigationRenderer
         return StringUtil::encodeEmail($href);
     }
 
+    /**
+     * @param array<string,mixed> $page
+     *
+     * @return array<string,mixed>
+     */
     private function dispatchItemEvent(ModuleModel $moduleModel, array $page): array
     {
         if (! $moduleModel->hofff_navigation_disableHooks) {
@@ -337,8 +366,6 @@ final class NavigationRenderer
      *
      * The callback receives the following parameters:
      * $this - This navigation module instance
-     *
-     * @return void
      */
     private function dispatchTreeEvent(ModuleModel $moduleModel, PageItems $items): void
     {
@@ -357,43 +384,55 @@ final class NavigationRenderer
      *
      * And should return a new root array or null
      *
-     * @param array $arrRootIDs The root pages before hook execution
+     * @param list<int|string> $rootIds The root pages before hook execution
      *
-     * @return array $arrRootIDs The root pages after hook execution
+     * @return list<int|string> $arrRootIDs The root pages after hook execution
      */
-    private  function dispatchMenuEvent(ModuleModel $moduleModel, array $arrRootIDs): array
+    private function dispatchMenuEvent(ModuleModel $moduleModel, array $rootIds): array
     {
         if ($moduleModel->hofff_navigation_disableHooks) {
-            return $arrRootIDs;
+            return $rootIds;
         }
 
-        $event = new MenuEvent($moduleModel, $arrRootIDs);
+        $event = new MenuEvent($moduleModel, $rootIds);
         $this->eventDispatcher->dispatch($event);
 
         return $event->rootIds();
     }
 
-    private function getFirstNavigationLevel(ModuleModel $moduleModel, PageItems $items, array $arrRootIDs): array
+    /**
+     * @param list<int|string> $rootIds
+     *
+     * @return array<int|string>
+     */
+    private function getFirstNavigationLevel(ModuleModel $moduleModel, PageItems $items, array $rootIds): array
     {
         if ($moduleModel->hofff_navigation_includeStart) {
-            return $arrRootIDs;
+            return $rootIds;
         }
 
         // if we do not want to show the root level
         $arrFirstIDs = [];
-        foreach ($arrRootIDs as $varRootID) {
-            if (isset($items->subItems[$varRootID])) {
-                $arrFirstIDs[] = $items->subItems[$varRootID];
+        foreach ($rootIds as $varRootID) {
+            if (! isset($items->subItems[$varRootID])) {
+                continue;
             }
+
+            $arrFirstIDs[] = $items->subItems[$varRootID];
         }
 
-        return array_merge(... $arrFirstIDs);
+        return array_merge(...$arrFirstIDs);
     }
 
+    /**
+     * @param array<string,mixed> $arrPage
+     *
+     * @return array<string,mixed>
+     */
     private function getRedirectPage(array $arrPage): array
     {
         if (! $arrPage['jumpTo']) {
-            $query = $this->redirectPageQueryBuilder->createFallbackQuery((int) $arrPage['id']);
+            $query = $this->redirectQueryBuilder->createFallbackQuery((int) $arrPage['id']);
 
             return $query->execute()->fetchAssociative();
         }
@@ -401,13 +440,13 @@ final class NavigationRenderer
         $intFallbackSearchID = $arrPage['id'];
         $intJumpToID         = $arrPage['jumpTo'];
         do {
-            $query = $this->redirectPageQueryBuilder->createJumpToQuery((int) $intJumpToID);
+            $query = $this->redirectQueryBuilder->createJumpToQuery((int) $intJumpToID);
             $query->setParameter('id', $intJumpToID);
             $result = $query->execute();
             $next   = $result->fetchAssociative();
 
             if (! $result->rowCount()) {
-                $query = $this->redirectPageQueryBuilder->createFallbackQuery((int) $intFallbackSearchID);
+                $query = $this->redirectQueryBuilder->createFallbackQuery((int) $intFallbackSearchID);
                 $next  = $query->execute()->fetchAssociative();
                 break;
             }

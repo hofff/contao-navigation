@@ -17,7 +17,7 @@ abstract class BaseQueryBuilder
     protected Connection $connection;
 
     /** @var array<string,QueryBuilder> */
-    private $queries = [];
+    private array $queries = [];
 
     public function __construct(Connection $connection, Security $security)
     {
@@ -27,7 +27,7 @@ abstract class BaseQueryBuilder
 
     protected function query(string $name, callable $builder): QueryBuilder
     {
-        if (! isset ($this->queries[$name])) {
+        if (! isset($this->queries[$name])) {
             $this->queries[$name] = $this->connection->createQueryBuilder()->from('tl_page');
             $builder($this->queries[$name]);
         }

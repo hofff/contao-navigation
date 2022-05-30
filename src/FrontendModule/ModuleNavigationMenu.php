@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Hofff\Contao\Navigation\FrontendModule;
 
 use Contao\CoreBundle\Controller\FrontendModule\AbstractFrontendModuleController;
@@ -14,7 +16,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function array_keys;
+use function array_map;
+use function explode;
 
+use const PHP_INT_MAX;
 
 /**
  * Navigation modules
@@ -48,8 +53,6 @@ use function array_keys;
  * _target
  * _description
  *
- * @author Oliver Hoff <oliver@hofff.com>
- *
  * @FrontendModule("hofff_navigation_menu", category="navigation")
  */
 final class ModuleNavigationMenu extends AbstractFrontendModuleController
@@ -64,6 +67,10 @@ final class ModuleNavigationMenu extends AbstractFrontendModuleController
         $this->renderer = $renderer;
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     protected function getResponse(Template $template, ModuleModel $model, Request $request): ?Response
     {
         $stopLevels = $this->getStopLevels($model);
@@ -96,6 +103,7 @@ final class ModuleNavigationMenu extends AbstractFrontendModuleController
         return $template->getResponse();
     }
 
+    /** @return list<int> */
     public function getStopLevels(ModuleModel $model): array
     {
         if (! $model->hofff_navigation_defineStop) {
@@ -106,9 +114,11 @@ final class ModuleNavigationMenu extends AbstractFrontendModuleController
         $stopLevel = [];
 
         foreach (array_map('intval', explode(',', $model->hofff_navigation_stop)) as $level) {
-            if ($level > $minLevel) {
-                $stopLevel[] = $minLevel = $level;
+            if ($level <= $minLevel) {
+                continue;
             }
+
+            $stopLevel[] = $minLevel = $level;
         }
 
         return $stopLevel ?: [PHP_INT_MAX];

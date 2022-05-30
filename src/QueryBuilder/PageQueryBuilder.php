@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Security;
 use function array_flip;
 use function array_keys;
 use function array_merge;
+use function count;
 
 final class PageQueryBuilder extends BaseQueryBuilder
 {
@@ -44,9 +45,10 @@ final class PageQueryBuilder extends BaseQueryBuilder
     ];
 
     private ModuleModel $moduleModel;
-    
+
+    /** @var list<string> */
     private array $fields = [];
-    
+
     public function __construct(Connection $connection, Security $security, ModuleModel $moduleModel)
     {
         parent::__construct($connection, $security);
@@ -55,13 +57,14 @@ final class PageQueryBuilder extends BaseQueryBuilder
         $this->determineFields();
     }
 
+    /** @param list<int|string> $parentIds */
     public function createFetchItemsQuery(array $parentIds): QueryBuilder
     {
         $query = $this->query(
             __FUNCTION__,
             function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
-                    ->select(... $this->fields)
+                    ->select(...$this->fields)
                     ->andWhere('type != :rootType')
                     ->setParameter('rootType', 'root')
                     ->andWhere('pid IN (:pids)')
@@ -144,11 +147,12 @@ final class PageQueryBuilder extends BaseQueryBuilder
         );
     }
 
+    /** @param list<int|string> $pageIds */
     public function createPageInformationQuery(array $pageIds): QueryBuilder
     {
         $query = $this->query(
             __FUNCTION__,
-            function (QueryBuilder $queryBuilder): void {
+            static function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
                     ->select('id', 'pid', 'protected', 'groups')
                     ->where('id IN (:ids)');
@@ -160,13 +164,14 @@ final class PageQueryBuilder extends BaseQueryBuilder
         return $query;
     }
 
+    /** @param list<int|string> $rootIds */
     public function createRootInformationQuery(array $rootIds): QueryBuilder
     {
         $query = $this->query(
             __FUNCTION__,
             function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
-                ->select(... $this->fields)
+                ->select(...$this->fields)
                 ->where('id IN (:rootIds)');
             }
         );
@@ -176,11 +181,12 @@ final class PageQueryBuilder extends BaseQueryBuilder
         return $query;
     }
 
+    /** @param list<int|string> $pageIds */
     public function createPreviousLevelQuery(array $pageIds): QueryBuilder
     {
         $query = $this->query(
             __FUNCTION__,
-            function (QueryBuilder $queryBuilder): void {
+            static function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
                 ->select('id', 'pid')
                 ->where('id IN (:ids)');
@@ -194,8 +200,6 @@ final class PageQueryBuilder extends BaseQueryBuilder
 
     /**
      * Adds the or hidden state of a page.
-     *
-     * @return self
      */
     private function addHiddenCondition(
         QueryBuilder $queryBuilder,
@@ -249,9 +253,11 @@ final class PageQueryBuilder extends BaseQueryBuilder
         $fields       = [];
 
         foreach ($table->getColumns() as $column) {
-            if (isset($customFields[$column->getName()])) {
-                $fields[$column->getName()] = true;
+            if (! isset($customFields[$column->getName()])) {
+                continue;
             }
+
+            $fields[$column->getName()] = true;
         }
 
         $this->fields = array_keys(array_merge($fields, self::DEFAULT_FIELDS));
