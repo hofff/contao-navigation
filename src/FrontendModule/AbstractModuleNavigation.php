@@ -411,7 +411,7 @@ abstract class AbstractModuleNavigation extends Module
      *
      * @return string The wildcard HTML string
      */
-    protected function generateBE($strBEType = 'NAVIGATION')
+    protected function generateBE($strBEType = 'NAVIGATION'): string
     {
         $objTemplate = new BackendTemplate('be_wildcard');
 

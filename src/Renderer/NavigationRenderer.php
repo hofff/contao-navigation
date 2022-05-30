@@ -212,63 +212,63 @@ final class NavigationRenderer
     /**
      * Compiles a navigation item array from a page dataset with the given subnavi
      *
-     * @param array $arrPage The page dataset as an array
+     * @param array $page The page dataset as an array
      *
      * @return array The compiled navigation item array
      */
     public function compileNavigationItem(
         ModuleModel $moduleModel,
         PageItems $items,
-        array $arrPage,
+        array $page,
         bool $forwardResolution = true
     ) {
         // fallback for dataset field collisions
-        $arrPage['_title']       = $arrPage['title'];
-        $arrPage['_pageTitle']   = $arrPage['pageTitle'];
-        $arrPage['_target']      = $arrPage['target'];
-        $arrPage['_description'] = $arrPage['description'];
+        $page['_title']       = $page['title'];
+        $page['_pageTitle']   = $page['pageTitle'];
+        $page['_target']      = $page['target'];
+        $page['_description'] = $page['description'];
 
-        $arrPage['link']        = $arrPage['_title'];
-        $arrPage['class']       = $arrPage['cssClass'] . ' ' . $arrPage['type'];
-        $arrPage['title']       = StringUtil::specialchars($arrPage['_title'], true);
-        $arrPage['pageTitle']   = StringUtil::specialchars($arrPage['_pageTitle'], true);
-        $arrPage['target']      = ''; // overwrite DB value
-        $arrPage['nofollow']    = strncmp($arrPage['robots'], 'noindex', 7) === 0;
-        $arrPage['description'] = str_replace(["\n", "\r"], [' ', ''], $arrPage['_description']);
-        $arrPage['isInTrail']     = $items->isInTrail((int) $arrPage['id']);
+        $page['link']        = $page['_title'];
+        $page['class']       = $page['cssClass'] . ' ' . $page['type'];
+        $page['title']       = StringUtil::specialchars($page['_title'], true);
+        $page['pageTitle']   = StringUtil::specialchars($page['_pageTitle'], true);
+        $page['target']      = ''; // overwrite DB value
+        $page['nofollow']    = strncmp($page['robots'], 'noindex', 7) === 0;
+        $page['description'] = str_replace(["\n", "\r"], [' ', ''], $page['_description']);
+        $page['isInTrail']   = $items->isInTrail((int) $page['id']);
 
-        switch ($arrPage['type']) {
+        switch ($page['type']) {
             case 'forward':
                 if ($forwardResolution) {
-                    $redirectPage = $this->getRedirectPage($arrPage);
+                    $redirectPage = $this->getRedirectPage($page);
                     if (! $redirectPage) {
-                        $arrPage['href'] = $this->generatePageUrl($arrPage);
+                        $page['href'] = $this->generatePageUrl($page);
                     } elseif ($redirectPage['type'] === 'redirect') {
-                        $arrPage['href']   = $this->encodeEmailURL($redirectPage['url']);
-                        $arrPage['target'] = $redirectPage['target'] ? LINK_NEW_WINDOW : '';
+                        $page['href']   = $this->encodeEmailURL($redirectPage['url']);
+                        $page['target'] = $redirectPage['target'] ? LINK_NEW_WINDOW : '';
                     } else {
-                        $arrPage['tid']  = $redirectPage['id'];
-                        $arrPage['href'] = $this->generatePageUrl($redirectPage);
+                        $page['tid']  = $redirectPage['id'];
+                        $page['href'] = $this->generatePageUrl($redirectPage);
                     }
                 } else {
-                    $arrPage['tid']  = $arrPage['jumpTo'];
-                    $arrPage['href'] = $this->generatePageUrl($arrPage);
+                    $page['tid']  = $page['jumpTo'];
+                    $page['href'] = $this->generatePageUrl($page);
                 }
                 break;
 
             case 'redirect':
-                $arrPage['href']   = $this->encodeEmailURL($arrPage['url']);
-                $arrPage['target'] = $arrPage['_target'] ? LINK_NEW_WINDOW : '';
+                $page['href']   = $this->encodeEmailURL($page['url']);
+                $page['target'] = $page['_target'] ? LINK_NEW_WINDOW : '';
                 break;
 
             case 'root':
-                if (! $arrPage['dns']
-                    || preg_replace('/^www\./', '', $arrPage['dns']) == preg_replace(
+                if (! $page['dns']
+                    || preg_replace('/^www\./', '', $page['dns']) == preg_replace(
                         '/^www\./',
                         '',
                         Environment::get('httpHost')
                     )) {
-                    $arrPage['href'] = Environment::get('base');
+                    $page['href'] = Environment::get('base');
                     break; // we only break on root pages; pages in different roots should be handled by DomainLink extension
                 }
             // do not break
@@ -278,13 +278,13 @@ final class NavigationRenderer
             case 'error_401':
             case 'error_403':
             case 'error_404':
-                $arrPage['href'] = $this->generatePageUrl($arrPage);
+                $page['href'] = $this->generatePageUrl($page);
                 break;
         }
 
-        $this->executeItemHook($moduleModel, $arrPage);
+        $this->executeItemHook($moduleModel, $page);
 
-        return $arrPage;
+        return $page;
     }
 
     private function generatePageUrl(array $arrPage): ?string
@@ -334,8 +334,6 @@ final class NavigationRenderer
      *
      * The callback receives the following parameters:
      * $this - This navigation module instance
-     *
-     * @param array $arrRootIDs The root pages before hook execution
      *
      * @return void
      */

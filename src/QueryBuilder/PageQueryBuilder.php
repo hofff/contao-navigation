@@ -72,7 +72,7 @@ final class PageQueryBuilder
         return $this;
     }
 
-    public function addGuestsQueryParts(QueryBuilder $queryBuilder, bool $showGuests): self
+    public function addGuestsQueryParts(QueryBuilder $queryBuilder, bool $showGuests = false): self
     {
         if ($showGuests) {
             return $this;
