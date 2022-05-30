@@ -31,6 +31,7 @@
 	"require": {
 		"php": "^7.4 || ^8.0",
 		"contao/core-bundle": "^4.9",
+		"doctrine/dbal": "^2.11 || ^3.0",
 		"symfony/http-kernel": "^4.4 || ^5.0"
 	},
 	"require-dev": {
