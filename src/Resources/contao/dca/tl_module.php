@@ -249,7 +249,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addFields'] = [
     'label'            => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addFields'],
     'exclude'          => true,
     'inputType'        => 'checkbox',
-    'options_callback' => ['NavigationDCA', 'getPageFields'],
     'eval'             => [
         'multiple' => true,
         'tl_class' => 'clr',
@@ -357,9 +356,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_stop'] = [
     'eval'          => [
         'maxlength' => 255,
         'tl_class'  => 'w50',
-    ],
-    'save_callback' => [
-        ['NavigationDCA', 'saveStop'],
     ],
     'sql' => [
         'type'    => Types::STRING,
