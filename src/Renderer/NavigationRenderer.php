@@ -15,6 +15,7 @@ use Hofff\Contao\Navigation\Event\MenuEvent;
 use Hofff\Contao\Navigation\Event\TreeEvent;
 use Hofff\Contao\Navigation\Items\PageItems;
 use Hofff\Contao\Navigation\QueryBuilder\RedirectPageQueryBuilder;
+use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 use function array_merge;
@@ -37,6 +38,12 @@ final class NavigationRenderer
     private RedirectPageQueryBuilder $redirectQueryBuilder;
 
     private EventDispatcherInterface $eventDispatcher;
+
+    /** @psalm-suppress PropertyNotSetInConstructor - Will be initialized in the only public method load() */
+    private PageItems $items;
+
+    /** @psalm-suppress PropertyNotSetInConstructor - Will be initialized in the only public method load() */
+    private ModuleModel $moduleModel;
 
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
@@ -67,15 +74,20 @@ final class NavigationRenderer
         ?int $activeId = null,
         int $currentLevel = 1
     ): string {
+        $this->moduleModel = $moduleModel;
+        $this->items       = $items;
+
         if ($stopLimit === []) {
             $stopLimit = [PHP_INT_MAX];
         }
 
-        $this->compileTree($moduleModel, $items);
-        $this->dispatchTreeEvent($moduleModel, $items);
+        $this->compileTree();
+        $this->dispatchEvent(new TreeEvent($moduleModel, $items));
 
-        $itemIds  = $this->dispatchMenuEvent($moduleModel, $itemIds);
-        $firstIds = $this->getFirstNavigationLevel($moduleModel, $items, $itemIds);
+        $event = new MenuEvent($moduleModel, $itemIds);
+        $this->dispatchEvent($event);
+        $itemIds  = $event->rootIds();
+        $firstIds = $this->getFirstNavigationLevel($itemIds);
 
         if ($moduleModel->hofff_navigation_hideSingleLevel) {
             $hasMultipleLevels = false;
@@ -97,7 +109,7 @@ final class NavigationRenderer
         }
 
         return trim(
-            $this->renderTree($moduleModel, $items, $firstIds, $stopLimit, $hardLevel, $currentLevel, $activeId)
+            $this->renderTree($firstIds, $stopLimit, $hardLevel, $currentLevel, $activeId)
         );
     }
 
@@ -110,8 +122,6 @@ final class NavigationRenderer
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     private function renderTree(
-        ModuleModel $moduleModel,
-        PageItems $items,
         array $itemIds,
         array $stopLimit = [PHP_INT_MAX],
         int $hardLevel = PHP_INT_MAX,
@@ -127,11 +137,11 @@ final class NavigationRenderer
         $containsActive = false;
 
         foreach ($itemIds as $itemId) {
-            if (! isset($items->items[$itemId])) {
+            if (! isset($this->items->items[$itemId])) {
                 continue;
             }
 
-            $item = $items->items[$itemId];
+            $item = $this->items->items[$itemId];
 
             if ($itemId === $activeId) {
                 $containsActive = true;
@@ -159,7 +169,7 @@ final class NavigationRenderer
                 $item['class'] .= ' trail';
             }
 
-            if (! isset($items->subItems[$itemId])) {
+            if (! isset($this->items->subItems[$itemId])) {
                 $item['class'] .= ' leaf';
             } elseif ($currentLevel >= $hardLevel) {
                 // we are at hard level, never draw submenu
@@ -171,12 +181,10 @@ final class NavigationRenderer
             ) {
                 // we are at stop level and not trail and not active, never draw submenu
                 $item['class'] .= ' submenu leaf';
-            } elseif ($items->subItems[$itemId]) {
+            } elseif ($this->items->subItems[$itemId]) {
                 $item['class']   .= ' submenu inner';
                 $item['subitems'] = $this->renderTree(
-                    $moduleModel,
-                    $items,
-                    $items->subItems[$itemId] ?? [],
+                    $this->items->subItems[$itemId] ?? [],
                     $stopLimit,
                     $hardLevel,
                     $currentLevel + 1
@@ -209,29 +217,27 @@ final class NavigationRenderer
 
         unset($item);
 
-        $objTemplate = new FrontendTemplate($moduleModel->navigationTpl ?: 'nav_default');
+        $objTemplate = new FrontendTemplate($this->moduleModel->navigationTpl ?: 'nav_default');
         $objTemplate->setData([
-            'module' => $moduleModel->row(),
+            'module' => $this->moduleModel->row(),
             'level'  => 'level_' . $currentLevel,
             'items'  => $renderedItems,
-            'type'   => static::class,
+            'type'   => self::class,
         ]);
 
         return $objTemplate->parse();
     }
 
-    private function compileTree(ModuleModel $moduleModel, PageItems $items): void
+    private function compileTree(): void
     {
-        $forwardResolution = ! $moduleModel->hofff_navigation_noForwardResolution;
-        foreach ($items->items as $itemId => $item) {
+        $forwardResolution = ! $this->moduleModel->hofff_navigation_noForwardResolution;
+        foreach ($this->items->items as $itemId => $item) {
             if ($item === []) {
                 continue;
             }
 
-            $items->items[$itemId] = $this->compileNavigationItem(
-                $moduleModel,
-                $items,
-                $items->items[$itemId],
+            $this->items->items[$itemId] = $this->compileNavigationItem(
+                $this->items->items[$itemId],
                 $forwardResolution
             );
         }
@@ -246,12 +252,8 @@ final class NavigationRenderer
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    private function compileNavigationItem(
-        ModuleModel $moduleModel,
-        PageItems $items,
-        array $page,
-        bool $forwardResolution = true
-    ): array {
+    private function compileNavigationItem(array $page, bool $forwardResolution = true): array
+    {
         // fallback for dataset field collisions
         $page['_title']       = $page['title'];
         $page['_pageTitle']   = $page['pageTitle'];
@@ -265,7 +267,7 @@ final class NavigationRenderer
         $page['target']      = ''; // overwrite DB value
         $page['nofollow']    = strncmp($page['robots'], 'noindex', 7) === 0;
         $page['description'] = str_replace(["\n", "\r"], [' ', ''], $page['_description']);
-        $page['isInTrail']   = $items->isInTrail((int) $page['id']);
+        $page['isInTrail']   = $this->items->isInTrail((int) $page['id']);
 
         switch ($page['type']) {
             case 'forward':
@@ -315,7 +317,10 @@ final class NavigationRenderer
                 break;
         }
 
-        return $this->dispatchItemEvent($moduleModel, $page);
+        $event = new ItemEvent($this->moduleModel, $page);
+        $this->dispatchEvent($event);
+
+        return $event->item();
     }
 
     /** @param array<string,mixed> $page */
@@ -349,81 +354,24 @@ final class NavigationRenderer
     }
 
     /**
-     * @param array<string,mixed> $page
-     *
-     * @return array<string,mixed>
-     */
-    private function dispatchItemEvent(ModuleModel $moduleModel, array $page): array
-    {
-        if (! $moduleModel->hofff_navigation_disableHooks) {
-            return $page;
-        }
-
-        $event = new ItemEvent($moduleModel, $page);
-        $this->eventDispatcher->dispatch($event);
-
-        return $event->item();
-    }
-
-    /**
-     * Executes the tree hook, to dynamically add navigations items to the tree
-     * the navigation is rendered from.
-     *
-     * The callback receives the following parameters:
-     * $this - This navigation module instance
-     */
-    private function dispatchTreeEvent(ModuleModel $moduleModel, PageItems $items): void
-    {
-        if (! $moduleModel->hofff_navigation_disableHooks) {
-            return;
-        }
-
-        $this->eventDispatcher->dispatch(new TreeEvent($moduleModel, $items));
-    }
-
-    /**
-     * Executes the navigation hook.
-     * The callback receives the following parameters:
-     * $this - This navigation module instance
-     * $rootIds - The IDs of the first navigation level
-     *
-     * And should return a new root array or null
-     *
-     * @param list<int> $rootIds The root pages before hook execution
-     *
-     * @return list<int> $rootIds The root pages after hook execution
-     */
-    private function dispatchMenuEvent(ModuleModel $moduleModel, array $rootIds): array
-    {
-        if ($moduleModel->hofff_navigation_disableHooks) {
-            return $rootIds;
-        }
-
-        $event = new MenuEvent($moduleModel, $rootIds);
-        $this->eventDispatcher->dispatch($event);
-
-        return $event->rootIds();
-    }
-
-    /**
      * @param list<int> $rootIds
      *
      * @return list<int>
      */
-    private function getFirstNavigationLevel(ModuleModel $moduleModel, PageItems $items, array $rootIds): array
+    private function getFirstNavigationLevel(array $rootIds): array
     {
-        if ($moduleModel->hofff_navigation_includeStart) {
+        if ($this->moduleModel->hofff_navigation_includeStart) {
             return $rootIds;
         }
 
         // if we do not want to show the root level
         $firstIds = [];
         foreach ($rootIds as $rootId) {
-            if (! isset($items->subItems[$rootId])) {
+            if (! isset($this->items->subItems[$rootId])) {
                 continue;
             }
 
-            $firstIds[] = $items->subItems[$rootId];
+            $firstIds[] = $this->items->subItems[$rootId];
         }
 
         return array_merge(...$firstIds);
@@ -466,5 +414,14 @@ final class NavigationRenderer
         } while ($next['type'] === 'forward');
 
         return $next;
+    }
+
+    private function dispatchEvent(Event $event): void
+    {
+        if (! $this->moduleModel->hofff_navigation_disableHooks) {
+            return;
+        }
+
+        $this->eventDispatcher->dispatch($event);
     }
 }
