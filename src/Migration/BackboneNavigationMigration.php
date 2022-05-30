@@ -7,6 +7,7 @@ namespace Hofff\Contao\Navigation\Migration;
 use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;
 use Doctrine\DBAL\Connection;
+use function is_int;
 
 final class BackboneNavigationMigration extends AbstractMigration
 {
@@ -16,6 +17,7 @@ final class BackboneNavigationMigration extends AbstractMigration
 
     private const NEW_PREFIX = 'hofff_navigation_';
 
+    /** @var array<int|string,string> */
     private const FIELDS = [
         'roots_order',
         'start',
@@ -30,7 +32,7 @@ final class BackboneNavigationMigration extends AbstractMigration
         'addFields',
         'noForwardResolution',
         'showErrorPages',
-        'disableHooks',
+        'disableHooks' => 'disableEvents',
         'currentAsRoot',
         'defineRoots',
         'defineStop',
@@ -53,9 +55,7 @@ final class BackboneNavigationMigration extends AbstractMigration
             return true;
         }
 
-        $affectedFields = $this->determineAffectedFields();
-
-        return $affectedFields !== [];
+        return $this->determineAffectedFields() !== [];
     }
 
     public function run(): MigrationResult
@@ -63,8 +63,8 @@ final class BackboneNavigationMigration extends AbstractMigration
         $this->renameNavigationModules();
 
         $affectedFields = $this->determineAffectedFields();
-        foreach ($affectedFields as $field) {
-            $this->renameField($field);
+        foreach ($affectedFields as $oldName => $newName) {
+            $this->renameField($oldName, $newName);
         }
 
         return $this->createResult(true);
@@ -89,32 +89,36 @@ final class BackboneNavigationMigration extends AbstractMigration
         );
     }
 
-    /** @return list<string> */
+    /** @return array<string,string> */
     private function determineAffectedFields(): array
     {
         $table  = $this->connection->getSchemaManager()->listTableDetails('tl_module');
         $fields = [];
 
-        foreach (self::FIELDS as $field) {
-            if (! $table->hasColumn(self::OLD_PREFIX . $field) || $table->hasColumn(self::NEW_PREFIX . $field)) {
+        foreach (self::FIELDS as $oldName => $newName) {
+            if (is_int($oldName)) {
+                $oldName = $newName;
+            }
+
+            if (! $table->hasColumn(self::OLD_PREFIX . $oldName) || $table->hasColumn(self::NEW_PREFIX . $newName)) {
                 continue;
             }
 
-            $fields[] = $field;
+            $fields[$oldName] = $newName;
         }
 
         return $fields;
     }
 
-    private function renameField(string $field): void
+    private function renameField(string $oldName, string $newName): void
     {
         $this->connection->executeStatement(
             sprintf(
                 'ALTER TABLE tl_module RENAME COLUMN %s%s TO %s%s',
                 self::OLD_PREFIX,
-                $field,
+                $oldName,
                 self::NEW_PREFIX,
-                $field,
+                $newName,
             )
         );
     }

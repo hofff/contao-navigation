@@ -89,8 +89,8 @@ $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_noForwardResolution']
 ];
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_showErrorPages']
     = ['Fehlerseiten anzeigen', 'Fehlerseiten vom Typ "403" und "404" werden in der Navigation angezeigt.'];
-$GLOBALS['TL_LANG']['tl_module']['hofff_navigation_disableHooks']
+$GLOBALS['TL_LANG']['tl_module']['hofff_navigation_disableEvents']
     = [
-    'Hooks deaktivieren',
-    'Deaktiviert das Ausführen der Navigations-Hooks. Kann zu einer besseren Performance führen, wenn Hooks für diese Navigation nicht notwendig sind.',
+    'Events deaktivieren',
+    'Deaktiviert das Ausführen der Navigations-Events. Kann zu einer besseren Performance führen, wenn Events für diese Navigation nicht notwendig sind.',
 ];

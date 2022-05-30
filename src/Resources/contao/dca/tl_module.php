@@ -26,7 +26,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_menu']
     . 'hofff_navigation_addFields;'
     . '{protected_legend:hide},protected;'
     . '{expert_legend:hide},hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages,'
-    . 'hofff_navigation_disableHooks,guests,cssID,space';
+    . 'hofff_navigation_disableEvents,guests,cssID,space';
 
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineRoots']
     = 'hofff_navigation_roots';
@@ -222,7 +222,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showErrorPages'] = [
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_disableHooks'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_disableEvents'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
