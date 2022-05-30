@@ -30,5 +30,10 @@
             <argument type="service" id="database_connection"/>
             <argument type="service" id="security.helper"/>
         </service>
+
+        <service id="Hofff\Contao\Navigation\FrontendModule\ModuleNavigationMenu">
+            <argument type="service" id="Hofff\Contao\Navigation\Items\PageItemsLoader"/>
+            <argument type="service" id="Hofff\Contao\Navigation\Renderer\NavigationRenderer"/>
+        </service>
     </services>
 </container>
