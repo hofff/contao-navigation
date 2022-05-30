@@ -18,7 +18,7 @@ final class Plugin implements BundlePluginInterface
         return [
             BundleConfig::create(HofffContaoNavigationBundle::class)
                 ->setLoadAfter([ContaoCoreBundle::class])
-//                ->setReplace(['backboneit_navigation']),
+                ->setReplace(['backboneit_navigation']),
         ];
     }
 }

@@ -48,6 +48,10 @@
 			"dev-develop": "2.0.x"
 		}
 	},
+	"replace": {
+		"contao-legacy/backboneit_navigation": "self.version",
+		"backboneit/contao-navigation": "self.version"
+	},
 	"autoload": {
 		"psr-4": {
 			"Hofff\\Contao\\Navigation\\": "src/"
