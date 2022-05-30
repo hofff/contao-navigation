@@ -60,7 +60,7 @@ final class PageItemsLoader
         $this->items = new PageItems();
         $this->items->trail = array_flip(isset($GLOBALS['objPage']) ? $GLOBALS['objPage']->trail : []);
 
-        $this->pageQueryBuilder = new PageQueryBuilder($this->connection, $moduleModel);
+        $this->pageQueryBuilder = new PageQueryBuilder($this->connection, $this->security, $moduleModel);
         $this->moduleModel      = $moduleModel;
         $this->stopLevels       = $stopLevels;
         $this->hardLevel        = $hardLevel;
@@ -194,7 +194,7 @@ final class PageItemsLoader
 
     public function isPermissionCheckRequired(): bool
     {
-        return ! BE_USER_LOGGED_IN && ! $this->moduleModel->hofff_navigation_showProtected;
+        return ! $this->security->isGranted('ROLE_USER') && ! $this->moduleModel->hofff_navigation_showProtected;
     }
 
     /**
@@ -215,9 +215,8 @@ final class PageItemsLoader
      */
     public function isPermissionGranted(ModuleModel $model, array $arrPage): bool
     {
-        // TODO: Replace with non deprecated check
         // be users have access everywhere
-        if (BE_USER_LOGGED_IN) {
+        if ($this->security->isGranted('ROLE_USER')) {
             return true;
         }
 

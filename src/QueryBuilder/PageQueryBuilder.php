@@ -9,6 +9,7 @@ use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 
+use Symfony\Component\Security\Core\Security;
 use function array_flip;
 use function array_keys;
 use function array_merge;
@@ -46,6 +47,8 @@ final class PageQueryBuilder
 
     private Connection $connection;
 
+    private Security $security;
+
     private ModuleModel $moduleModel;
     
     private array $fields = [];
@@ -53,10 +56,11 @@ final class PageQueryBuilder
     /** @var array<string,QueryBuilder> */
     private $queries = [];
     
-    public function __construct(Connection $connection, ModuleModel $moduleModel)
+    public function __construct(Connection $connection, Security $security, ModuleModel $moduleModel)
     {
         $this->connection  = $connection;
         $this->moduleModel = $moduleModel;
+        $this->security    = $security;
 
         $this->determineFields();
     }
@@ -200,7 +204,7 @@ final class PageQueryBuilder
 
     public function addPublishedCondition(QueryBuilder $queryBuilder, bool $respectPublished = true): self
     {
-        if (BE_USER_LOGGED_IN || ! $respectPublished) {
+        if (! $respectPublished || $this->security->isGranted('ROLE_USER')) {
             return $this;
         }
 
@@ -258,7 +262,7 @@ final class PageQueryBuilder
             return $this;
         }
 
-        if (FE_USER_LOGGED_IN && ! BE_USER_LOGGED_IN) {
+        if ($this->security->isGranted('ROLE_MEMBER') && ! $this->security->isGranted('ROLE_USER')) {
             $queryBuilder->andWhere('guests != 1');
         }
 
