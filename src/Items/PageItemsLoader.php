@@ -6,6 +6,7 @@ namespace Hofff\Contao\Navigation\Items;
 
 use Contao\FrontendUser;
 use Contao\ModuleModel;
+use Contao\PageModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -61,18 +62,15 @@ final class PageItemsLoader
 
     /**
      * @param list<int> $stopLevels
-     *
-     * @SuppressWarnings(PHPMD.Superglobals)
      */
     public function load(
         ModuleModel $moduleModel,
+        PageModel $currentPage,
         array $stopLevels = [PHP_INT_MAX],
         int $hardLevel = PHP_INT_MAX,
         ?int $activeId = null
     ): PageItems {
-        $this->items        = new PageItems();
-        $this->items->trail = array_flip(isset($GLOBALS['objPage']) ? $GLOBALS['objPage']->trail : []);
-
+        $this->items            = new PageItems($currentPage);
         $this->pageQueryBuilder = new PageQueryBuilder($this->connection, $this->security, $moduleModel);
         $this->moduleModel      = $moduleModel;
         $this->stopLevels       = $stopLevels;
@@ -184,14 +182,12 @@ final class PageItemsLoader
 
     /**
      * @return list<int>
-     *
-     * @SuppressWarnings(PHPMD.Superglobals)
      */
     private function calculateRootIDs(): array
     {
         $rootIds = $this->getRootIds();
         if ($this->moduleModel->hofff_navigation_currentAsRoot) {
-            array_unshift($rootIds, (int) $GLOBALS['objPage']->id);
+            array_unshift($rootIds, (int) $this->items->currentPage->id);
         }
 
         if ($this->moduleModel->hofff_navigation_start > 0) {
@@ -213,7 +209,7 @@ final class PageItemsLoader
 
         $stopLevels = $this->stopLevels;
         if ($stopLevels[0] === 0) { // special case, keep only roots within the current path
-            $path    = array_map('intval', $GLOBALS['objPage']->trail);
+            $path    = array_map('intval', $this->items->currentPage->trail);
             $path[]  = $this->activeId;
             $rootIds = array_values(array_intersect($rootIds, $path));
         }
@@ -294,13 +290,12 @@ final class PageItemsLoader
 
     /**
      * @return list<int>
-     *
-     * @SuppressWarnings(PHPMD.Superglobals)
      */
     private function getRootIds(): array
     {
         if (! $this->moduleModel->hofff_navigation_defineRoots) {
-            return [(int) $GLOBALS['objPage']->rootId];
+            /** @psalm-suppress RedundantCastGivenDocblockType */
+            return [(int) $this->items->currentPage->rootId];
         }
 
         return array_map(

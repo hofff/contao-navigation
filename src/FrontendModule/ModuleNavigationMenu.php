@@ -80,7 +80,7 @@ final class ModuleNavigationMenu extends AbstractFrontendModuleController
             ? null
             : (int) $GLOBALS['objPage']->id;
 
-        $items = $this->loader->load($model, $stopLevels, $hardLevel, $activeId);
+        $items = $this->loader->load($model, $GLOBALS['objPage'], $stopLevels, $hardLevel, $activeId);
 
         $navigation = $this->renderer->render(
             $model,

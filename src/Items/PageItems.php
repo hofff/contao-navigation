@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 namespace Hofff\Contao\Navigation\Items;
 
+use Contao\PageModel;
+
+use function array_flip;
 use function array_key_exists;
+use function array_map;
 
 final class PageItems
 {
+    /** @psalm-readonly */
+    public PageModel $currentPage;
+
     /** @var array<int,bool> */
     public array $roots = [];
 
@@ -17,8 +24,18 @@ final class PageItems
     /** @var array<int,list<int>> */
     public array $subItems = [];
 
-    /** @var list<int> */
-    public array $trail = [];
+    /**
+     * Page trail as flipped array
+     *
+     * @var array<int,int>
+     */
+    private array $trail = [];
+
+    public function __construct(PageModel $currentPage)
+    {
+        $this->currentPage = $currentPage;
+        $this->trail       = array_flip(array_map('intval', $currentPage->trail));
+    }
 
     public function isInTrail(int $pageId): bool
     {
