@@ -2,11 +2,8 @@
 
 namespace Hofff\Contao\Navigation\FrontendModule;
 
-use BackendTemplate;
-use Contao\StringUtil;
-use Environment;
-use FrontendTemplate;
-use Module;
+use Contao\BackendTemplate;
+use Contao\Module;
 
 /**
  * Abstract base class for navigation modules
@@ -14,7 +11,7 @@ use Module;
  * Navigation item array layout:
  * Before rendering:
  * id            => the ID of the current item (optional)
- * isTrail        => whether this item is in the trail path
+ * isInTrail        => whether this item is in the trail path
  * class        => CSS classes
  * title        => page name with Insert-Tags stripped and XML specialchars replaced by their entities
  * pageTitle    => page title with Insert-Tags stripped and XML specialchars replaced by their entities
@@ -44,7 +41,6 @@ use Module;
  */
 abstract class AbstractModuleNavigation extends Module
 {
-
     const HOOK_DISABLE = 0;
     const HOOK_ENABLE = 1;
     const HOOK_FORCE = 2;
@@ -71,20 +67,12 @@ abstract class AbstractModuleNavigation extends Module
     ];
 
     protected $arrFields = []; // the fields to use for navigation tpl
-    protected $strJumpToQuery;
-    protected $strJumpToFallbackQuery;
 
     protected $objStmt; // a reusable stmt object
 
     protected $arrGroups; // set of groups of the current user
-    protected $arrTrail; // same as trail but with current page included
 
     public $varActiveID; // the id of the active page
-
-    public $arrItems    = []; // compiled page datasets
-    public $arrSubitems = []; // ordered IDs of subnavigations
-    /** @Deprecated */
-    public $arrSubpages;
 
     protected $blnTreeHook = false; // execute tree hook?
     protected $blnItemHook = false; // execute item hook?
@@ -96,14 +84,12 @@ abstract class AbstractModuleNavigation extends Module
             return;
         }
 
-        $this->arrSubpages = &$this->arrSubitems; // for deprecated compat
 
         $this->import('Database');
 
-        $this->varActiveID = $this->hofff_navigation_isSitemap || $this->Input->get(
-            'articles'
-        ) ? false : $GLOBALS['objPage']->id;
-        $this->arrTrail    = array_flip($GLOBALS['objPage']->trail);
+        $this->varActiveID = $this->hofff_navigation_isSitemap || $this->Input->get('articles')
+            ? false
+            : $GLOBALS['objPage']->id;
 
         if (FE_USER_LOGGED_IN) {
             $this->import('FrontendUser', 'User');
@@ -132,29 +118,6 @@ abstract class AbstractModuleNavigation extends Module
         }
 
         $this->objStmt = $this->Database->prepare('*');
-
-        $arrConditions = [
-            $this->getQueryPartGuests(),
-            $this->getQueryPartPublish(),
-        ];
-        $strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
-        $strConditions && $strConditions = ' AND (' . $strConditions . ')';
-
-        $this->strJumpToQuery =
-            'SELECT	*
-			FROM	tl_page
-			WHERE	id = ?
-			' . $strConditions . '
-			LIMIT	0, 1';
-
-        $this->strJumpToFallbackQuery =
-            'SELECT	*
-			FROM	tl_page
-			WHERE	pid = ?
-			AND		type = \'regular\'
-			' . $strConditions . '
-			ORDER BY sorting
-			LIMIT	0, 1';
 
         if (! $this->hofff_navigation_disableHooks) {
             $this->blnTreeHook = is_array($GLOBALS['TL_HOOKS']['hofff_navigation_tree']);
@@ -347,235 +310,6 @@ abstract class AbstractModuleNavigation extends Module
     }
 
 
-    /**
-     * Renders the navigation of the given IDs into the navigation template.
-     * Adds CSS classes "first" and "last" to the appropriate navigation item arrays.
-     * If the given array is empty, the empty string is returned.
-     *
-     * @param array   $arrRoots The navigation items arrays
-     * @param integer $intStop  (optional, defaults to PHP_INT_MAX) The soft limit of depth.
-     * @param integer $intHard  (optional, defaults to PHP_INT_MAX) The hard limit of depth.
-     * @param integer $intLevel (optional, defaults to 1) The current level of this navigation layer
-     *
-     * @return string The parsed navigation template, could be empty string.
-     */
-    protected function renderNavigationTree(
-        array $arrIDs,
-        $strTemplate,
-        $arrStop = PHP_INT_MAX,
-        $intHard = PHP_INT_MAX,
-        $intLevel = 1
-    ) {
-        if (! $arrIDs) {
-            return '';
-        }
-
-        $arrStop = (array) $arrStop;
-        $arrStop || $arrStop = [PHP_INT_MAX];
-        $intStop  = $intLevel >= $arrStop[0] ? array_shift($arrStop) : $arrStop[0];
-        $arrItems = [];
-
-        foreach ($arrIDs as $varID) {
-            if (! $this->arrItems[$varID]) {
-                continue;
-            }
-
-            $arrItem = $this->arrItems[$varID];
-
-            if ($varID == $this->varActiveID) {
-                $blnContainsActive = true;
-
-                if ($arrItem['href'] === Environment::get('request')) {
-                    $arrItem['isActive'] = true; // nothing else (active class is set in template)
-                    $arrItem['isTrail']  = false;
-                } else {
-                    $arrItem['isActive'] = false; // nothing else (active class is set in template)
-                    $arrItem['isTrail']  = true;
-                }
-            } else { // do not flatten if/else
-                if ($arrItem['tid'] == $this->varActiveID) {
-                    if ($arrItem['href'] === Environment::get('request')) {
-                        $arrItem['isActive'] = true; // nothing else (active class is set in template)
-                        $arrItem['isTrail']  = false;
-                    } else {
-                        $arrItem['isActive'] = false; // nothing else (active class is set in template)
-                        $arrItem['isTrail']  = true;
-                    }
-                }
-            }
-
-            if ($arrItem['isTrail']) {
-                $arrItem['class'] .= ' trail';
-            }
-
-            if (! isset($this->arrSubitems[$varID])) {
-                $arrItem['class'] .= ' leaf';
-            } elseif ($intLevel >= $intHard) {
-                // we are at hard level, never draw submenu
-                $arrItem['class'] .= ' submenu leaf';
-            } elseif ($intLevel >= $intStop && ! $arrItem['isTrail'] && $varID !== $this->varActiveID && $arrItem['tid'] != $this->varActiveID) {
-                // we are at stop level and not trail and not active, never draw submenu
-                $arrItem['class'] .= ' submenu leaf';
-            } elseif ($this->arrSubitems[$varID]) {
-                $arrItem['class']    .= ' submenu inner';
-                $arrItem['subitems'] = $this->renderNavigationTree(
-                    $this->arrSubitems[$varID],
-                    $arrItem['template'],
-                    $arrStop,
-                    $intHard,
-                    $intLevel + 1
-                );
-            } else { // should never be reached, if no hooks are used
-                $arrItem['class'] .= ' leaf';
-            }
-
-            $arrItems[] = $arrItem;
-        }
-
-        if ($blnContainsActive) {
-            foreach ($arrItems as &$arrItem) {
-                if (! $arrItem['isActive']) {
-                    $arrItem['class'] .= ' sibling';
-                }
-            }
-        }
-
-        $arrItems[0]['class']                    .= ' first';
-        $arrItems[count($arrItems) - 1]['class'] .= ' last';
-
-        foreach ($arrItems as &$arrItem) {
-            $arrItem['class'] = ltrim($arrItem['class']);
-        }
-
-        strlen($strTemplate) || $strTemplate = $this->navigationTpl;
-        $objTemplate = new FrontendTemplate($strTemplate);
-        $objTemplate->setData([
-            'module' => $this->arrData,
-            'level'  => 'level_' . $intLevel,
-            'items'  => $arrItems,
-            'type'   => get_class($this),
-        ]);
-
-        return $objTemplate->parse();
-    }
-
-    /**
-     * Compiles a navigation item array from a page dataset with the given subnavi
-     *
-     * @param array $arrPage The page dataset as an array
-     *
-     * @return array The compiled navigation item array
-     */
-    public function compileNavigationItem(
-        array $arrPage,
-        $blnForwardResolution = true,
-        $intItemHook = self::HOOK_DISABLE
-    ) {
-        // fallback for dataset field collisions
-        $arrPage['_title']       = $arrPage['title'];
-        $arrPage['_pageTitle']   = $arrPage['pageTitle'];
-        $arrPage['_target']      = $arrPage['target'];
-        $arrPage['_description'] = $arrPage['description'];
-
-        $arrPage['link']        = $arrPage['_title'];
-        $arrPage['class']       = $arrPage['cssClass'] . ' ' . $arrPage['type'];
-        $arrPage['title']       = specialchars($arrPage['_title'], true);
-        $arrPage['pageTitle']   = specialchars($arrPage['_pageTitle'], true);
-        $arrPage['target']      = ''; // overwrite DB value
-        $arrPage['nofollow']    = strncmp($arrPage['robots'], 'noindex', 7) === 0;
-        $arrPage['description'] = str_replace(["\n", "\r"], [' ', ''], $arrPage['_description']);
-        $arrPage['isTrail']     = isset($this->arrTrail[$arrPage['id']]);
-
-        switch ($arrPage['type']) {
-            case 'forward':
-                if ($blnForwardResolution) {
-                    if ($arrPage['jumpTo']) {
-                        $intFallbackSearchID = $arrPage['id'];
-                        $intJumpToID         = $arrPage['jumpTo'];
-                        do {
-                            $objNext = $this->objStmt->prepare($this->strJumpToQuery)->execute($intJumpToID);
-
-                            if (! $objNext->numRows) {
-                                $objNext = $this->objStmt->prepare($this->strJumpToFallbackQuery)->execute(
-                                    $intFallbackSearchID
-                                );
-                                break;
-                            }
-
-                            $intFallbackSearchID = $intJumpToID;
-                            $intJumpToID         = $objNext->jumpTo;
-                        } while ($objNext->type == 'forward');
-                    } else {
-                        $objNext = $this->objStmt->prepare($this->strJumpToFallbackQuery)->execute($arrPage['id']);
-                    }
-
-                    if (! $objNext->numRows) {
-                        $arrPage['href'] = $this->generatePageUrl($arrPage);
-                    } elseif ($objNext->type == 'redirect') {
-                        $arrPage['href']   = $this->encodeEmailURL($objNext->url);
-                        $arrPage['target'] = $objNext->target ? LINK_NEW_WINDOW : '';
-                    } else {
-                        $arrPage['tid']  = $objNext->id;
-                        $arrPage['href'] = $this->generatePageUrl($objNext->row());
-                    }
-                } else {
-                    $arrPage['tid']  = $arrPage['jumpTo'];
-                    $arrPage['href'] = $this->generatePageUrl($arrPage);
-                }
-                break;
-
-            case 'redirect':
-                $arrPage['href']   = $this->encodeEmailURL($arrPage['url']);
-                $arrPage['target'] = $arrPage['_target'] ? LINK_NEW_WINDOW : '';
-                break;
-
-            case 'root':
-                if (! $arrPage['dns']
-                    || preg_replace('/^www\./', '', $arrPage['dns']) == preg_replace(
-                        '/^www\./',
-                        '',
-                        $this->Environment->httpHost
-                    )) {
-                    $arrPage['href'] = $this->Environment->base;
-                    break; // we only break on root pages; pages in different roots should be handled by DomainLink extension
-                }
-            // do not break
-
-            default:
-            case 'regular':
-            case 'error_401':
-            case 'error_403':
-            case 'error_404':
-                $arrPage['href'] = $this->generatePageUrl($arrPage);
-                break;
-        }
-
-        if ($intItemHook != self::HOOK_DISABLE) {
-            $this->executeItemHook($arrPage, $intItemHook == self::HOOK_FORCE);
-        }
-
-        return $arrPage;
-    }
-
-    /**
-     * Utility method of compileNavigationItem.
-     *
-     * If the given URL starts with "mailto:", the E-Mail is encoded,
-     * otherwise nothing is done.
-     *
-     * @param string $strHref The URL to check and possibly encode
-     *
-     * @return string The modified URL
-     */
-    public function encodeEmailURL($strHref)
-    {
-        if (strncasecmp($strHref, 'mailto:', 7) !== 0) {
-            return $strHref;
-        }
-
-        return StringUtil::encodeEmail($strHref);
-    }
-
     public function isPermissionCheckRequired()
     {
         return ! BE_USER_LOGGED_IN && ! $this->hofff_navigation_showProtected;
@@ -609,37 +343,6 @@ abstract class AbstractModuleNavigation extends Module
 
         // check if the current user is not in any group, which is allowed to access the current page
         return ! array_intersect($this->arrGroups, deserialize($arrPage['groups'], true));
-    }
-
-    /**
-     * Utility method.
-     *
-     * THIS IS NOT THE OPPOSITE OF ::isPermissionDenied()!
-     *
-     * Checks if the current user has permission to view the page of the given
-     * page dataset, in regards to the current navigation settings and the
-     * permission requirements of the page.
-     *
-     * Context property: hofff_navigation_showProtected
-     *
-     * @param array $arrPage The page dataset of the current page, with at least
-     *                       groups and protected attributes set.
-     *
-     * @return boolean If the permission is granted true, otherwise false.
-     */
-    public function isPermissionGranted($arrPage)
-    {
-        if (BE_USER_LOGGED_IN) // be users have access everywhere
-        {
-            return true;
-        }
-
-        if ($this->hofff_navigation_showProtected) // protection is ignored
-        {
-            return true;
-        }
-
-        return ! $this->isPermissionDenied($arrPage);
     }
 
     /**
@@ -723,62 +426,5 @@ abstract class AbstractModuleNavigation extends Module
         $objTemplate->href     = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id=' . $this->id;
 
         return $objTemplate->parse();
-    }
-
-    public function addForwardItem($varID, $varTargetID)
-    {
-        if (is_array($this->arrItems[$varID])) {
-            $this->arrItems[$varID]['href'] = $this->arrItems[$varTargetID]['href'];
-        } else {
-            $this->arrItems[$varID]       = $this->arrItems[$varTargetID];
-            $this->arrItems[$varID]['id'] = $varID;
-            unset($this->arrItems[$varID]['pid']);
-        }
-        $this->arrItems[$varID]['tid'] = $varTargetID;
-    }
-
-    /**
-     * Executes the tree hook, to dynamically add navigations items to the tree
-     * the navigation is rendered from.
-     *
-     * The callback receives the following parameters:
-     * $this - This navigation module instance
-     *
-     * @param array $arrRootIDs The root pages before hook execution
-     *
-     * @return array $arrRootIDs The root pages after hook execution
-     */
-    protected function executeTreeHook($blnForce = false)
-    {
-        if (! $blnForce && ! $this->blnTreeHook) {
-            return;
-        }
-
-        foreach ((array) $GLOBALS['TL_HOOKS']['hofff_navigation_tree'] as $arrCallback) {
-            $this->import($arrCallback[0]);
-            $this->{$arrCallback[0]}->{$arrCallback[1]}($this);
-        }
-    }
-
-    protected function executeItemHook(array &$arrPage, $blnForce = false)
-    {
-        if (! $blnForce && ! $this->blnItemHook) {
-            return;
-        }
-
-        foreach ((array) $GLOBALS['TL_HOOKS']['hofff_navigation_item'] as $arrCallback) {
-            $this->import($arrCallback[0]);
-            $this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrPage);
-        }
-    }
-
-    private function generatePageUrl(array $arrPage)
-    {
-        $pageModel = \Contao\PageModel::findByPk($arrPage['id']);
-        if ($pageModel) {
-            return $pageModel->getFrontendUrl();
-        }
-
-        return null;
     }
 }

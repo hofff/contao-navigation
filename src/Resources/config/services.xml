@@ -15,5 +15,18 @@
             <argument type="service" id="database_connection"/>
             <tag name="contao.migration"/>
         </service>
+
+        <service id="Hofff\Contao\Navigation\Items\PageItemsLoader" public="true">
+            <argument type="service" id="database_connection"/>
+            <argument type="service" id="security.helper"/>
+            <argument type="service" id="Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder"/>
+        </service>
+
+        <service id="Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder"/>
+
+        <service id="Hofff\Contao\Navigation\Renderer\NavigationRenderer" public="true">
+            <argument type="service" id="database_connection"/>
+            <argument type="service" id="Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder"/>
+        </service>
     </services>
 </container>

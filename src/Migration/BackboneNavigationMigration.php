@@ -73,7 +73,7 @@ final class BackboneNavigationMigration extends AbstractMigration
     private function hasBackboneItNavigationModules(): bool
     {
         $result = $this->connection->executeQuery(
-            'SELECT count(id) FROM tl_navigation WHERE type=:type',
+            'SELECT count(id) FROM tl_module WHERE type=:type',
             ['type' => 'backboneit_navigation_menu']
         );
 
