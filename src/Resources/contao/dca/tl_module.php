@@ -27,55 +27,6 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
     . '{protected_legend:hide},protected;'
     . '{expert_legend:hide},hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages,hofff_navigation_disableHooks,guests,cssID,space';
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_chain']
-    = '{title_legend},name,type,hofff_navigation_rootSelectionType';
-
-$GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chainsingle']
-    = '{title_legend},name,headline,type;'
-    . '{backboneit_navigation_root_legend},'
-    . 'backboneit_navigation_rootSelectionType,'
-    . 'backboneit_navigation_roots,'
-    . 'backboneit_navigation_respectPublish;'
-    . '{backboneit_navigation_legend},'
-    . 'backboneit_navigation_chainDirections,'
-    . 'backboneit_navigation_showHidden,backboneit_navigation_showProtected,'
-    . 'backboneit_navigation_showGuests;'
-    . '{template_legend:hide},navigationTpl,'
-    . 'backboneit_navigation_addFields;'
-    . '{protected_legend:hide},protected;'
-    . '{expert_legend:hide},backboneit_navigation_noForwardResolution,backboneit_navigation_showErrorPages,backboneit_navigation_disableHooks,guests,cssID,space';
-
-$GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chainsubtrees']
-    = '{title_legend},name,headline,type;'
-    . '{backboneit_navigation_root_legend},'
-    . 'backboneit_navigation_rootSelectionType,'
-    . 'backboneit_navigation_roots,'
-    . 'backboneit_navigation_start,backboneit_navigation_includeStart,'
-    . 'backboneit_navigation_respectHidden,backboneit_navigation_respectPublish,'
-    . 'backboneit_navigation_respectGuests;'
-    . '{backboneit_navigation_legend},'
-    . 'backboneit_navigation_chainDirections,'
-    . 'backboneit_navigation_defineDepth,'
-    . 'backboneit_navigation_showHidden,backboneit_navigation_showProtected;'
-    . 'backboneit_navigation_showGuests;'
-    . '{template_legend:hide},navigationTpl,'
-    . 'backboneit_navigation_addFields;'
-    . '{protected_legend:hide},protected;'
-    . '{expert_legend:hide},backboneit_navigation_noForwardResolution,backboneit_navigation_showErrorPages,backboneit_navigation_disableHooks,guests,cssID,space';
-
-$GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chaincurrent']
-    = '{title_legend},name,headline,type;'
-    . '{backboneit_navigation_root_legend},'
-    . 'backboneit_navigation_rootSelectionType,'
-    . '{backboneit_navigation_legend},'
-    . 'backboneit_navigation_chainDirections,'
-    . 'backboneit_navigation_showHidden,backboneit_navigation_showProtected;'
-    . 'backboneit_navigation_showGuests;'
-    . '{template_legend:hide},navigationTpl,'
-    . 'backboneit_navigation_addFields;'
-    . '{protected_legend:hide},protected;'
-    . '{expert_legend:hide},backboneit_navigation_noForwardResolution,backboneit_navigation_showErrorPages,backboneit_navigation_disableHooks,guests,cssID,space';
-
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineRoots']
     = 'backboneit_navigation_roots';
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_includeStart']
@@ -85,8 +36,6 @@ $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineStop
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineHard']
     = 'backboneit_navigation_hard';
 
-
-/***** GENERAL FIELDS *********************************************************/
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = [
     'exclude'   => true,
@@ -284,9 +233,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_disableHooks'] 
         'default' => '',
     ],
 ];
-
-
-/***** NAVIGATION MENU ********************************************************/
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_currentAsRoot'] = [
     'exclude'   => true,
