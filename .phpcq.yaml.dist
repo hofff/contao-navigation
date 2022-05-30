@@ -3,7 +3,6 @@ phpcq:
     - https://phpcq.github.io/repository/repository.json
   directories:
     - src
-    - tests
   artifact: .phpcq/build
 
   plugins:
@@ -29,9 +28,6 @@ phpcq:
       version: ^1.0
       signed: false
     composer-normalize:
-      version: ^1.0
-      signed: false
-    phpunit:
       version: ^1.0
       signed: false
   trusted-keys:
@@ -66,7 +62,6 @@ tasks:
     - phpmd
     - phpcs
     - psalm
-    - phpunit
 
   default:
     - verify

@@ -14,3 +14,4 @@
 !/phpunit.xml.dist
 !/psalm.xml
 !/.github
+!/.composer-require-checker.json
