@@ -26,7 +26,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
         $arrRootIDs  = $this->executeMenuHook($arrRootIDs);
         $arrFirstIDs = $this->getFirstNavigationLevel($arrRootIDs);
 
-        if ($this->backboneit_navigation_hideSingleLevel) {
+        if ($this->hofff_navigation_hideSingleLevel) {
             foreach ($arrFirstIDs as $id) {
                 if ($this->arrSubitems[$id]) {
                     $hasMultipleLevels = true;
@@ -48,11 +48,11 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
 
     public function getStop()
     {
-        if (! $this->backboneit_navigation_defineStop) {
+        if (! $this->hofff_navigation_defineStop) {
             return [PHP_INT_MAX];
         }
         $intMin = -1;
-        foreach (array_map('intval', explode(',', $this->backboneit_navigation_stop)) as $intLevel) {
+        foreach (array_map('intval', explode(',', $this->hofff_navigation_stop)) as $intLevel) {
             if ($intLevel > $intMin) {
                 $arrStop[] = $intMin = $intLevel;
             }
@@ -63,7 +63,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
 
     public function getHard()
     {
-        return $this->backboneit_navigation_defineHard ? $this->backboneit_navigation_hard : PHP_INT_MAX;
+        return $this->hofff_navigation_defineHard ? $this->hofff_navigation_hard : PHP_INT_MAX;
     }
 
     protected function compile()
@@ -71,50 +71,50 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
         $this->Template->request = $this->getIndexFreeRequest(true);
         $this->Template->skipId  = 'skipNavigation' . $this->id;
         $this->Template->items   = $this->strNavigation;
-        $this->backboneit_navigation_addLegacyCss && $this->Template->legacyClass = ' mod_navigation';
+        $this->hofff_navigation_addLegacyCss && $this->Template->legacyClass = ' mod_navigation';
     }
 
     protected function calculateRootIDs($arrStop = PHP_INT_MAX)
     {
-        $arrRootIDs = $this->backboneit_navigation_defineRoots
+        $arrRootIDs = $this->hofff_navigation_defineRoots
             ? $this->getRootIds()
             : [$GLOBALS['objPage']->rootId];
 
-        $this->backboneit_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
+        $this->hofff_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
 
         $arrConditions = [
             $this->getQueryPartHidden(
-                ! $this->backboneit_navigation_respectHidden,
-                $this->backboneit_navigation_isSitemap
+                ! $this->hofff_navigation_respectHidden,
+                $this->hofff_navigation_isSitemap
             ),
         ];
-        $this->backboneit_navigation_respectGuests && $arrConditions[] = $this->getQueryPartGuests();
-        $this->backboneit_navigation_respectPublish && $arrConditions[] = $this->getQueryPartPublish();
+        $this->hofff_navigation_respectGuests && $arrConditions[] = $this->getQueryPartGuests();
+        $this->hofff_navigation_respectPublish && $arrConditions[] = $this->getQueryPartPublish();
         $strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
 
-        if ($this->backboneit_navigation_includeStart) {
+        if ($this->hofff_navigation_includeStart) {
             $arrStartConditions = [
                 $this->getQueryPartHidden(
-                    $this->backboneit_navigation_showHiddenStart,
-                    $this->backboneit_navigation_isSitemap
+                    $this->hofff_navigation_showHiddenStart,
+                    $this->hofff_navigation_isSitemap
                 ),
                 $this->getQueryPartPublish(),
-                $this->getQueryPartErrorPages($this->backboneit_navigation_showErrorPages),
+                $this->getQueryPartErrorPages($this->hofff_navigation_showErrorPages),
             ];
-            ! $this->backboneit_navigation_showGuests && $arrStartConditions[] = $this->getQueryPartGuests();
+            ! $this->hofff_navigation_showGuests && $arrStartConditions[] = $this->getQueryPartGuests();
             $strStartConditions = implode(' AND ', array_filter($arrStartConditions, 'strlen'));
         } else {
             $strStartConditions = $strConditions;
         }
 
-        if ($this->backboneit_navigation_start > 0) {
+        if ($this->hofff_navigation_start > 0) {
             $arrRootIDs = $this->filterPages($arrRootIDs, $strConditions);
-            for ($i = 1, $n = $this->backboneit_navigation_start; $i < $n; $i++) {
+            for ($i = 1, $n = $this->hofff_navigation_start; $i < $n; $i++) {
                 $arrRootIDs = $this->getNextLevel($arrRootIDs, $strConditions);
             }
             $arrRootIDs = $this->getNextLevel($arrRootIDs, $strStartConditions);
-        } elseif ($this->backboneit_navigation_start < 0) {
-            for ($i = 0, $n = -$this->backboneit_navigation_start; $i < $n; $i++) {
+        } elseif ($this->hofff_navigation_start < 0) {
+            for ($i = 0, $n = -$this->hofff_navigation_start; $i < $n; $i++) {
                 $arrRootIDs = $this->getPrevLevel($arrRootIDs);
             }
             $arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
@@ -145,7 +145,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
             $this->arrItems[$intRootID] = (array) $this->arrItems[$intRootID];
         }
 
-        if ($this->backboneit_navigation_includeStart) {
+        if ($this->hofff_navigation_includeStart) {
             $arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard, 2);
 
             $objRoots = $this->objStmt->query(
@@ -162,7 +162,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
             $arrFetched = $this->fetchItems($arrRootIDs, $arrStop, $intHard);
         }
 
-        $blnForwardResolution = ! $this->backboneit_navigation_noForwardResolution;
+        $blnForwardResolution = ! $this->hofff_navigation_noForwardResolution;
         foreach ($arrFetched as $intID => $_) {
             $this->arrItems[$intID] = $this->compileNavigationItem(
                 $this->arrItems[$intID],
@@ -194,11 +194,11 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
         }
 
         $arrConditions = [
-            $this->getQueryPartHidden($this->backboneit_navigation_showHidden, $this->backboneit_navigation_isSitemap),
+            $this->getQueryPartHidden($this->hofff_navigation_showHidden, $this->hofff_navigation_isSitemap),
             $this->getQueryPartPublish(),
-            $this->getQueryPartErrorPages($this->backboneit_navigation_showErrorPages),
+            $this->getQueryPartErrorPages($this->hofff_navigation_showErrorPages),
         ];
-        ! $this->backboneit_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
+        ! $this->hofff_navigation_showGuests && $arrConditions[] = $this->getQueryPartGuests();
         $strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
         $strConditions && $strConditions = 'AND (' . $strConditions . ')';
 
@@ -276,7 +276,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
      */
     protected function executeMenuHook(array $arrRootIDs, $blnForce = false)
     {
-        if (! $blnForce && $this->backboneit_navigation_disableHooks) {
+        if (! $blnForce && $this->hofff_navigation_disableHooks) {
             return $arrRootIDs;
         }
         if (! is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_menu'])) {

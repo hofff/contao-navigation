@@ -10,5 +10,10 @@
         <service id="Hofff\Contao\Navigation\EventListener\Dca\NavigationDcaListener">
             <argument type="service" id="contao.framework"/>
         </service>
+
+        <service id="Hofff\Contao\Navigation\Migration\BackboneNavigationMigration">
+            <argument type="service" id="database_connection"/>
+            <tag name="contao.migration"/>
+        </service>
     </services>
 </container>

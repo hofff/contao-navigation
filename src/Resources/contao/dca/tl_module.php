@@ -2,33 +2,33 @@
 
 use Doctrine\DBAL\Types\Types;
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_rootSelectionType';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_defineRoots';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_includeStart';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_defineStop';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_defineHard';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'backboneit_navigation_defineDepth';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_rootSelectionType';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineRoots';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_includeStart';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineStop';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineHard';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineDepth';
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
     = '{title_legend},name,headline,type;'
-    . '{backboneit_navigation_root_legend},'
-    . 'backboneit_navigation_currentAsRoot,backboneit_navigation_defineRoots,'
-    . 'backboneit_navigation_start,backboneit_navigation_respectHidden,'
-    . 'backboneit_navigation_respectPublish,backboneit_navigation_respectGuests;'
-    . '{backboneit_navigation_legend},'
-    . 'backboneit_navigation_includeStart,'
-    . 'backboneit_navigation_defineStop,'
-    . 'backboneit_navigation_defineHard,'
-    . 'backboneit_navigation_showHidden,backboneit_navigation_showProtected,'
-    . 'backboneit_navigation_showGuests,backboneit_navigation_isSitemap,'
-    . 'backboneit_navigation_hideSingleLevel;'
-    . '{template_legend:hide},navigationTpl,backboneit_navigation_addLegacyCss,'
-    . 'backboneit_navigation_addFields;'
+    . '{hofff_navigation_root_legend},'
+    . 'hofff_navigation_currentAsRoot,hofff_navigation_defineRoots,'
+    . 'hofff_navigation_start,hofff_navigation_respectHidden,'
+    . 'hofff_navigation_respectPublish,hofff_navigation_respectGuests;'
+    . '{hofff_navigation_legend},'
+    . 'hofff_navigation_includeStart,'
+    . 'hofff_navigation_defineStop,'
+    . 'hofff_navigation_defineHard,'
+    . 'hofff_navigation_showHidden,hofff_navigation_showProtected,'
+    . 'hofff_navigation_showGuests,hofff_navigation_isSitemap,'
+    . 'hofff_navigation_hideSingleLevel;'
+    . '{template_legend:hide},navigationTpl,hofff_navigation_addLegacyCss,'
+    . 'hofff_navigation_addFields;'
     . '{protected_legend:hide},protected;'
-    . '{expert_legend:hide},backboneit_navigation_noForwardResolution,backboneit_navigation_showErrorPages,backboneit_navigation_disableHooks,guests,cssID,space';
+    . '{expert_legend:hide},hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages,hofff_navigation_disableHooks,guests,cssID,space';
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chain']
-    = '{title_legend},name,type,backboneit_navigation_rootSelectionType';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_chain']
+    = '{title_legend},name,type,hofff_navigation_rootSelectionType';
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_chainsingle']
     = '{title_legend},name,headline,type;'

@@ -99,7 +99,7 @@ abstract class AbstractModuleNavigation extends Module
 
         $this->import('Database');
 
-        $this->varActiveID = $this->backboneit_navigation_isSitemap || $this->Input->get(
+        $this->varActiveID = $this->hofff_navigation_isSitemap || $this->Input->get(
             'articles'
         ) ? false : $GLOBALS['objPage']->id;
         $this->arrTrail    = array_flip($GLOBALS['objPage']->trail);
@@ -113,7 +113,7 @@ abstract class AbstractModuleNavigation extends Module
             $this->navigationTpl = 'nav_default';
         }
 
-        $arrFields = deserialize($this->backboneit_navigation_addFields, true);
+        $arrFields = deserialize($this->hofff_navigation_addFields, true);
 
         if (count($arrFields) > 10) {
             $this->arrFields[] = '*';
@@ -155,7 +155,7 @@ abstract class AbstractModuleNavigation extends Module
 			ORDER BY sorting
 			LIMIT	0, 1';
 
-        if (! $this->backboneit_navigation_disableHooks) {
+        if (! $this->hofff_navigation_disableHooks) {
             $this->blnTreeHook = is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_tree']);
             $this->blnItemHook = is_array($GLOBALS['TL_HOOKS']['bbit_navi_item']);
         }
@@ -581,7 +581,7 @@ abstract class AbstractModuleNavigation extends Module
 
     public function isPermissionCheckRequired()
     {
-        return ! BE_USER_LOGGED_IN && ! $this->backboneit_navigation_showProtected;
+        return ! BE_USER_LOGGED_IN && ! $this->hofff_navigation_showProtected;
     }
 
     /**
@@ -623,7 +623,7 @@ abstract class AbstractModuleNavigation extends Module
      * page dataset, in regards to the current navigation settings and the
      * permission requirements of the page.
      *
-     * Context property: backboneit_navigation_showProtected
+     * Context property: hofff_navigation_showProtected
      *
      * @param array $arrPage The page dataset of the current page, with at least
      *                       groups and protected attributes set.
@@ -637,7 +637,7 @@ abstract class AbstractModuleNavigation extends Module
             return true;
         }
 
-        if ($this->backboneit_navigation_showProtected) // protection is ignored
+        if ($this->hofff_navigation_showProtected) // protection is ignored
         {
             return true;
         }

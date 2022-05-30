@@ -17,7 +17,7 @@ class NavigationDcaListener
     }
 
     /**
-     * @Callback(table="tl_module", target="fields.backboneit_navigation_addFields.options")
+     * @Callback(table="tl_module", target="fields.hofff_navigation_addFields.options")
      *
      * @return array<string,string>
      */
@@ -41,7 +41,7 @@ class NavigationDcaListener
     /**
      * @param mixed $value
      *
-     * @Callback(table="tl_module", target="fields.backboneit_navigation_stop.save")
+     * @Callback(table="tl_module", target="fields.hofff_navigation_stop.save")
      */
     public function saveStop($value): string
     {
