@@ -129,21 +129,21 @@ final class PageItemsLoader
         $stopLevels = $this->stopLevels;
 
         while ($parentIds) {
-            // if $arrEndPIDs == $arrPIDs the next $arrPIDs will be empty -> leave loop
+            // if $endParentIds == $parentIds the next $parentIds will be empty -> leave loop
             if ($level > $this->hardLevel) {
-                $arrEndPIDs = $parentIds;
+                $endParentIds = $parentIds;
             } elseif ($level > $stopLevels[0]) {
                 count($stopLevels) > 1 && array_shift($stopLevels);
-                $arrEndPIDs = [];
-                foreach ($parentIds as $intPID) {
-                    if ($this->items->isInTrail((int) $intPID)) {
+                $endParentIds = [];
+                foreach ($parentIds as $parentId) {
+                    if ($this->items->isInTrail((int) $parentId)) {
                         continue;
                     }
 
-                    $arrEndPIDs[$intPID] = true;
+                    $endParentIds[$parentId] = true;
                 }
             } else {
-                $arrEndPIDs = [];
+                $endParentIds = [];
             }
 
             /** @psalm-var Result $result */
@@ -163,7 +163,7 @@ final class PageItemsLoader
                     continue;
                 }
 
-                if (! isset($arrEndPIDs[$page['pid']])) {
+                if (! isset($endParentIds[$page['pid']])) {
                     if (! in_array((int) $page['id'], $this->items->subItems[(int) $page['pid']] ?? [])) {
                         $this->items->subItems[(int) $page['pid']][] = (int) $page['id']; // for order of items
                     }
@@ -322,7 +322,7 @@ final class PageItemsLoader
      * this navigations settings.
      * Maintains relative order of the input array.
      *
-     * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+     * For performance reason $pageIds is NOT "intval"ed. Make sure $pageIds
      * contains no hazardous code.
      *
      * @param list<int> $pageIds An array of page IDs to filter
@@ -352,50 +352,50 @@ final class PageItemsLoader
             );
         } // restore order
 
-        $arrPIDs  = [];
-        $arrValid = [];
-        while ($arrPage = $result->fetchAssociative()) {
-            if ($this->isPermissionDenied($arrPage)) {
+        $parentIds = [];
+        $valid     = [];
+        while ($page = $result->fetchAssociative()) {
+            if ($this->isPermissionDenied($page)) {
                 continue;
             }
 
-            $arrValid[] = $arrPage['id'];
+            $valid[] = $page['id'];
             /*
              * do not remove the protected check! permission denied checks for
              * more, but we need to know, if we must recurse to parent pages,
              * for permission check, which must not be done, when this page
              * defines access rights.
              */
-            if ($arrPage['protected'] || $arrPage['pid'] === 0) {
+            if ($page['protected'] || $page['pid'] === 0) {
                 continue;
             }
 
-            $arrPIDs[$arrPage['pid']][] = $arrPage['id'];
+            $parentIds[$page['pid']][] = $page['id'];
         }
 
         // exclude pages which are in a protected path
-        while (count($arrPIDs)) {
-            $arrIDs  = $arrPIDs;
-            $arrPIDs = [];
+        while (count($parentIds)) {
+            $currentIds = $parentIds;
+            $parentIds  = [];
 
-            $query = $this->pageQueryBuilder->createPageInformationQuery(array_keys($arrIDs));
+            $query = $this->pageQueryBuilder->createPageInformationQuery(array_keys($currentIds));
             /** @psalm-var Result $result */
             $result = $query->execute();
 
-            while ($arrPage = $result->fetchAssociative()) {
-                if (! $arrPage['protected']) { // do not remove, see above
-                    if ($arrPage['pid'] !== 0) {
-                        $arrPIDs[$arrPage['pid']] = isset($arrPIDs[$arrPage['pid']])
-                            ? array_merge($arrPIDs[$arrPage['pid']], $arrIDs[$arrPage['id']])
-                            : $arrIDs[$arrPage['id']];
+            while ($page = $result->fetchAssociative()) {
+                if (! $page['protected']) { // do not remove, see above
+                    if ($page['pid'] !== 0) {
+                        $parentIds[$page['pid']] = isset($parentIds[$page['pid']])
+                            ? array_merge($parentIds[$page['pid']], $currentIds[$page['id']])
+                            : $currentIds[$page['id']];
                     }
-                } elseif ($this->isPermissionDenied($arrPage)) {
-                    $arrValid = array_diff($arrValid, $arrIDs[$arrPage['id']]);
+                } elseif ($this->isPermissionDenied($page)) {
+                    $valid = array_diff($valid, $currentIds[$page['id']]);
                 }
             }
         }
 
-        return array_values(array_intersect($pageIds, $arrValid));
+        return array_values(array_intersect($pageIds, $valid));
     }
 
     /**
@@ -403,7 +403,7 @@ final class PageItemsLoader
      * given conditions, which are added to the WHERE clause of the query.
      * Maintains relative order of the input array.
      *
-     * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+     * For performance reason $pageIds is NOT "intval"ed. Make sure $pageIds
      * contains no hazardous code.
      *
      * @param list<int> $pageIds An array of parent IDs
@@ -436,12 +436,12 @@ final class PageItemsLoader
         }
 
         $nextLevel = [];
-        foreach ($pageIds as $intID) {
-            if (! isset($next[$intID])) {
+        foreach ($pageIds as $pageId) {
+            if (! isset($next[$pageId])) {
                 continue;
             }
 
-            $nextLevel = array_merge($nextLevel, $next[$intID]);
+            $nextLevel = array_merge($nextLevel, $next[$pageId]);
         }
 
         return $nextLevel;
@@ -453,7 +453,7 @@ final class PageItemsLoader
      * Maintains relative order of the input array and merges subsequent parent
      * IDs.
      *
-     * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+     * For performance reason $pageIds is NOT "intval"ed. Make sure $pageIds
      * contains no hazardous code.
      *
      * @param list<int> $pageIds An array of child IDs

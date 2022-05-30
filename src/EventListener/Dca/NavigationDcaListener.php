@@ -57,12 +57,12 @@ final class NavigationDcaListener
         $minimum = -1;
         $stop    = [];
 
-        foreach (array_map('intval', explode(',', $value)) as $intLevel) {
-            if ($intLevel <= $minimum) {
+        foreach (array_map('intval', explode(',', $value)) as $level) {
+            if ($level <= $minimum) {
                 continue;
             }
 
-            $stop[] = $minimum = $intLevel;
+            $stop[] = $minimum = $level;
         }
 
         return implode(',', $stop);

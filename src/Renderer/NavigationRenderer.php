@@ -53,7 +53,7 @@ final class NavigationRenderer
      *
      * @param list<int> $itemIds      The navigation items arrays
      * @param list<int> $stopLimit    (optional, defaults to PHP_INT_MAX) The soft limit of depth.
-     * @param int       $intHard      (optional, defaults to PHP_INT_MAX) The hard limit of depth.
+     * @param int       $hardLevel    (optional, defaults to PHP_INT_MAX) The hard limit of depth.
      * @param int       $currentLevel (optional, defaults to 1) The current level of this navigation layer
      *
      * @return string The parsed navigation template, could be empty string.
@@ -63,7 +63,7 @@ final class NavigationRenderer
         PageItems $items,
         array $itemIds,
         array $stopLimit = [PHP_INT_MAX],
-        int $intHard = PHP_INT_MAX,
+        int $hardLevel = PHP_INT_MAX,
         ?int $activeId = null,
         int $currentLevel = 1
     ): string {
@@ -96,7 +96,9 @@ final class NavigationRenderer
             array_shift($stopLimit); // special case renderNavigationTree cannot handle
         }
 
-        return trim($this->renderTree($moduleModel, $items, $firstIds, $stopLimit, $intHard, $currentLevel, $activeId));
+        return trim(
+            $this->renderTree($moduleModel, $items, $firstIds, $stopLimit, $hardLevel, $currentLevel, $activeId)
+        );
     }
 
     /**
@@ -112,7 +114,7 @@ final class NavigationRenderer
         PageItems $items,
         array $itemIds,
         array $stopLimit = [PHP_INT_MAX],
-        int $intHard = PHP_INT_MAX,
+        int $hardLevel = PHP_INT_MAX,
         int $currentLevel = 1,
         ?int $activeId = null
     ): string {
@@ -120,7 +122,7 @@ final class NavigationRenderer
             return '';
         }
 
-        $intStop        = $currentLevel >= $stopLimit[0] ? array_shift($stopLimit) : $stopLimit[0];
+        $stopLevel      = $currentLevel >= $stopLimit[0] ? array_shift($stopLimit) : $stopLimit[0];
         $renderedItems  = [];
         $containsActive = false;
 
@@ -159,11 +161,11 @@ final class NavigationRenderer
 
             if (! isset($items->subItems[$itemId])) {
                 $item['class'] .= ' leaf';
-            } elseif ($currentLevel >= $intHard) {
+            } elseif ($currentLevel >= $hardLevel) {
                 // we are at hard level, never draw submenu
                 $item['class'] .= ' submenu leaf';
             } elseif (
-                $currentLevel >= $intStop
+                $currentLevel >= $stopLevel
                 && ! $item['isInTrail'] && $itemId !== $activeId
                 && $item['tid'] !== $activeId
             ) {
@@ -176,7 +178,7 @@ final class NavigationRenderer
                     $items,
                     $items->subItems[$itemId] ?? [],
                     $stopLimit,
-                    $intHard,
+                    $hardLevel,
                     $currentLevel + 1
                 );
             } else { // should never be reached, if no hooks are used
@@ -220,7 +222,7 @@ final class NavigationRenderer
 
     private function compileTree(ModuleModel $moduleModel, PageItems $items): void
     {
-        $blnForwardResolution = ! $moduleModel->hofff_navigation_noForwardResolution;
+        $forwardResolution = ! $moduleModel->hofff_navigation_noForwardResolution;
         foreach ($items->items as $itemId => $item) {
             if ($item === []) {
                 continue;
@@ -230,7 +232,7 @@ final class NavigationRenderer
                 $moduleModel,
                 $items,
                 $items->items[$itemId],
-                $blnForwardResolution
+                $forwardResolution
             );
         }
     }
@@ -383,13 +385,13 @@ final class NavigationRenderer
      * Executes the navigation hook.
      * The callback receives the following parameters:
      * $this - This navigation module instance
-     * $arrRootIDs - The IDs of the first navigation level
+     * $rootIds - The IDs of the first navigation level
      *
      * And should return a new root array or null
      *
      * @param list<int> $rootIds The root pages before hook execution
      *
-     * @return list<int> $arrRootIDs The root pages after hook execution
+     * @return list<int> $rootIds The root pages after hook execution
      */
     private function dispatchMenuEvent(ModuleModel $moduleModel, array $rootIds): array
     {
