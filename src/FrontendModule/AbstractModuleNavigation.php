@@ -70,9 +70,6 @@ abstract class AbstractModuleNavigation extends Module
 
     public $varActiveID; // the id of the active page
 
-    protected $blnTreeHook = false; // execute tree hook?
-    protected $blnItemHook = false; // execute item hook?
-
     public function __construct($objModule, $strColumn = 'main')
     {
         parent::__construct($objModule, $strColumn);
@@ -114,11 +111,6 @@ abstract class AbstractModuleNavigation extends Module
         }
 
         $this->objStmt = $this->Database->prepare('*');
-
-        if (! $this->hofff_navigation_disableHooks) {
-            $this->blnTreeHook = is_array($GLOBALS['TL_HOOKS']['hofff_navigation_tree']);
-            $this->blnItemHook = is_array($GLOBALS['TL_HOOKS']['hofff_navigation_item']);
-        }
     }
 
     public function __get($strKey)
