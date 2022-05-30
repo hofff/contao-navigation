@@ -10,23 +10,23 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigatio
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineDepth';
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_menu']
-    = '{title_legend},name,headline,type;'
-    . '{hofff_navigation_root_legend},'
-    . 'hofff_navigation_currentAsRoot,hofff_navigation_defineRoots,'
-    . 'hofff_navigation_start,hofff_navigation_respectHidden,'
-    . 'hofff_navigation_respectPublish,hofff_navigation_respectGuests;'
-    . '{hofff_navigation_legend},'
-    . 'hofff_navigation_includeStart,'
-    . 'hofff_navigation_defineStop,'
-    . 'hofff_navigation_defineHard,'
-    . 'hofff_navigation_showHidden,hofff_navigation_showProtected,'
-    . 'hofff_navigation_showGuests,hofff_navigation_isSitemap,'
-    . 'hofff_navigation_hideSingleLevel;'
-    . '{template_legend:hide},navigationTpl,hofff_navigation_addLegacyCss,'
-    . 'hofff_navigation_addFields;'
-    . '{protected_legend:hide},protected;'
-    . '{expert_legend:hide},hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages,'
-    . 'hofff_navigation_disableEvents,guests,cssID,space';
+    = ';{title_legend},name,headline,type'
+    . ';{hofff_navigation_root_legend}'
+    . ',hofff_navigation_currentAsRoot,hofff_navigation_defineRoots'
+    . ',hofff_navigation_start,hofff_navigation_respectHidden'
+    . ',hofff_navigation_respectPublish,hofff_navigation_respectGuests'
+    . ';{hofff_navigation_legend}'
+    . ',hofff_navigation_includeStart'
+    . ',hofff_navigation_defineStop'
+    . ',hofff_navigation_defineHard'
+    . ',hofff_navigation_showHidden,hofff_navigation_showProtected'
+    . ',hofff_navigation_showGuests,hofff_navigation_isSitemap'
+    . ',hofff_navigation_hideSingleLevel'
+    . ';{template_legend:hide},navigationTpl,hofff_navigation_addLegacyCss'
+    . ',hofff_navigation_addFields'
+    . ';{protected_legend:hide},protected,guests'
+    . ';{expert_legend:hide},cssID,hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages'
+    . ',hofff_navigation_disableEvents';
 
 $GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineRoots']
     = 'hofff_navigation_roots';
@@ -200,7 +200,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_noForwardResolution'
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
-        'tl_class' => 'clr w50 cbx m12',
+        'tl_class' => 'm12 w50',
     ],
     'sql'       => [
         'type'    => Types::STRING,
@@ -213,7 +213,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showErrorPages'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
-        'tl_class' => 'clr w50 cbx m12',
+        'tl_class' => 'w50',
     ],
     'sql'       => [
         'type'    => Types::STRING,
@@ -226,7 +226,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_disableEvents'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
-        'tl_class' => 'w50 cbx m12',
+        'tl_class' => 'w50',
     ],
     'sql'       => [
         'type'    => Types::STRING,
