@@ -41,8 +41,8 @@ final class PageItemsLoader
         ModuleModel $moduleModel,
         array $rootIds,
         array $fields,
-        $arrStop = PHP_INT_MAX,
-        $intHard = PHP_INT_MAX
+        array $stopLevels = [PHP_INT_MAX],
+        int $hardLvel = PHP_INT_MAX
     ): PageItems {
         $items = new PageItems();
         $items->trail = array_flip(isset($GLOBALS['objPage']) ? $GLOBALS['objPage']->trail : []);
@@ -51,19 +51,17 @@ final class PageItemsLoader
         }
 
         $rootIds = array_keys(array_flip($rootIds));
-        $arrStop = (array) $arrStop;
-
         foreach ($rootIds as $rootId) {
             $items->items[$rootId] = $items->items[$rootId] ?? [];
         }
 
         if (! $moduleModel->hofff_navigation_includeStart) {
-            $items->roots = $this->fetchItems($moduleModel, $items, $fields, $rootIds, $arrStop, $intHard);
+            $items->roots = $this->fetchItems($moduleModel, $items, $fields, $rootIds, $stopLevels, $hardLvel);
 
             return $items;
         }
 
-        $items->roots = $this->fetchItems($moduleModel, $items, $fields, $rootIds, $arrStop, $intHard, 2);
+        $items->roots = $this->fetchItems($moduleModel, $items, $fields, $rootIds, $stopLevels, $hardLvel, 2);
 
         $result = $this->connection->executeQuery(
             sprintf(
@@ -85,10 +83,10 @@ final class PageItemsLoader
     /**
      * Fetches page data for all navigation items below the given roots.
      *
-     * @param integer $arrPIDs  The root pages of the navigation.
-     * @param integer $intStop  (optional, defaults to PHP_INT_MAX) The soft limit of depth.
-     * @param integer $intHard  (optional, defaults to PHP_INT_MAX) The hard limit of depth.
-     * @param integer $intLevel (optional, defaults to 1) The level of the PIDs.
+     * @param integer $parentIds The root pages of the navigation.
+     * @param integer $intStop   (optional, defaults to PHP_INT_MAX) The soft limit of depth.
+     * @param integer $hardStop  (optional, defaults to PHP_INT_MAX) The hard limit of depth.
+     * @param integer $level     (optional, defaults to 1) The level of the PIDs.
      *
      * @return array<int,bool>
      */
@@ -96,17 +94,16 @@ final class PageItemsLoader
         ModuleModel $moduleModel,
         PageItems $items,
         array $fields,
-        array $arrPIDs,
-        $arrStop = PHP_INT_MAX,
-        $intHard = PHP_INT_MAX,
-        $intLevel = 1
+        array $parentIds,
+        array $stopLevels,
+        int $hardStop = PHP_INT_MAX,
+        int $level = 1
     ): array {
-        $intLevel = max(1, $intLevel);
-        $arrStop  = (array) $arrStop;
+        $level = max(1, $level);
 
         // nothing todo
-        // $intLevel == $intHard + 1 requires subitem detection for css class "submenu" calculation
-        if (! $arrPIDs || $intLevel - 1 > $intHard) {
+        // $level == $hardStop + 1 requires subitem detection for css class "submenu" calculation
+        if (! $parentIds || $level - 1 > $hardStop) {
             return [];
         }
 
@@ -128,17 +125,17 @@ final class PageItemsLoader
             ->addErrorPagesCondition($queryBuilder, (bool) $moduleModel->hofff_navigation_showErrorPages)
             ->addGuestsQueryParts($queryBuilder, (bool) $moduleModel->backboneit_navigation_showGuests);
 
-        $arrFetched = [];
+        $fetched = [];
 
-        while ($arrPIDs) {
+        while ($parentIds) {
             // if $arrEndPIDs == $arrPIDs the next $arrPIDs will be empty -> leave loop
-            if ($intLevel > $intHard) {
-                $arrEndPIDs = $arrPIDs;
-            } elseif ($intLevel > $arrStop[0]) {
-                count($arrStop) > 1 && array_shift($arrStop);
+            if ($level > $hardStop) {
+                $arrEndPIDs = $parentIds;
+            } elseif ($level > $stopLevels[0]) {
+                count($stopLevels) > 1 && array_shift($stopLevels);
                 $arrEndPIDs = [];
-                foreach ($arrPIDs as $intPID) {
-                    if ($items->isInTrail((int) $intPID)) {
+                foreach ($parentIds as $intPID) {
+                    if (!$items->isInTrail((int) $intPID)) {
                         $arrEndPIDs[$intPID] = true;
                     }
                 }
@@ -147,14 +144,14 @@ final class PageItemsLoader
             }
 
             $query = clone $queryBuilder;
-            $query->setParameter('pids', $arrPIDs, Connection::PARAM_INT_ARRAY);
+            $query->setParameter('pids', $parentIds, Connection::PARAM_INT_ARRAY);
 
             $result = $query->execute();
             if ($result->rowCount() === 0) {
                 break;
             }
 
-            $arrPIDs = [];
+            $parentIds = [];
             while ($arrPage = $result->fetchAssociative()) {
                 if (isset($items->items[$arrPage['id']])) {
                     continue;
@@ -167,18 +164,18 @@ final class PageItemsLoader
                 if (! isset($arrEndPIDs[$arrPage['pid']])) {
                     $items->subItems[(int) $arrPage['pid']][] = (int) $arrPage['id']; // for order of items
                     $items->items[(int) $arrPage['id']]       = $arrPage; // item datasets
-                    $arrPIDs[]                                = $arrPage['id']; // ids of current layer (for next layer pids)
-                    $arrFetched[$arrPage['id']]               = true; // fetched in this method
+                    $parentIds[]                              = $arrPage['id']; // ids of current layer (for next layer pids)
+                    $fetched[$arrPage['id']]                  = true; // fetched in this method
 
                 } elseif (! isset($items->subItems[$arrPage['pid']])) {
                     $items->subItems[$arrPage['pid']] = [];
                 }
             }
 
-            $intLevel++;
+            $level++;
         }
 
-        return $arrFetched;
+        return $fetched;
     }
 
 
