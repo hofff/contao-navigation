@@ -91,7 +91,6 @@ $GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineDept
 /***** GENERAL FIELDS *********************************************************/
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_roots'],
     'exclude'   => true,
     'inputType' => 'pageTree',
     'eval'      => [
@@ -100,7 +99,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = [
         'tl_class'   => 'clr',
         'orderField' => 'backboneit_navigation_roots_order',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::BLOB,
         'default' => null,
         'notnull' => false,
@@ -108,7 +107,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots_order'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_roots_order'],
     'sql' => [
         'type'    => Types::BLOB,
         'default' => null,
@@ -117,7 +115,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots_order'] =
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_start'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_start'],
     'exclude'   => true,
     'inputType' => 'text',
     'eval'      => [
@@ -125,7 +122,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_start'] = [
         'rgxp'      => 'digit',
         'tl_class'  => 'clr w50',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::SMALLINT,
         'default' => 0,
         'length'  => 5,
@@ -133,13 +130,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_start'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectHidden'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectHidden'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'w50 cbx m12',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -147,13 +143,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectHidden']
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectPublish'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectPublish'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'clr w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -161,13 +156,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectPublish'
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectGuests'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_respectGuests'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -175,14 +169,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectGuests']
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_includeStart'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_includeStart'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'submitOnChange' => true,
         'tl_class'       => 'clr w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -190,13 +183,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_includeStart'] 
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showHiddenStart'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showHiddenStart'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -204,13 +196,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showHiddenStart
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showHidden'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showHidden'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'clr w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -218,13 +209,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showHidden'] = 
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showProtected'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showProtected'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -232,13 +222,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showProtected']
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showGuests'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showGuests'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'clr w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -246,14 +235,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showGuests'] = 
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addFields'] = [
-    'label'            => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addFields'],
-    'exclude'          => true,
-    'inputType'        => 'checkbox',
-    'eval'             => [
+    'exclude'   => true,
+    'inputType' => 'checkbox',
+    'eval'      => [
         'multiple' => true,
         'tl_class' => 'clr',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::BLOB,
         'default' => null,
         'notnull' => false,
@@ -261,13 +249,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addFields'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_noForwardResolution'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_noForwardResolution'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'clr w50 cbx m12',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -275,13 +262,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_noForwardResolu
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showErrorPages'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_showErrorPages'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'clr w50 cbx m12',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -289,13 +275,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showErrorPages'
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_disableHooks'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_disableHooks'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'w50 cbx m12',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -306,13 +291,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_disableHooks'] 
 /***** NAVIGATION MENU ********************************************************/
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_currentAsRoot'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_currentAsRoot'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -320,14 +304,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_currentAsRoot']
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineRoots'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineRoots'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'submitOnChange' => true,
         'tl_class'       => 'w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -335,14 +318,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineRoots'] =
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineStop'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineStop'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'submitOnChange' => true,
         'tl_class'       => 'clr w50 cbx m12',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -350,14 +332,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineStop'] = 
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_stop'] = [
-    'label'         => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_stop'],
-    'exclude'       => true,
-    'inputType'     => 'text',
-    'eval'          => [
+    'exclude'   => true,
+    'inputType' => 'text',
+    'eval'      => [
         'maxlength' => 255,
         'tl_class'  => 'w50',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 255,
         'default' => '',
@@ -365,14 +346,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_stop'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineHard'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineHard'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'submitOnChange' => true,
         'tl_class'       => 'clr w50 cbx m12',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -380,7 +360,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineHard'] = 
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hard'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_hard'],
     'exclude'   => true,
     'inputType' => 'text',
     'eval'      => [
@@ -388,7 +367,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hard'] = [
         'rgxp'      => 'digit',
         'tl_class'  => 'w50',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::SMALLINT,
         'default' => 0,
         'length'  => 5,
@@ -396,13 +375,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hard'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_isSitemap'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_isSitemap'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -410,13 +388,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_isSitemap'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hideSingleLevel'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_hideSingleLevel'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'clr w50 cbx',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -424,13 +401,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hideSingleLevel
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addLegacyCss'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_addLegacyCss'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'tl_class' => 'w50 cbx m12',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -441,7 +417,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addLegacyCss'] 
 /***** NAVIGATION CHAIN *******************************************************/
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_rootSelectionType'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_rootSelectionType'],
     'exclude'   => true,
     'inputType' => 'select',
     'default'   => 'current',
@@ -451,7 +426,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_rootSelectionTy
         'submitOnChange' => true,
         'tl_class'       => 'clr w50',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 32,
         'default' => '',
@@ -459,7 +434,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_rootSelectionTy
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_chainDirections'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_chainDirections'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'default'   => ['forward', 'backward'],
@@ -472,7 +446,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_chainDirections
         'multiple' => true,
         'tl_class' => 'clr w50',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::BLOB,
         'default' => null,
         'notnull' => false,
@@ -480,14 +454,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_chainDirections
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineDepth'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_defineDepth'],
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
         'submitOnChange' => true,
         'tl_class'       => 'clr w50 cbx m12',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::STRING,
         'length'  => 1,
         'default' => '',
@@ -495,7 +468,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineDepth'] =
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_depth'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_module']['backboneit_navigation_depth'],
     'exclude'   => true,
     'inputType' => 'text',
     'eval'      => [
@@ -503,7 +475,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_depth'] = [
         'rgxp'      => 'digit',
         'tl_class'  => 'w50',
     ],
-    'sql' => [
+    'sql'       => [
         'type'    => Types::SMALLINT,
         'default' => 0,
         'length'  => 5,
