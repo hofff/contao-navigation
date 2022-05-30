@@ -8,10 +8,7 @@ use Contao\System;
 use Hofff\Contao\Navigation\Items\PageItemsLoader;
 use Hofff\Contao\Navigation\Renderer\NavigationRenderer;
 
-use function array_flip;
 use function array_keys;
-use function array_merge;
-use function deserialize;
 use function strlen;
 
 use const TL_MODE;
@@ -58,8 +55,6 @@ final class ModuleNavigationMenu extends Module
 
     protected $arrGroups; // set of groups of the current user
 
-    public $varActiveID; // the id of the active page
-
     private PageItemsLoader $loader;
 
     private NavigationRenderer $renderer;
@@ -76,10 +71,6 @@ final class ModuleNavigationMenu extends Module
         }
 
         $this->import('Database');
-
-        $this->varActiveID = $this->hofff_navigation_isSitemap || $this->Input->get('articles')
-            ? null
-            : (int) $GLOBALS['objPage']->id;
 
         if (FE_USER_LOGGED_IN) {
             $this->import('FrontendUser', 'User');
@@ -99,8 +90,11 @@ final class ModuleNavigationMenu extends Module
 
         $stopLevels = $this->getStopLevels();
         $hardLevel  = $this->getHardLevel();
+        $activeId   = $this->hofff_navigation_isSitemap || $this->Input->get('articles')
+            ? null
+            : (int) $GLOBALS['objPage']->id;
 
-        $items = $this->loader->load($this->objModel, $stopLevels, $hardLevel, $this->varActiveID);
+        $items = $this->loader->load($this->objModel, $stopLevels, $hardLevel, $activeId);
 
         $this->strNavigation = $this->renderer->render(
             $this->objModel,
@@ -108,7 +102,7 @@ final class ModuleNavigationMenu extends Module
             array_keys($items->roots),
             $stopLevels,
             $hardLevel,
-            $this->varActiveID
+            $activeId
         );
 
         return $this->strNavigation ? parent::generate() : '';
