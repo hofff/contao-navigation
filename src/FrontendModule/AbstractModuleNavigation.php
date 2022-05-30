@@ -41,10 +41,6 @@ use Contao\Module;
  */
 abstract class AbstractModuleNavigation extends Module
 {
-    const HOOK_DISABLE = 0;
-    const HOOK_ENABLE = 1;
-    const HOOK_FORCE = 2;
-
     public static $arrDefaultFields = [
         'id'          => true,
         'pid'         => true,

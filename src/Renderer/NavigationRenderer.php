@@ -204,8 +204,7 @@ final class NavigationRenderer
                 $moduleModel,
                 $items,
                 $items->items[$intID],
-                $blnForwardResolution,
-                AbstractModuleNavigation::HOOK_ENABLE
+                $blnForwardResolution
             );
         }
     }
@@ -221,8 +220,7 @@ final class NavigationRenderer
         ModuleModel $moduleModel,
         PageItems $items,
         array $arrPage,
-        $blnForwardResolution = true,
-        $intItemHook = AbstractModuleNavigation::HOOK_DISABLE
+        bool $forwardResolution = true
     ) {
         // fallback for dataset field collisions
         $arrPage['_title']       = $arrPage['title'];
@@ -241,7 +239,7 @@ final class NavigationRenderer
 
         switch ($arrPage['type']) {
             case 'forward':
-                if ($blnForwardResolution) {
+                if ($forwardResolution) {
                     $redirectPage = $this->getRedirectPage($arrPage);
                     if (! $redirectPage) {
                         $arrPage['href'] = $this->generatePageUrl($arrPage);
@@ -284,9 +282,7 @@ final class NavigationRenderer
                 break;
         }
 
-        if ($intItemHook != AbstractModuleNavigation::HOOK_DISABLE) {
-            $this->executeItemHook($moduleModel, $arrPage, $intItemHook == AbstractModuleNavigation::HOOK_FORCE);
-        }
+        $this->executeItemHook($moduleModel, $arrPage);
 
         return $arrPage;
     }
@@ -320,9 +316,9 @@ final class NavigationRenderer
         return StringUtil::encodeEmail($strHref);
     }
 
-    protected function executeItemHook(ModuleModel $moduleModel, array &$arrPage, $blnForce = false): void
+    protected function executeItemHook(ModuleModel $moduleModel, array &$arrPage): void
     {
-        if (! $blnForce && ! $moduleModel->hofff_navigation_disableHooks) {
+        if (! $moduleModel->hofff_navigation_disableHooks) {
             return;
         }
 
