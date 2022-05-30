@@ -5,7 +5,6 @@ namespace Hofff\Contao\Navigation\EventListener\Dca;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\ServiceAnnotation\Callback;
-use Hofff\Contao\Navigation\FrontendModule\ModuleNavigationMenu;
 use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
 
 class NavigationDcaListener
@@ -30,9 +29,9 @@ class NavigationDcaListener
 
         $fields = [];
 
-        foreach ($GLOBALS['TL_DCA']['tl_page']['fields'] as $strField => $arrConfig) {
-            if (! isset(PageQueryBuilder::DEFAULT_FIELDS[$strField])) {
-                $fields[$strField] = &$arrConfig['label'][0];
+        foreach ($GLOBALS['TL_DCA']['tl_page']['fields'] as $fieldName => &$config) {
+            if (! isset(PageQueryBuilder::DEFAULT_FIELDS[$fieldName])) {
+                $fields[$fieldName] = sprintf('%s <span class="tl_gray">[%s]</span>', $config['label'][0], $fieldName);
             }
         }
 
@@ -40,18 +39,16 @@ class NavigationDcaListener
     }
 
     /**
-     * @param mixed $value
-     *
      * @Callback(table="tl_module", target="fields.hofff_navigation_stop.save")
      */
-    public function saveStop($value): string
+    public function saveStop(string $value): string
     {
-        $intMin = -1;
-        $stop   = [];
+        $minimum = -1;
+        $stop    = [];
 
         foreach (array_map('intval', explode(',', (string) $value)) as $intLevel) {
-            if ($intLevel > $intMin) {
-                $stop[] = $intMin = $intLevel;
+            if ($intLevel > $minimum) {
+                $stop[] = $minimum = $intLevel;
             }
         }
 
