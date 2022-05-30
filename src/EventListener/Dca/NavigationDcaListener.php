@@ -14,7 +14,8 @@ use function explode;
 use function implode;
 use function sprintf;
 
-class NavigationDcaListener
+/** @psalm-suppress PropertyNotSetInConstructor */
+final class NavigationDcaListener
 {
     private ContaoFramework $framework;
 
@@ -56,7 +57,7 @@ class NavigationDcaListener
         $minimum = -1;
         $stop    = [];
 
-        foreach (array_map('intval', explode(',', (string) $value)) as $intLevel) {
+        foreach (array_map('intval', explode(',', $value)) as $intLevel) {
             if ($intLevel <= $minimum) {
                 continue;
             }

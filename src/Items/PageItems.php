@@ -11,13 +11,13 @@ final class PageItems
     /** @var array<int,bool> */
     public array $roots = [];
 
-    /** @var array<int,string> */
+    /** @var array<int,array<string,mixed>> */
     public array $items = [];
 
     /** @var array<int,list<int>> */
     public array $subItems = [];
 
-    /** @var array<int,string> */
+    /** @var list<int> */
     public array $trail = [];
 
     public function isInTrail(int $pageId): bool

@@ -9,6 +9,7 @@ use Contao\FrontendTemplate;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
+use Doctrine\DBAL\Result;
 use Hofff\Contao\Navigation\Event\ItemEvent;
 use Hofff\Contao\Navigation\Event\MenuEvent;
 use Hofff\Contao\Navigation\Event\TreeEvent;
@@ -50,10 +51,10 @@ final class NavigationRenderer
      * Adds CSS classes "first" and "last" to the appropriate navigation item arrays.
      * If the given array is empty, the empty string is returned.
      *
-     * @param list<int|string> $itemIds      The navigation items arrays
-     * @param list<int>        $stopLimit    (optional, defaults to PHP_INT_MAX) The soft limit of depth.
-     * @param int              $intHard      (optional, defaults to PHP_INT_MAX) The hard limit of depth.
-     * @param int              $currentLevel (optional, defaults to 1) The current level of this navigation layer
+     * @param list<int> $itemIds      The navigation items arrays
+     * @param list<int> $stopLimit    (optional, defaults to PHP_INT_MAX) The soft limit of depth.
+     * @param int       $intHard      (optional, defaults to PHP_INT_MAX) The hard limit of depth.
+     * @param int       $currentLevel (optional, defaults to 1) The current level of this navigation layer
      *
      * @return string The parsed navigation template, could be empty string.
      */
@@ -63,8 +64,8 @@ final class NavigationRenderer
         array $itemIds,
         array $stopLimit = [PHP_INT_MAX],
         int $intHard = PHP_INT_MAX,
-        int $currentLevel = 1,
-        ?int $activeId = null
+        ?int $activeId = null,
+        int $currentLevel = 1
     ): string {
         if ($stopLimit === []) {
             $stopLimit = [PHP_INT_MAX];
@@ -77,6 +78,8 @@ final class NavigationRenderer
         $firstIds = $this->getFirstNavigationLevel($moduleModel, $items, $itemIds);
 
         if ($moduleModel->hofff_navigation_hideSingleLevel) {
+            $hasMultipleLevels = false;
+
             foreach ($firstIds as $id) {
                 if ($items->subItems[$id]) {
                     $hasMultipleLevels = true;
@@ -384,9 +387,9 @@ final class NavigationRenderer
      *
      * And should return a new root array or null
      *
-     * @param list<int|string> $rootIds The root pages before hook execution
+     * @param list<int> $rootIds The root pages before hook execution
      *
-     * @return list<int|string> $arrRootIDs The root pages after hook execution
+     * @return list<int> $arrRootIDs The root pages after hook execution
      */
     private function dispatchMenuEvent(ModuleModel $moduleModel, array $rootIds): array
     {
@@ -401,9 +404,9 @@ final class NavigationRenderer
     }
 
     /**
-     * @param list<int|string> $rootIds
+     * @param list<int> $rootIds
      *
-     * @return array<int|string>
+     * @return list<int>
      */
     private function getFirstNavigationLevel(ModuleModel $moduleModel, PageItems $items, array $rootIds): array
     {
@@ -412,47 +415,52 @@ final class NavigationRenderer
         }
 
         // if we do not want to show the root level
-        $arrFirstIDs = [];
-        foreach ($rootIds as $varRootID) {
-            if (! isset($items->subItems[$varRootID])) {
+        $firstIds = [];
+        foreach ($rootIds as $rootId) {
+            if (! isset($items->subItems[$rootId])) {
                 continue;
             }
 
-            $arrFirstIDs[] = $items->subItems[$varRootID];
+            $firstIds[] = $items->subItems[$rootId];
         }
 
-        return array_merge(...$arrFirstIDs);
+        return array_merge(...$firstIds);
     }
 
     /**
-     * @param array<string,mixed> $arrPage
+     * @param array<string,mixed> $page
      *
      * @return array<string,mixed>
      */
-    private function getRedirectPage(array $arrPage): array
+    private function getRedirectPage(array $page): array
     {
-        if (! $arrPage['jumpTo']) {
-            $query = $this->redirectQueryBuilder->createFallbackQuery((int) $arrPage['id']);
+        if (! $page['jumpTo']) {
+            $query = $this->redirectQueryBuilder->createFallbackQuery((int) $page['id']);
+            /** @psalm-var Result $result */
+            $result =  $query->execute();
 
-            return $query->execute()->fetchAssociative();
+            return $result->fetchAssociative() ?: [];
         }
 
-        $intFallbackSearchID = $arrPage['id'];
-        $intJumpToID         = $arrPage['jumpTo'];
+        $fallbackSearchId = $page['id'];
+        $jumpToId         = $page['jumpTo'];
         do {
-            $query = $this->redirectQueryBuilder->createJumpToQuery((int) $intJumpToID);
-            $query->setParameter('id', $intJumpToID);
+            $query = $this->redirectQueryBuilder->createJumpToQuery((int) $jumpToId);
+            $query->setParameter('id', $jumpToId);
+            /** @psalm-var Result $result */
             $result = $query->execute();
-            $next   = $result->fetchAssociative();
+            $next   = $result->fetchAssociative() ?: [];
 
             if (! $result->rowCount()) {
-                $query = $this->redirectQueryBuilder->createFallbackQuery((int) $intFallbackSearchID);
-                $next  = $query->execute()->fetchAssociative();
+                $query = $this->redirectQueryBuilder->createFallbackQuery((int) $fallbackSearchId);
+                /** @psalm-var Result $result */
+                $result = $query->execute();
+                $next   = $result->fetchAssociative() ?: [];
                 break;
             }
 
-            $intFallbackSearchID = $intJumpToID;
-            $intJumpToID         = $next['jumpTo'] ?? 0;
+            $fallbackSearchId = $jumpToId;
+            $jumpToId         = $next['jumpTo'] ?? 0;
         } while ($next['type'] === 'forward');
 
         return $next;

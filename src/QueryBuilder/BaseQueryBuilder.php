@@ -35,6 +35,7 @@ abstract class BaseQueryBuilder
         return clone $this->queries[$name];
     }
 
+    /** @return static */
     protected function addGuestsQueryParts(QueryBuilder $queryBuilder, bool $showGuests = false): self
     {
         if ($showGuests) {
@@ -48,6 +49,7 @@ abstract class BaseQueryBuilder
         return $this;
     }
 
+    /** @return static */
     protected function addPublishedCondition(QueryBuilder $queryBuilder, bool $respectPublished = true): self
     {
         if (! $respectPublished || $this->security->isGranted('ROLE_USER')) {

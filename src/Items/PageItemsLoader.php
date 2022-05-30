@@ -9,10 +9,12 @@ use Contao\ModuleModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Result;
 use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
 use Symfony\Component\Security\Core\Security;
 
 use function array_diff;
+use function array_fill_keys;
 use function array_flip;
 use function array_intersect;
 use function array_keys;
@@ -35,10 +37,13 @@ final class PageItemsLoader
 
     private Security $security;
 
-    private ?PageQueryBuilder $pageQueryBuilder;
+    /** @psalm-suppress PropertyNotSetInConstructor - Will be initialized in the only public method load() */
+    private PageQueryBuilder $pageQueryBuilder;
 
+    /** @psalm-suppress PropertyNotSetInConstructor - Will be initialized in the only public method load() */
     private PageItems $items;
 
+    /** @psalm-suppress PropertyNotSetInConstructor - Will be initialized in the only public method load() */
     private ModuleModel $moduleModel;
 
     /** @var list<int> */
@@ -74,7 +79,7 @@ final class PageItemsLoader
         $this->hardLevel        = $hardLevel;
         $this->activeId         = $activeId;
 
-        $this->items->roots = array_flip($this->calculateRootIDs());
+        $this->items->roots = array_fill_keys(array_flip($this->calculateRootIDs()), true);
         if (! $this->items->roots) {
             return $this->items;
         }
@@ -89,6 +94,7 @@ final class PageItemsLoader
 
         $this->fetchItems($rootIds, 2);
 
+        /** @psalm-var Result $result */
         $result = $this->pageQueryBuilder->createRootInformationQuery($rootIds)->execute();
         while ($row = $result->fetchAssociative()) {
             $this->items->items[$row['id']] = $row;
@@ -140,14 +146,16 @@ final class PageItemsLoader
                 $arrEndPIDs = [];
             }
 
+            /** @psalm-var Result $result */
             $result = $this->pageQueryBuilder->createFetchItemsQuery($parentIds)->execute();
             if ($result->rowCount() === 0) {
                 break;
             }
 
             $parentIds = [];
+            /** @psalm-var Result $result */
             while ($page = $result->fetchAssociative()) {
-                if (isset($items->items[$page['id']])) {
+                if (isset($this->items->items[$page['id']])) {
                     continue;
                 }
 
@@ -163,7 +171,7 @@ final class PageItemsLoader
                     $this->items->items[(int) $page['id']] = $page; // item datasets
                     $parentIds[]                           = $page['id']; // ids of current layer (for next layer pids)
                     $fetched[$page['id']]                  = true; // fetched in this method
-                } elseif (! isset($items->subItems[(int) $page['pid']])) {
+                } elseif (! isset($this->items->subItems[(int) $page['pid']])) {
                     $this->items->subItems[(int) $page['pid']] = [];
                 }
             }
@@ -175,15 +183,15 @@ final class PageItemsLoader
     }
 
     /**
-     * @return list<int|string>
+     * @return list<int>
      *
      * @SuppressWarnings(PHPMD.Superglobals)
      */
-    protected function calculateRootIDs(): array
+    private function calculateRootIDs(): array
     {
         $rootIds = $this->getRootIds();
         if ($this->moduleModel->hofff_navigation_currentAsRoot) {
-            array_unshift($rootIds, $GLOBALS['objPage']->id);
+            array_unshift($rootIds, (int) $GLOBALS['objPage']->id);
         }
 
         if ($this->moduleModel->hofff_navigation_start > 0) {
@@ -205,9 +213,9 @@ final class PageItemsLoader
 
         $stopLevels = $this->stopLevels;
         if ($stopLevels[0] === 0) { // special case, keep only roots within the current path
-            $path    = $GLOBALS['objPage']->trail;
+            $path    = array_map('intval', $GLOBALS['objPage']->trail);
             $path[]  = $this->activeId;
-            $rootIds = array_intersect($rootIds, $path);
+            $rootIds = array_values(array_intersect($rootIds, $path));
         }
 
         return $rootIds;
@@ -289,7 +297,7 @@ final class PageItemsLoader
      *
      * @SuppressWarnings(PHPMD.Superglobals)
      */
-    protected function getRootIds(): array
+    private function getRootIds(): array
     {
         if (! $this->moduleModel->hofff_navigation_defineRoots) {
             return [(int) $GLOBALS['objPage']->rootId];
@@ -317,27 +325,30 @@ final class PageItemsLoader
      * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
-     * @param list<int|string> $arrPages An array of page IDs to filter
+     * @param list<int> $pageIds An array of page IDs to filter
      *
-     * @return list<int|string> Filtered array of page IDs
+     * @return list<int> Filtered array of page IDs
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    public function filterPages(array $arrPages, QueryBuilder $queryBuilder): array
+    private function filterPages(array $pageIds, QueryBuilder $queryBuilder): array
     {
-        if (! $arrPages) {
-            return $arrPages;
+        if (! $pageIds) {
+            return $pageIds;
         }
 
         $queryBuilder
             ->andWhere('id IN (:ids)')
-            ->setParameter('ids', array_keys(array_flip($arrPages)), Connection::PARAM_STR_ARRAY);
+            ->setParameter('ids', $pageIds, Connection::PARAM_STR_ARRAY);
+        /** @psalm-var Result $result */
         $result = $queryBuilder->execute();
 
         if (! $this->isPermissionCheckRequired()) {
-            return array_intersect(
-                $arrPages,
-                array_map(static fn (array $row): int => (int) $row['id'], $result->fetchAllAssociative())
+            return array_values(
+                array_intersect(
+                    $pageIds,
+                    array_map(static fn (array $row): int => (int) $row['id'], $result->fetchAllAssociative())
+                )
             );
         } // restore order
 
@@ -367,7 +378,8 @@ final class PageItemsLoader
             $arrIDs  = $arrPIDs;
             $arrPIDs = [];
 
-            $query  = $this->pageQueryBuilder->createPageInformationQuery(array_keys($arrIDs));
+            $query = $this->pageQueryBuilder->createPageInformationQuery(array_keys($arrIDs));
+            /** @psalm-var Result $result */
             $result = $query->execute();
 
             while ($arrPage = $result->fetchAssociative()) {
@@ -383,7 +395,7 @@ final class PageItemsLoader
             }
         }
 
-        return array_intersect($arrPages, $arrValid);
+        return array_values(array_intersect($pageIds, $arrValid));
     }
 
     /**
@@ -394,44 +406,45 @@ final class PageItemsLoader
      * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
-     * @param list<int|string> $arrPages An array of parent IDs
+     * @param list<int> $pageIds An array of parent IDs
      *
-     * @return list<int|string> The child IDs
+     * @return list<int> The child IDs
      */
-    public function getNextLevel(array $arrPages, QueryBuilder $queryBuilder): array
+    public function getNextLevel(array $pageIds, QueryBuilder $queryBuilder): array
     {
-        if (! $arrPages) {
-            return $arrPages;
+        if (! $pageIds) {
+            return $pageIds;
         }
 
-        $queryBuilder->setParameter('ids', array_keys(array_flip($arrPages)), Connection::PARAM_STR_ARRAY);
+        $queryBuilder->setParameter('ids', array_keys(array_flip($pageIds)), Connection::PARAM_STR_ARRAY);
+        /** @psalm-var Result */
         $result = $queryBuilder->execute();
 
-        $arrNext = [];
+        $next = [];
         if ($this->isPermissionCheckRequired()) {
-            while ($arrPage = $result->fetchAssociative()) {
-                if ($this->isPermissionDenied($arrPage)) {
+            while ($page = $result->fetchAssociative()) {
+                if ($this->isPermissionDenied($page)) {
                     continue;
                 }
 
-                $arrNext[$arrPage['pid']][] = $arrPage['id'];
+                $next[(int) $page['pid']][] = (int) $page['id'];
             }
         } else {
-            while ($arrPage = $result->fetchAssociative()) {
-                $arrNext[$arrPage['pid']][] = $arrPage['id'];
+            while ($page = $result->fetchAssociative()) {
+                $next[(int) $page['pid']][] = (int) $page['id'];
             }
         }
 
-        $arrNextLevel = [];
-        foreach ($arrPages as $intID) {
-            if (! isset($arrNext[$intID])) {
+        $nextLevel = [];
+        foreach ($pageIds as $intID) {
+            if (! isset($next[$intID])) {
                 continue;
             }
 
-            $arrNextLevel = array_merge($arrNextLevel, $arrNext[$intID]);
+            $nextLevel = array_merge($nextLevel, $next[$intID]);
         }
 
-        return $arrNextLevel;
+        return $nextLevel;
     }
 
     /**
@@ -443,32 +456,33 @@ final class PageItemsLoader
      * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
-     * @param list<int|string> $arrPages An array of child IDs
+     * @param list<int> $pageIds An array of child IDs
      *
-     * @return list<int|string> The parent IDs
+     * @return list<int> The parent IDs
      */
-    public function getPrevLevel(array $arrPages): array
+    private function getPrevLevel(array $pageIds): array
     {
-        if (! $arrPages) {
-            return $arrPages;
+        if (! $pageIds) {
+            return $pageIds;
         }
 
-        $result  = $this->pageQueryBuilder->createPreviousLevelQuery(array_keys(array_flip($arrPages)))->execute();
-        $arrPrev = [];
+        /** @psalm-var Result $result */
+        $result   = $this->pageQueryBuilder->createPreviousLevelQuery($pageIds)->execute();
+        $previous = [];
         while ($row = $result->fetchAssociative()) {
-            $arrPrev[$row['id']] = $row['pid'];
+            $previous[(int) $row['id']] = (int) $row['pid'];
         }
 
-        $arrPrevLevel = [];
-        $intPID       = -1;
-        foreach ($arrPages as $intID) {
-            if (! isset($arrPrev[$intID]) || $arrPrev[$intID] === $intPID) {
+        $prevLevel = [];
+        $parentId  = -1;
+        foreach ($pageIds as $pageId) {
+            if (! isset($previous[$pageId]) || $previous[$pageId] === $parentId) {
                 continue;
             }
 
-            $arrPrevLevel[] = $intPID = $arrPrev[$intID];
+            $prevLevel[] = $parentId = $previous[$pageId];
         }
 
-        return $arrPrevLevel;
+        return $prevLevel;
     }
 }
