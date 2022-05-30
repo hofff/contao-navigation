@@ -5,13 +5,38 @@ declare(strict_types=1);
 namespace Hofff\Contao\Navigation\QueryBuilder;
 
 use Contao\ModuleModel;
+use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 
+use function array_flip;
+use function array_keys;
+use function array_merge;
 use function time;
 
 final class PageQueryBuilder
 {
+    public const DEFAULT_FIELDS = [
+        'id'          => true,
+        'pid'         => true,
+        'sorting'     => true,
+        'tstamp'      => true,
+        'type'        => true,
+        'alias'       => true,
+        'title'       => true,
+        'protected'   => true,
+        'groups'      => true,
+        'jumpTo'      => true,
+        'pageTitle'   => true,
+        'target'      => true,
+        'description' => true,
+        'url'         => true,
+        'robots'      => true,
+        'cssClass'    => true,
+        'accesskey'   => true,
+        'tabindex'    => true,
+    ];
+
     private const ERROR_PAGE_TYPES = [
         'error_401',
         'error_403',
@@ -23,16 +48,17 @@ final class PageQueryBuilder
 
     private ModuleModel $moduleModel;
     
-    private array $fields;
+    private array $fields = [];
     
     /** @var array<string,QueryBuilder> */
     private $queries = [];
     
-    public function __construct(Connection $connection, ModuleModel $moduleModel, array $fields)
+    public function __construct(Connection $connection, ModuleModel $moduleModel)
     {
         $this->connection  = $connection;
         $this->moduleModel = $moduleModel;
-        $this->fields      = $fields;
+
+        $this->determineFields();
     }
 
     public function createFetchItemsQuery(array $parentIds): QueryBuilder
@@ -239,5 +265,34 @@ final class PageQueryBuilder
         }
 
         return $this;
+    }
+
+    private function determineFields(): void
+    {
+        $customFields = StringUtil::deserialize($this->moduleModel->hofff_navigation_addFields, true);
+
+        if (count($customFields) > 10) {
+            $this->fields[] = '*';
+
+            return;
+        }
+
+        if ($customFields === []) {
+            $this->fields = array_keys(self::DEFAULT_FIELDS);
+
+            return;
+        }
+
+        $customFields = array_flip($customFields);
+        $table        = $this->connection->getSchemaManager()->listTableDetails('tl_page');
+        $fields       = [];
+
+        foreach ($table->getColumns() as $column) {
+            if (isset($customFields[$column->getName()])) {
+                $fields[$column->getName()] = true;
+            }
+        }
+
+        $this->fields = array_keys(array_merge($fields, self::DEFAULT_FIELDS));
     }
 }

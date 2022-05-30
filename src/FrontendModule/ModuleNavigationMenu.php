@@ -54,32 +54,7 @@ final class ModuleNavigationMenu extends Module
 {
     protected $strTemplate = 'mod_hofff_navigation_menu';
 
-    public static $arrDefaultFields = [
-        'id'          => true,
-        'pid'         => true,
-        'sorting'     => true,
-        'tstamp'      => true,
-        'type'        => true,
-        'alias'       => true,
-        'title'       => true,
-        'protected'   => true,
-        'groups'      => true,
-        'jumpTo'      => true,
-        'pageTitle'   => true,
-        'target'      => true,
-        'description' => true,
-        'url'         => true,
-        'robots'      => true,
-        'cssClass'    => true,
-        'accesskey'   => true,
-        'tabindex'    => true,
-    ];
-
     protected string $strNavigation = '';
-
-    protected $arrFields = []; // the fields to use for navigation tpl
-
-    protected $objStmt; // a reusable stmt object
 
     protected $arrGroups; // set of groups of the current user
 
@@ -114,25 +89,6 @@ final class ModuleNavigationMenu extends Module
         if (! strlen($this->navigationTpl)) {
             $this->navigationTpl = 'nav_default';
         }
-
-        $arrFields = deserialize($this->hofff_navigation_addFields, true);
-
-        if (count($arrFields) > 10) {
-            $this->arrFields[] = '*';
-        } elseif ($arrFields) {
-            $arrFields = array_flip($arrFields);
-            foreach ($this->Database->listFields('tl_page') as $arrField) {
-                if (isset($arrFields[$arrField['name']])) {
-                    $this->arrFields[$arrField['name']] = true;
-                }
-            }
-
-            $this->arrFields = array_keys(array_merge($this->arrFields, self::$arrDefaultFields));
-        } else {
-            $this->arrFields = array_keys(self::$arrDefaultFields);
-        }
-
-        $this->objStmt = $this->Database->prepare('*');
     }
 
     public function generate(): string
@@ -144,7 +100,7 @@ final class ModuleNavigationMenu extends Module
         $stopLevels = $this->getStopLevels();
         $hardLevel  = $this->getHardLevel();
 
-        $items = $this->loader->load($this->objModel, $this->arrFields, $stopLevels, $hardLevel, $this->varActiveID);
+        $items = $this->loader->load($this->objModel, $stopLevels, $hardLevel, $this->varActiveID);
 
         $this->strNavigation = $this->renderer->render(
             $this->objModel,

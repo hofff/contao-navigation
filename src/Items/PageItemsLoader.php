@@ -53,7 +53,6 @@ final class PageItemsLoader
 
     public function load(
         ModuleModel $moduleModel,
-        array $fields,
         array $stopLevels = [PHP_INT_MAX],
         int $hardLevel = PHP_INT_MAX,
         ?int $activeId = null
@@ -61,7 +60,7 @@ final class PageItemsLoader
         $this->items = new PageItems();
         $this->items->trail = array_flip(isset($GLOBALS['objPage']) ? $GLOBALS['objPage']->trail : []);
 
-        $this->pageQueryBuilder = new PageQueryBuilder($this->connection, $moduleModel, $fields);
+        $this->pageQueryBuilder = new PageQueryBuilder($this->connection, $moduleModel);
         $this->moduleModel      = $moduleModel;
         $this->stopLevels       = $stopLevels;
         $this->hardLevel        = $hardLevel;

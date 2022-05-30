@@ -6,6 +6,7 @@ use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\ServiceAnnotation\Callback;
 use Hofff\Contao\Navigation\FrontendModule\ModuleNavigationMenu;
+use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
 
 class NavigationDcaListener
 {
@@ -30,7 +31,7 @@ class NavigationDcaListener
         $fields = [];
 
         foreach ($GLOBALS['TL_DCA']['tl_page']['fields'] as $strField => $arrConfig) {
-            if (! isset(ModuleNavigationMenu::$arrDefaultFields[$strField])) {
+            if (! isset(PageQueryBuilder::DEFAULT_FIELDS[$strField])) {
                 $fields[$strField] = &$arrConfig['label'][0];
             }
         }
