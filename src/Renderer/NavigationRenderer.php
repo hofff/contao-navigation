@@ -35,9 +35,6 @@ final class NavigationRenderer
 
     private PageQueryBuilder $pageQueryBuilder;
 
-    private ?int $activeId = null;
-
-
     public function __construct(Connection $connection, PageQueryBuilder $pageQueryBuilder)
     {
         $this->connection       = $connection;
@@ -62,7 +59,8 @@ final class NavigationRenderer
         array $itemIds,
         array $stopLimit = [PHP_INT_MAX],
         int $intHard = PHP_INT_MAX,
-        int $currentLevel = 1
+        int $currentLevel = 1,
+        ?int $activeId = null
     ): string {
         if ($stopLimit === []) {
             $stopLimit = [PHP_INT_MAX];
@@ -89,7 +87,7 @@ final class NavigationRenderer
 
         $stopLimit[0] == 0 && array_shift($stopLimit); // special case renderNavigationTree cannot handle
 
-        return trim($this->renderTree($moduleModel, $items, $arrFirstIDs, $stopLimit, $intHard, $currentLevel));
+        return trim($this->renderTree($moduleModel, $items, $arrFirstIDs, $stopLimit, $intHard, $currentLevel, $activeId));
     }
 
     private function renderTree(
@@ -98,7 +96,8 @@ final class NavigationRenderer
         array $itemIds,
         array $stopLimit = [PHP_INT_MAX],
         int $intHard = PHP_INT_MAX,
-        int $currentLevel = 1
+        int $currentLevel = 1,
+        ?int $activeId = null
     ): string {
         if (! $itemIds) {
             return '';
@@ -114,7 +113,7 @@ final class NavigationRenderer
 
             $arrItem = $items->items[$varID];
 
-            if ($varID == $this->activeId) {
+            if ($varID == $activeId) {
                 $blnContainsActive = true;
 
                 if ($arrItem['href'] === Environment::get('request')) {
@@ -125,7 +124,7 @@ final class NavigationRenderer
                     $arrItem['isInTrail']  = true;
                 }
             } else { // do not flatten if/else
-                if ($arrItem['tid'] == $this->activeId) {
+                if ($arrItem['tid'] == $activeId) {
                     if ($arrItem['href'] === Environment::get('request')) {
                         $arrItem['isActive'] = true; // nothing else (active class is set in template)
                         $arrItem['isInTrail']  = false;
@@ -145,7 +144,7 @@ final class NavigationRenderer
             } elseif ($currentLevel >= $intHard) {
                 // we are at hard level, never draw submenu
                 $arrItem['class'] .= ' submenu leaf';
-            } elseif ($currentLevel >= $intStop && ! $arrItem['isInTrail'] && $varID !== $this->activeId && $arrItem['tid'] != $this->activeId) {
+            } elseif ($currentLevel >= $intStop && ! $arrItem['isInTrail'] && $varID !== $activeId && $arrItem['tid'] != $activeId) {
                 // we are at stop level and not trail and not active, never draw submenu
                 $arrItem['class'] .= ' submenu leaf';
             } elseif ($items->subItems[$varID]) {

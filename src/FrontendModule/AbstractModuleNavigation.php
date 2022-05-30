@@ -88,8 +88,8 @@ abstract class AbstractModuleNavigation extends Module
         $this->import('Database');
 
         $this->varActiveID = $this->hofff_navigation_isSitemap || $this->Input->get('articles')
-            ? false
-            : $GLOBALS['objPage']->id;
+            ? null
+            : (int) $GLOBALS['objPage']->id;
 
         if (FE_USER_LOGGED_IN) {
             $this->import('FrontendUser', 'User');

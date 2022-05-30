@@ -33,7 +33,7 @@ final class ModuleNavigationMenu extends AbstractModuleNavigation
 
         $items = $loader->load($this->objModel, $arrRootIDs, $this->arrFields, $stopLevels, $hardLevel);
 
-        $this->strNavigation = $renderer->render($this->objModel, $items, $arrRootIDs, $stopLevels, $hardLevel);
+        $this->strNavigation = $renderer->render($this->objModel, $items, $arrRootIDs, $stopLevels, $hardLevel, $this->varActiveID);
 
         return $this->strNavigation ? parent::generate() : '';
     }
