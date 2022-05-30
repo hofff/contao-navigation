@@ -41,10 +41,6 @@
 		"doctrine/coding-standard": "^9.0.",
 		"phpcq/runner-bootstrap": "1.x-dev"
 	},
-	"replace": {
-		"contao-legacy/backboneit_navigation": "self.version",
-		"backboneit/contao-navigation": "self.version"
-	},
 	"extra": {
 		"contao-manager-plugin": "Hofff\\Contao\\Navigation\\ContaoManager\\Plugin",
 		"branch-alias": {

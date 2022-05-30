@@ -2,16 +2,88 @@
 
 namespace Hofff\Contao\Navigation\FrontendModule;
 
-use Contao\StringUtil;
+use Contao\BackendTemplate;
+use Contao\Module;
 use Contao\System;
 use Hofff\Contao\Navigation\Items\PageItemsLoader;
 use Hofff\Contao\Navigation\Renderer\NavigationRenderer;
 
-final class ModuleNavigationMenu extends AbstractModuleNavigation
+use function array_flip;
+use function array_keys;
+use function array_merge;
+use function deserialize;
+use function strlen;
+
+use const TL_MODE;
+
+/**
+ * Navigation modules
+ *
+ * Navigation item array layout:
+ * Before rendering:
+ * id            => the ID of the current item (optional)
+ * isInTrail        => whether this item is in the trail path
+ * class        => CSS classes
+ * title        => page name with Insert-Tags stripped and XML specialchars replaced by their entities
+ * pageTitle    => page title with Insert-Tags stripped and XML specialchars replaced by their entities
+ * link            => page name (with Insert-Tags and XML specialchars NOT replaced; as stored in the db)
+ * href            => URL of target page
+ * nofollow        => true, if nofollow should be set on rel attribute
+ * target        => either ' onclick="window.open(this.href); return false;"' or empty string
+ * description    => page description with line breaks (\r and \n) replaced by whitespaces
+ *
+ * Calculated while rendering:
+ * subitems        => subnavigation as HTML string or empty string (rendered if subpages & items setup correctly)
+ * isActive        => whether this item is the current active navigation item
+ *
+ * Following CSS classes are calculated while rendering: level_x, trail, sibling, submenu, first, last
+ *
+ * Additionally all page dataset values from the database are available unter their field name,
+ * if the field name does not collide with the listed keys.
+ *
+ * For the collisions of the Contao core page dataset fields the following keys are available:
+ * _type
+ * _title
+ * _pageTitle
+ * _target
+ * _description
+ *
+ * @author Oliver Hoff <oliver@hofff.com>
+ */
+final class ModuleNavigationMenu extends Module
 {
     protected $strTemplate = 'mod_hofff_navigation_menu';
 
+    public static $arrDefaultFields = [
+        'id'          => true,
+        'pid'         => true,
+        'sorting'     => true,
+        'tstamp'      => true,
+        'type'        => true,
+        'alias'       => true,
+        'title'       => true,
+        'protected'   => true,
+        'groups'      => true,
+        'jumpTo'      => true,
+        'pageTitle'   => true,
+        'target'      => true,
+        'description' => true,
+        'url'         => true,
+        'robots'      => true,
+        'cssClass'    => true,
+        'accesskey'   => true,
+        'tabindex'    => true,
+    ];
+
     protected string $strNavigation = '';
+
+    protected $arrFields = []; // the fields to use for navigation tpl
+
+    protected $objStmt; // a reusable stmt object
+
+    protected $arrGroups; // set of groups of the current user
+
+    public $varActiveID; // the id of the active page
 
     private PageItemsLoader $loader;
 
@@ -23,6 +95,44 @@ final class ModuleNavigationMenu extends AbstractModuleNavigation
 
         $this->loader   = System::getContainer()->get(PageItemsLoader::class);
         $this->renderer = System::getContainer()->get(NavigationRenderer::class);
+
+        if (TL_MODE === 'BE') {
+            return;
+        }
+
+        $this->import('Database');
+
+        $this->varActiveID = $this->hofff_navigation_isSitemap || $this->Input->get('articles')
+            ? null
+            : (int) $GLOBALS['objPage']->id;
+
+        if (FE_USER_LOGGED_IN) {
+            $this->import('FrontendUser', 'User');
+            $this->User->groups && $this->arrGroups = $this->User->groups;
+        }
+
+        if (! strlen($this->navigationTpl)) {
+            $this->navigationTpl = 'nav_default';
+        }
+
+        $arrFields = deserialize($this->hofff_navigation_addFields, true);
+
+        if (count($arrFields) > 10) {
+            $this->arrFields[] = '*';
+        } elseif ($arrFields) {
+            $arrFields = array_flip($arrFields);
+            foreach ($this->Database->listFields('tl_page') as $arrField) {
+                if (isset($arrFields[$arrField['name']])) {
+                    $this->arrFields[$arrField['name']] = true;
+                }
+            }
+
+            $this->arrFields = array_keys(array_merge($this->arrFields, self::$arrDefaultFields));
+        } else {
+            $this->arrFields = array_keys(self::$arrDefaultFields);
+        }
+
+        $this->objStmt = $this->Database->prepare('*');
     }
 
     public function generate(): string
@@ -33,14 +143,13 @@ final class ModuleNavigationMenu extends AbstractModuleNavigation
 
         $stopLevels = $this->getStopLevels();
         $hardLevel  = $this->getHardLevel();
-        $rootIds    = $this->calculateRootIDs($stopLevels);
 
-        $items = $this->loader->load($this->objModel, $rootIds, $this->arrFields, $stopLevels, $hardLevel);
+        $items = $this->loader->load($this->objModel, $this->arrFields, $stopLevels, $hardLevel, $this->varActiveID);
 
         $this->strNavigation = $this->renderer->render(
             $this->objModel,
             $items,
-            $rootIds,
+            array_keys($items->roots),
             $stopLevels,
             $hardLevel,
             $this->varActiveID
@@ -80,76 +189,23 @@ final class ModuleNavigationMenu extends AbstractModuleNavigation
         $this->hofff_navigation_addLegacyCss && $this->Template->legacyClass = ' mod_navigation';
     }
 
-    protected function calculateRootIDs($arrStop = PHP_INT_MAX)
+    /**
+     * A helper method to generate BE wildcard.
+     *
+     * @param string $strBEType (optional, defaults to "NAVIGATION") The type to be displayed in the wildcard
+     *
+     * @return string The wildcard HTML string
+     */
+    protected function generateBE($strBEType = 'NAVIGATION'): string
     {
-        $arrRootIDs = $this->hofff_navigation_defineRoots
-            ? $this->getRootIds()
-            : [$GLOBALS['objPage']->rootId];
+        $objTemplate = new BackendTemplate('be_wildcard');
 
-        $this->hofff_navigation_currentAsRoot && array_unshift($arrRootIDs, $GLOBALS['objPage']->id);
+        $objTemplate->wildcard = '### ' . $strBEType . ' ###';
+        $objTemplate->title    = $this->headline;
+        $objTemplate->id       = $this->id;
+        $objTemplate->link     = $this->name;
+        $objTemplate->href     = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id=' . $this->id;
 
-        $arrConditions = [
-            $this->getQueryPartHidden(
-                ! $this->hofff_navigation_respectHidden,
-                $this->hofff_navigation_isSitemap
-            ),
-        ];
-        $this->hofff_navigation_respectGuests && $arrConditions[] = $this->getQueryPartGuests();
-        $this->hofff_navigation_respectPublish && $arrConditions[] = $this->getQueryPartPublish();
-        $strConditions = implode(' AND ', array_filter($arrConditions, 'strlen'));
-
-        if ($this->hofff_navigation_includeStart) {
-            $arrStartConditions = [
-                $this->getQueryPartHidden(
-                    $this->hofff_navigation_showHiddenStart,
-                    $this->hofff_navigation_isSitemap
-                ),
-                $this->getQueryPartPublish(),
-                $this->getQueryPartErrorPages($this->hofff_navigation_showErrorPages),
-            ];
-            ! $this->hofff_navigation_showGuests && $arrStartConditions[] = $this->getQueryPartGuests();
-            $strStartConditions = implode(' AND ', array_filter($arrStartConditions, 'strlen'));
-        } else {
-            $strStartConditions = $strConditions;
-        }
-
-        if ($this->hofff_navigation_start > 0) {
-            $arrRootIDs = $this->filterPages($arrRootIDs, $strConditions);
-            for ($i = 1, $n = $this->hofff_navigation_start; $i < $n; $i++) {
-                $arrRootIDs = $this->getNextLevel($arrRootIDs, $strConditions);
-            }
-            $arrRootIDs = $this->getNextLevel($arrRootIDs, $strStartConditions);
-        } elseif ($this->hofff_navigation_start < 0) {
-            for ($i = 0, $n = -$this->hofff_navigation_start; $i < $n; $i++) {
-                $arrRootIDs = $this->getPrevLevel($arrRootIDs);
-            }
-            $arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
-        } else {
-            $arrRootIDs = $this->filterPages($arrRootIDs, $strStartConditions);
-        }
-
-        $arrStop = (array) $arrStop;
-        if ($arrStop[0] == 0) { // special case, keep only roots within the current path
-            $arrPath    = $GLOBALS['objPage']->trail;
-            $arrPath[]  = $this->varActiveID;
-            $arrRootIDs = array_intersect($arrRootIDs, $arrPath);
-        }
-
-        return $arrRootIDs;
-    }
-
-    protected function getRootIds(): array
-    {
-        return array_map(
-            'intval',
-            array_values(
-                array_unique(
-                    array_merge(
-                        StringUtil::deserialize($this->hofff_navigation_roots_order, true),
-                        StringUtil::deserialize($this->hofff_navigation_roots, true)
-                    )
-                )
-            )
-        );
+        return $objTemplate->parse();
     }
 }

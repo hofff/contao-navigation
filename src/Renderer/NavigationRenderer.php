@@ -11,12 +11,12 @@ use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
 use Doctrine\DBAL\Connection;
-use Hofff\Contao\Navigation\FrontendModule\AbstractModuleNavigation;
 use Hofff\Contao\Navigation\Items\PageItems;
 use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
 
 use function array_merge;
 use function array_shift;
+use function dump;
 use function get_class;
 use function is_array;
 use function ltrim;
@@ -33,12 +33,11 @@ final class NavigationRenderer
 {
     private Connection $connection;
 
-    private PageQueryBuilder $pageQueryBuilder;
+    private ?PageQueryBuilder $pageQueryBuilder;
 
-    public function __construct(Connection $connection, PageQueryBuilder $pageQueryBuilder)
+    public function __construct(Connection $connection)
     {
-        $this->connection       = $connection;
-        $this->pageQueryBuilder = $pageQueryBuilder;
+        $this->connection = $connection;
     }
 
     /**
@@ -69,11 +68,13 @@ final class NavigationRenderer
         $this->compileTree($moduleModel, $items);
         $this->executeTreeHook($moduleModel, $items);
 
-        $arrRootIDs = $this->executeMenuHook($moduleModel, $itemIds);
-        $arrFirstIDs = $this->getFirstNavigationLevel($moduleModel, $items, $arrRootIDs);
+        $itemIds = $this->executeMenuHook($moduleModel, $itemIds);
+        $firstIds = $this->getFirstNavigationLevel($moduleModel, $items, $itemIds);
+
+        \dump($firstIds);
 
         if ($moduleModel->hofff_navigation_hideSingleLevel) {
-            foreach ($arrFirstIDs as $id) {
+            foreach ($firstIds as $id) {
                 if ($items->subItems[$id]) {
                     $hasMultipleLevels = true;
                     break;
@@ -85,9 +86,11 @@ final class NavigationRenderer
             }
         }
 
-        $stopLimit[0] == 0 && array_shift($stopLimit); // special case renderNavigationTree cannot handle
+        if ($stopLimit[0] == 0) {
+            array_shift($stopLimit); // special case renderNavigationTree cannot handle
+        }
 
-        return trim($this->renderTree($moduleModel, $items, $arrFirstIDs, $stopLimit, $intHard, $currentLevel, $activeId));
+        return trim($this->renderTree($moduleModel, $items, $firstIds, $stopLimit, $intHard, $currentLevel, $activeId));
     }
 
     private function renderTree(
@@ -195,15 +198,15 @@ final class NavigationRenderer
     public function compileTree(ModuleModel $moduleModel, PageItems $items): void
     {
         $blnForwardResolution = ! $moduleModel->hofff_navigation_noForwardResolution;
-        foreach ($items->roots as $intID => $_) {
-            if (!isset($items->items[$intID])) {
+        foreach ($items->items as $itemId => $item) {
+            if ($item === []) {
                 continue;
             }
 
-            $items->items[$intID] = $this->compileNavigationItem(
+            $items->items[$itemId] = $this->compileNavigationItem(
                 $moduleModel,
                 $items,
-                $items->items[$intID],
+                $items->items[$itemId],
                 $blnForwardResolution
             );
         }

@@ -5,7 +5,7 @@ namespace Hofff\Contao\Navigation\EventListener\Dca;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\ServiceAnnotation\Callback;
-use Hofff\Contao\Navigation\FrontendModule\AbstractModuleNavigation;
+use Hofff\Contao\Navigation\FrontendModule\ModuleNavigationMenu;
 
 class NavigationDcaListener
 {
@@ -30,7 +30,7 @@ class NavigationDcaListener
         $fields = [];
 
         foreach ($GLOBALS['TL_DCA']['tl_page']['fields'] as $strField => $arrConfig) {
-            if (! isset(AbstractModuleNavigation::$arrDefaultFields[$strField])) {
+            if (! isset(ModuleNavigationMenu::$arrDefaultFields[$strField])) {
                 $fields[$strField] = &$arrConfig['label'][0];
             }
         }

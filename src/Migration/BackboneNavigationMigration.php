@@ -49,6 +49,7 @@ final class BackboneNavigationMigration extends AbstractMigration
 
     public function shouldRun(): bool
     {
+        return false;
         if ($this->hasBackboneItNavigationModules()) {
             return true;
         }
