@@ -14,9 +14,9 @@ use Doctrine\DBAL\Connection;
 use Hofff\Contao\Navigation\Items\PageItems;
 use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
 
+use Hofff\Contao\Navigation\QueryBuilder\RedirectPageQueryBuilder;
 use function array_merge;
 use function array_shift;
-use function dump;
 use function get_class;
 use function is_array;
 use function ltrim;
@@ -33,11 +33,12 @@ final class NavigationRenderer
 {
     private Connection $connection;
 
-    private ?PageQueryBuilder $pageQueryBuilder;
+    private RedirectPageQueryBuilder $redirectPageQueryBuilder;
 
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection, RedirectPageQueryBuilder $redirectPageQueryBuilder)
     {
-        $this->connection = $connection;
+        $this->connection               = $connection;
+        $this->redirectPageQueryBuilder = $redirectPageQueryBuilder;
     }
 
     /**
@@ -70,8 +71,6 @@ final class NavigationRenderer
 
         $itemIds = $this->executeMenuHook($moduleModel, $itemIds);
         $firstIds = $this->getFirstNavigationLevel($moduleModel, $items, $itemIds);
-
-        \dump($firstIds);
 
         if ($moduleModel->hofff_navigation_hideSingleLevel) {
             foreach ($firstIds as $id) {
@@ -106,89 +105,89 @@ final class NavigationRenderer
             return '';
         }
 
-        $intStop  = $currentLevel >= $stopLimit[0] ? array_shift($stopLimit) : $stopLimit[0];
-        $arrItems = [];
+        $intStop       = $currentLevel >= $stopLimit[0] ? array_shift($stopLimit) : $stopLimit[0];
+        $renderedItems = [];
 
-        foreach ($itemIds as $varID) {
-            if (! isset($items->items[$varID])) {
+        foreach ($itemIds as $itemId) {
+            if (! isset($items->items[$itemId])) {
                 continue;
             }
 
-            $arrItem = $items->items[$varID];
+            $item = $items->items[$itemId];
 
-            if ($varID == $activeId) {
+            if ($itemId == $activeId) {
                 $blnContainsActive = true;
 
-                if ($arrItem['href'] === Environment::get('request')) {
-                    $arrItem['isActive'] = true; // nothing else (active class is set in template)
-                    $arrItem['isInTrail']  = false;
+                if ($item['href'] === Environment::get('request')) {
+                    $item['isActive'] = true; // nothing else (active class is set in template)
+                    $item['isInTrail']  = false;
                 } else {
-                    $arrItem['isActive'] = false; // nothing else (active class is set in template)
-                    $arrItem['isInTrail']  = true;
+                    $item['isActive'] = false; // nothing else (active class is set in template)
+                    $item['isInTrail']  = true;
                 }
             } else { // do not flatten if/else
-                if ($arrItem['tid'] == $activeId) {
-                    if ($arrItem['href'] === Environment::get('request')) {
-                        $arrItem['isActive'] = true; // nothing else (active class is set in template)
-                        $arrItem['isInTrail']  = false;
+                if ($item['tid'] == $activeId) {
+                    if ($item['href'] === Environment::get('request')) {
+                        $item['isActive'] = true; // nothing else (active class is set in template)
+                        $item['isInTrail']  = false;
                     } else {
-                        $arrItem['isActive'] = false; // nothing else (active class is set in template)
-                        $arrItem['isInTrail']  = true;
+                        $item['isActive'] = false; // nothing else (active class is set in template)
+                        $item['isInTrail']  = true;
                     }
                 }
             }
 
-            if ($arrItem['isInTrail']) {
-                $arrItem['class'] .= ' trail';
+            if ($item['isInTrail']) {
+                $item['class'] .= ' trail';
             }
 
-            if (! isset($items->subItems[$varID])) {
-                $arrItem['class'] .= ' leaf';
+            if (! isset($items->subItems[$itemId])) {
+                $item['class'] .= ' leaf';
             } elseif ($currentLevel >= $intHard) {
                 // we are at hard level, never draw submenu
-                $arrItem['class'] .= ' submenu leaf';
-            } elseif ($currentLevel >= $intStop && ! $arrItem['isInTrail'] && $varID !== $activeId && $arrItem['tid'] != $activeId) {
+                $item['class'] .= ' submenu leaf';
+            } elseif ($currentLevel >= $intStop && ! $item['isInTrail'] && $itemId !== $activeId && $item['tid'] != $activeId) {
                 // we are at stop level and not trail and not active, never draw submenu
-                $arrItem['class'] .= ' submenu leaf';
-            } elseif ($items->subItems[$varID]) {
-                $arrItem['class']    .= ' submenu inner';
-                $arrItem['subitems'] = $this->renderTree(
+                $item['class'] .= ' submenu leaf';
+            } elseif ($items->subItems[$itemId]) {
+                $item['class']    .= ' submenu inner';
+                $item['subitems'] = $this->renderTree(
                     $moduleModel,
                     $items,
-                    $items->subItems[$varID] ?? [],
+                    $items->subItems[$itemId] ?? [],
                     $stopLimit,
                     $intHard,
                     $currentLevel + 1
                 );
             } else { // should never be reached, if no hooks are used
-                $arrItem['class'] .= ' leaf';
+                $item['class'] .= ' leaf';
             }
 
-            $arrItems[] = $arrItem;
+            $renderedItems[] = $item;
         }
 
         if ($blnContainsActive) {
-            foreach ($arrItems as &$arrItem) {
-                if (! $arrItem['isActive']) {
-                    $arrItem['class'] .= ' sibling';
+            foreach ($renderedItems as &$item) {
+                if (! $item['isActive']) {
+                    $item['class'] .= ' sibling';
                 }
             }
-            unset($arrItem);
+            unset($item);
         }
 
-        $arrItems[0]['class']                    .= ' first';
-        $arrItems[count($arrItems) - 1]['class'] .= ' last';
+        $renderedItems[0]['class']                    .= ' first';
+        $renderedItems[count($renderedItems) - 1]['class'] .= ' last';
 
-        foreach ($arrItems as &$arrItem) {
-            $arrItem['class'] = ltrim($arrItem['class']);
+        foreach ($renderedItems as &$item) {
+            $item['class'] = ltrim($item['class']);
         }
-        unset($arrItem);
+        unset($item);
 
         $objTemplate = new FrontendTemplate($moduleModel->navigationTpl ?: 'nav_hofff');
         $objTemplate->setData([
             'module' => $moduleModel->row(),
             'level'  => 'level_' . $currentLevel,
-            'items'  => $arrItems,
+            'items'  => $renderedItems,
             'type'   => get_class($this),
         ]);
 
@@ -224,7 +223,7 @@ final class NavigationRenderer
         PageItems $items,
         array $page,
         bool $forwardResolution = true
-    ) {
+    ): array {
         // fallback for dataset field collisions
         $page['_title']       = $page['title'];
         $page['_pageTitle']   = $page['pageTitle'];
@@ -405,47 +404,17 @@ final class NavigationRenderer
 
     private function getRedirectPage(array $arrPage): array
     {
-        static $jumpToQuery = null;
-        static $jumpToFallbackQuery = null;
-
-        if ($jumpToQuery === null) {
-            $jumpToQuery = $this->connection->createQueryBuilder()
-                ->select('*')
-                ->from('tl_page')
-                ->where('id=:id')
-                ->setMaxResults(1);
-
-            $this->pageQueryBuilder
-                ->addGuestsQueryParts($jumpToQuery)
-                ->addPublishedCondition($jumpToQuery);
-        }
-
-        if ($jumpToFallbackQuery === null) {
-            $jumpToFallbackQuery = $this->connection->createQueryBuilder()
-                ->select('*')
-                ->from('tl_page')
-                ->where('type=:type')
-                ->andWhere('pid=:pid')
-                ->setParameter('type', 'regular')
-                ->orderBy('sorting')
-                ->setMaxResults(1);
-
-            $this->pageQueryBuilder
-                ->addGuestsQueryParts($jumpToFallbackQuery);
-        }
-
         if ($arrPage['jumpTo']) {
             $intFallbackSearchID = $arrPage['id'];
             $intJumpToID         = $arrPage['jumpTo'];
             do {
-                $query = clone $jumpToQuery;
+                $query = $this->redirectPageQueryBuilder->createJumpToQuery((int) $intJumpToID);
                 $query->setParameter('id', $intJumpToID);
                 $result = $query->execute();
                 $next   = $result->fetchAssociative();
 
                 if (! $result->rowCount()) {
-                    $query = clone $jumpToFallbackQuery;
-                    $query->setParameter('pid', $intFallbackSearchID);
+                    $query = $this->redirectPageQueryBuilder->createFallbackQuery((int) $intFallbackSearchID);
                     $next = $query->execute()->fetchAssociative();
                     break;
                 }
@@ -454,9 +423,8 @@ final class NavigationRenderer
                 $intJumpToID         = $next['jumpTo'] ?? 0;
             } while ($next['type'] === 'forward');
         } else {
-            $query = clone $jumpToFallbackQuery;
-            $query->setParameter('pid', $arrPage['id']);
-            $next = $query->execute()->fetchAssociative();
+            $query = $this->redirectPageQueryBuilder->createFallbackQuery((int) $arrPage['id']);
+            $next  = $query->execute()->fetchAssociative();
         }
 
         return $next;

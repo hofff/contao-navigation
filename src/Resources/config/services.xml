@@ -23,6 +23,12 @@
 
         <service id="Hofff\Contao\Navigation\Renderer\NavigationRenderer" public="true">
             <argument type="service" id="database_connection"/>
+            <argument type="service" id="Hofff\Contao\Navigation\QueryBuilder\RedirectPageQueryBuilder"/>
+        </service>
+
+        <service id="Hofff\Contao\Navigation\QueryBuilder\RedirectPageQueryBuilder">
+            <argument type="service" id="database_connection"/>
+            <argument type="service" id="security.helper"/>
         </service>
     </services>
 </container>

@@ -8,14 +8,13 @@ use Contao\ModuleModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
-
 use Symfony\Component\Security\Core\Security;
+
 use function array_flip;
 use function array_keys;
 use function array_merge;
-use function time;
 
-final class PageQueryBuilder
+final class PageQueryBuilder extends BaseQueryBuilder
 {
     public const DEFAULT_FIELDS = [
         'id'          => true,
@@ -45,23 +44,15 @@ final class PageQueryBuilder
         'error_410'
     ];
 
-    private Connection $connection;
-
-    private Security $security;
-
     private ModuleModel $moduleModel;
     
     private array $fields = [];
     
-    /** @var array<string,QueryBuilder> */
-    private $queries = [];
-    
     public function __construct(Connection $connection, Security $security, ModuleModel $moduleModel)
     {
-        $this->connection  = $connection;
-        $this->moduleModel = $moduleModel;
-        $this->security    = $security;
+        parent::__construct($connection, $security);
 
+        $this->moduleModel = $moduleModel;
         $this->determineFields();
     }
 
@@ -202,24 +193,6 @@ final class PageQueryBuilder
         return $query;
     }
 
-    public function addPublishedCondition(QueryBuilder $queryBuilder, bool $respectPublished = true): self
-    {
-        if (! $respectPublished || $this->security->isGranted('ROLE_USER')) {
-            return $this;
-        }
-
-        static $time;
-        if (! $time) {
-            $time = time();
-        }
-
-        $queryBuilder
-            ->andWhere('(start = \'\' OR start < :time) AND (stop = \'\' OR stop > :time) AND published = 1')
-            ->setParameter('time', $time);
-
-        return $this;
-    }
-
     /**
      * Adds the or hidden state of a page.
      *
@@ -254,29 +227,6 @@ final class PageQueryBuilder
         }
 
         return $this;
-    }
-
-    public function addGuestsQueryParts(QueryBuilder $queryBuilder, bool $showGuests = false): self
-    {
-        if ($showGuests) {
-            return $this;
-        }
-
-        if ($this->security->isGranted('ROLE_MEMBER') && ! $this->security->isGranted('ROLE_USER')) {
-            $queryBuilder->andWhere('guests != 1');
-        }
-
-        return $this;
-    }
-
-    private function query(string $name, callable $builder): QueryBuilder
-    {
-        if (! isset ($this->queries[$name])) {
-            $this->queries[$name] = $this->connection->createQueryBuilder()->from('tl_page');
-            $builder($this->queries[$name]);
-        }
-
-        return clone $this->queries[$name];
     }
 
     private function determineFields(): void
