@@ -63,33 +63,34 @@ final class PageQueryBuilder
 
     public function createFetchItemsQuery(array $parentIds): QueryBuilder
     {
-        if (! isset($this->queries[__FUNCTION__])) {
-            $this->queries[__FUNCTION__] = $this->connection->createQueryBuilder()
-                ->from('tl_page')
-                ->select(... $this->fields)
-                ->andWhere('type != :rootType')
-                ->setParameter('rootType', 'root')
-                ->andWhere('pid IN (:pids)')
-                ->orderBy('sorting');
+        $query = $this->query(
+            __FUNCTION__,
+            function (QueryBuilder $queryBuilder): void {
+                $queryBuilder
+                    ->select(... $this->fields)
+                    ->andWhere('type != :rootType')
+                    ->setParameter('rootType', 'root')
+                    ->andWhere('pid IN (:pids)')
+                    ->orderBy('sorting');
 
-            $this
-                ->addHiddenCondition(
-                    $this->queries[__FUNCTION__],
-                    (bool) $this->moduleModel->hofff_navigation_showHidden,
-                    (bool) $this->moduleModel->hofff_navigation_isSitemap
-                )
-                ->addPublishedCondition($this->queries[__FUNCTION__])
-                ->addErrorPagesCondition(
-                    $this->queries[__FUNCTION__],
-                    (bool) $this->moduleModel->hofff_navigation_showErrorPages
-                )
-                ->addGuestsQueryParts(
-                    $this->queries[__FUNCTION__],
-                    (bool) $this->moduleModel->backboneit_navigation_showGuests
-                );
-        }
+                $this
+                    ->addHiddenCondition(
+                        $queryBuilder,
+                        (bool) $this->moduleModel->hofff_navigation_showHidden,
+                        (bool) $this->moduleModel->hofff_navigation_isSitemap
+                    )
+                    ->addPublishedCondition($queryBuilder)
+                    ->addErrorPagesCondition(
+                        $queryBuilder,
+                        (bool) $this->moduleModel->hofff_navigation_showErrorPages
+                    )
+                    ->addGuestsQueryParts(
+                        $queryBuilder,
+                        (bool) $this->moduleModel->backboneit_navigation_showGuests
+                    );
+            }
+        );
 
-        $query = clone $this->queries[__FUNCTION__];
         $query->setParameter('pids', $parentIds, Connection::PARAM_INT_ARRAY);
 
         return $query;
@@ -97,29 +98,28 @@ final class PageQueryBuilder
 
     public function createRootIdsQuery(): QueryBuilder
     {
-        if (! isset($this->queries[__FUNCTION__])) {
-            $this->queries[__FUNCTION__] = $this->connection->createQueryBuilder();
-            $this->queries[__FUNCTION__]
-                ->select('id', 'pid', 'protected', 'groups')
-                ->from('tl_page');
+        return $this->query(
+            __FUNCTION__,
+            function (QueryBuilder $queryBuilder): void {
+                $queryBuilder
+                    ->select('id', 'pid', 'protected', 'groups');
 
-            $this
-                ->addHiddenCondition(
-                    $this->queries[__FUNCTION__],
-                    ! $this->moduleModel->hofff_navigation_respectHidden,
-                    (bool) $this->moduleModel->hofff_navigation_isSitemap
-                )
-                ->addGuestsQueryParts(
-                    $this->queries[__FUNCTION__],
-                    ! $this->moduleModel->hofff_navigation_respectGuests
-                )
-                ->addPublishedCondition(
-                    $this->queries[__FUNCTION__],
-                    (bool) $this->moduleModel->hofff_navigation_respectPublish
-                );
-        }
-
-        return clone $this->queries[__FUNCTION__];
+                $this
+                    ->addHiddenCondition(
+                        $queryBuilder,
+                        ! $this->moduleModel->hofff_navigation_respectHidden,
+                        (bool) $this->moduleModel->hofff_navigation_isSitemap
+                    )
+                    ->addGuestsQueryParts(
+                        $queryBuilder,
+                        ! $this->moduleModel->hofff_navigation_respectGuests
+                    )
+                    ->addPublishedCondition(
+                        $queryBuilder,
+                        (bool) $this->moduleModel->hofff_navigation_respectPublish
+                    );
+            }
+        );
     }
 
     public function createStartRootIdsQuery(): QueryBuilder
@@ -128,41 +128,39 @@ final class PageQueryBuilder
             return $this->createRootIdsQuery();
         }
 
-        if (! isset($this->queries[__FUNCTION__])) {
-            $this->queries[__FUNCTION__] = $this->connection->createQueryBuilder();
+        return $this->query(
+            __FUNCTION__,
+            function (QueryBuilder $queryBuilder): void {
+                $queryBuilder
+                    ->select('id', 'pid', 'protected', 'groups');
 
-            $this->queries[__FUNCTION__]
-                ->select('id', 'pid', 'protected', 'groups')
-                ->from('tl_page');
-
-            $this
-                ->addHiddenCondition(
-                    $this->queries[__FUNCTION__],
-                    (bool) $this->moduleModel->hofff_navigation_showHiddenStart,
-                    (bool) $this->moduleModel->hofff_navigation_isSitemap
-                )
-                ->addPublishedCondition($this->queries[__FUNCTION__])
-                ->addErrorPagesCondition(
-                    $this->queries[__FUNCTION__],
-                    (bool) $this->moduleModel->hofff_navigation_showErrorPages
-                )
-                ->addGuestsQueryParts($this->queries[__FUNCTION__], (bool) $this->moduleModel->hofff_navigation_showGuests);
-        }
-
-        return clone $this->queries[__FUNCTION__];
+                $this
+                    ->addHiddenCondition(
+                        $queryBuilder,
+                        (bool) $this->moduleModel->hofff_navigation_showHiddenStart,
+                        (bool) $this->moduleModel->hofff_navigation_isSitemap
+                    )
+                    ->addPublishedCondition($queryBuilder)
+                    ->addErrorPagesCondition(
+                        $queryBuilder,
+                        (bool) $this->moduleModel->hofff_navigation_showErrorPages
+                    )
+                    ->addGuestsQueryParts($queryBuilder, (bool) $this->moduleModel->hofff_navigation_showGuests);
+            }
+        );
     }
 
     public function createPageInformationQuery(array $pageIds): QueryBuilder
     {
-        if (! isset($this->queries[__FUNCTION__])) {
-            $this->queries[__FUNCTION__] = $this->connection->createQueryBuilder();
-            $this->queries[__FUNCTION__]
-                ->select('id', 'pid', 'protected', 'groups')
-                ->from('tl_page')
-                ->where('id IN (:ids)');
-        }
+        $query = $this->query(
+            __FUNCTION__,
+            function (QueryBuilder $queryBuilder): void {
+                $queryBuilder
+                    ->select('id', 'pid', 'protected', 'groups')
+                    ->where('id IN (:ids)');
+            }
+        );
 
-        $query = clone $this->queries[__FUNCTION__];
         $query->setParameter('ids', $pageIds, Connection::PARAM_STR_ARRAY);
 
         return $query;
@@ -170,15 +168,15 @@ final class PageQueryBuilder
 
     public function createRootInformationQuery(array $rootIds): QueryBuilder
     {
-        if (! isset($this->queries[__FUNCTION__])) {
-            $this->queries[__FUNCTION__] = $this->connection->createQueryBuilder();
-            $this->queries[__FUNCTION__]
+        $query = $this->query(
+            __FUNCTION__,
+            function (QueryBuilder $queryBuilder): void {
+                $queryBuilder
                 ->select(... $this->fields)
-                ->from('tl_page')
                 ->where('id IN (:rootIds)');
-        }
+            }
+        );
 
-        $query = clone $this->queries[__FUNCTION__];
         $query->setParameter('rootIds', $rootIds, Connection::PARAM_STR_ARRAY);
 
         return $query;
@@ -186,15 +184,15 @@ final class PageQueryBuilder
 
     public function createPreviousLevelQuery(array $pageIds): QueryBuilder
     {
-        if (! isset($this->queries[__FUNCTION__])) {
-            $this->queries[__FUNCTION__] = $this->connection->createQueryBuilder();
-            $this->queries[__FUNCTION__]
+        $query = $this->query(
+            __FUNCTION__,
+            function (QueryBuilder $queryBuilder): void {
+                $queryBuilder
                 ->select('id', 'pid')
-                ->from('tl_page')
                 ->where('id IN (:ids)');
-        }
+            }
+        );
 
-        $query = clone $this->queries[__FUNCTION__];
         $query->setParameter('ids', $pageIds);
 
         return $query;
@@ -265,6 +263,16 @@ final class PageQueryBuilder
         }
 
         return $this;
+    }
+
+    private function query(string $name, callable $builder): QueryBuilder
+    {
+        if (! isset ($this->queries[$name])) {
+            $this->queries[$name] = $this->connection->createQueryBuilder()->from('tl_page');
+            $builder($this->queries[$name]);
+        }
+
+        return clone $this->queries[$name];
     }
 
     private function determineFields(): void
