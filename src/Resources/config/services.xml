@@ -22,7 +22,7 @@
         </service>
 
         <service id="Hofff\Contao\Navigation\Renderer\NavigationRenderer" public="true">
-            <argument type="service" id="database_connection"/>
+            <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="Hofff\Contao\Navigation\QueryBuilder\RedirectPageQueryBuilder"/>
         </service>
 

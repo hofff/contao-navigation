@@ -9,16 +9,17 @@ use Contao\FrontendTemplate;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
-use Contao\System;
 use Doctrine\DBAL\Connection;
+use Hofff\Contao\Navigation\Event\ItemEvent;
+use Hofff\Contao\Navigation\Event\MenuEvent;
+use Hofff\Contao\Navigation\Event\TreeEvent;
 use Hofff\Contao\Navigation\Items\PageItems;
-use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
-
 use Hofff\Contao\Navigation\QueryBuilder\RedirectPageQueryBuilder;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+
 use function array_merge;
 use function array_shift;
 use function get_class;
-use function is_array;
 use function ltrim;
 use function preg_replace;
 use function str_replace;
@@ -31,14 +32,16 @@ use const PHP_INT_MAX;
 
 final class NavigationRenderer
 {
-    private Connection $connection;
-
     private RedirectPageQueryBuilder $redirectPageQueryBuilder;
 
-    public function __construct(Connection $connection, RedirectPageQueryBuilder $redirectPageQueryBuilder)
-    {
-        $this->connection               = $connection;
+    private EventDispatcherInterface $eventDispatcher;
+
+    public function __construct(
+        EventDispatcherInterface $eventDispatcher,
+        RedirectPageQueryBuilder $redirectPageQueryBuilder
+    ) {
         $this->redirectPageQueryBuilder = $redirectPageQueryBuilder;
+        $this->eventDispatcher          = $eventDispatcher;
     }
 
     /**
@@ -69,7 +72,7 @@ final class NavigationRenderer
         $this->compileTree($moduleModel, $items);
         $this->executeTreeHook($moduleModel, $items);
 
-        $itemIds = $this->executeMenuHook($moduleModel, $itemIds);
+        $itemIds = $this->dispatchMenuEvent($moduleModel, $itemIds);
         $firstIds = $this->getFirstNavigationLevel($moduleModel, $items, $itemIds);
 
         if ($moduleModel->hofff_navigation_hideSingleLevel) {
@@ -284,9 +287,7 @@ final class NavigationRenderer
                 break;
         }
 
-        $this->executeItemHook($moduleModel, $page);
-
-        return $page;
+        return $this->dispatchItemEvent($moduleModel, $page);
     }
 
     private function generatePageUrl(array $arrPage): ?string
@@ -318,16 +319,16 @@ final class NavigationRenderer
         return StringUtil::encodeEmail($strHref);
     }
 
-    protected function executeItemHook(ModuleModel $moduleModel, array &$arrPage): void
+    protected function dispatchItemEvent(ModuleModel $moduleModel, array $arrPage): array
     {
         if (! $moduleModel->hofff_navigation_disableHooks) {
-            return;
+            return $arrPage;
         }
 
-        foreach ((array) ($GLOBALS['TL_HOOKS']['hofff_navigation_item'] ?? []) as $arrCallback) {
-            $arrCallback[0] = System::importStatic($arrCallback[0]);
-            $arrCallback[0]->{$arrCallback[1]}($moduleModel, $arrPage);
-        }
+        $event = new ItemEvent($moduleModel, $arrPage);
+        $this->eventDispatcher->dispatch($event);
+
+        return $event->item();
     }
 
     /**
@@ -345,10 +346,7 @@ final class NavigationRenderer
             return;
         }
 
-        foreach ((array) $GLOBALS['TL_HOOKS']['hofff_navigation_tree'] as $arrCallback) {
-            $arrCallback[0] = System::importStatic($arrCallback[0]);
-            $arrCallback[0]->{$arrCallback[1]}($moduleModel, $items);
-        }
+        $this->eventDispatcher->dispatch(new TreeEvent($moduleModel, $items));
     }
 
     /**
@@ -363,26 +361,16 @@ final class NavigationRenderer
      *
      * @return array $arrRootIDs The root pages after hook execution
      */
-    protected function executeMenuHook(ModuleModel $moduleModel, array $arrRootIDs, $blnForce = false)
+    protected function dispatchMenuEvent(ModuleModel $moduleModel, array $arrRootIDs): array
     {
-        if (! $blnForce && $moduleModel->hofff_navigation_disableHooks) {
+        if ($moduleModel->hofff_navigation_disableHooks) {
             return $arrRootIDs;
         }
 
-        if (! is_array($GLOBALS['TL_HOOKS']['hofff_navigation_menu'])) {
-            return $arrRootIDs;
-        }
+        $event = new MenuEvent($moduleModel, $arrRootIDs);
+        $this->eventDispatcher->dispatch($event);
 
-        foreach ($GLOBALS['TL_HOOKS']['hofff_navigation_menu'] as $arrCallback) {
-            $arrCallback[0] = System::importStatic($arrCallback[0]);
-            $arrNewRoots = $this->{$arrCallback[0]}->{$arrCallback[1]}($moduleModel, $arrRootIDs);
-
-            if ($arrNewRoots !== null) {
-                $arrRootIDs = $arrNewRoots;
-            }
-        }
-
-        return $arrRootIDs;
+        return $event->rootIds();
     }
 
     protected function getFirstNavigationLevel(ModuleModel $moduleModel, PageItems $items, array $arrRootIDs): array
