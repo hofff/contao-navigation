@@ -3,6 +3,7 @@
 namespace Hofff\Contao\Navigation\FrontendModule;
 
 use BackendTemplate;
+use Contao\StringUtil;
 use Environment;
 use FrontendTemplate;
 use Module;
@@ -572,11 +573,7 @@ abstract class AbstractModuleNavigation extends Module
             return $strHref;
         }
 
-        if (version_compare(VERSION . '.' . BUILD, '3.5.5', '>=')) {
-            return \StringUtil::encodeEmail($strHref);
-        } else {
-            return \String::encodeEmail($strHref);
-        }
+        return StringUtil::encodeEmail($strHref);
     }
 
     public function isPermissionCheckRequired()
