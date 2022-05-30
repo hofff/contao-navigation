@@ -41,7 +41,6 @@ final class PageQueryBuilder extends BaseQueryBuilder
         'error_401',
         'error_403',
         'error_404',
-        'error_410'
     ];
 
     private ModuleModel $moduleModel;
@@ -198,7 +197,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
      *
      * @return self
      */
-    public function addHiddenCondition(
+    private function addHiddenCondition(
         QueryBuilder $queryBuilder,
         bool $showHidden = false,
         bool $sitemap = false
@@ -218,7 +217,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
         return $this;
     }
 
-    public function addErrorPagesCondition(QueryBuilder $queryBuilder, bool $showErrorPages): self
+    private function addErrorPagesCondition(QueryBuilder $queryBuilder, bool $showErrorPages): self
     {
         if (! $showErrorPages) {
             $queryBuilder

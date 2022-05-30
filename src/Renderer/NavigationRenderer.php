@@ -70,7 +70,7 @@ final class NavigationRenderer
         }
 
         $this->compileTree($moduleModel, $items);
-        $this->executeTreeHook($moduleModel, $items);
+        $this->dispatchTreeEvent($moduleModel, $items);
 
         $itemIds = $this->dispatchMenuEvent($moduleModel, $itemIds);
         $firstIds = $this->getFirstNavigationLevel($moduleModel, $items, $itemIds);
@@ -197,7 +197,7 @@ final class NavigationRenderer
         return $objTemplate->parse();
     }
 
-    public function compileTree(ModuleModel $moduleModel, PageItems $items): void
+    private function compileTree(ModuleModel $moduleModel, PageItems $items): void
     {
         $blnForwardResolution = ! $moduleModel->hofff_navigation_noForwardResolution;
         foreach ($items->items as $itemId => $item) {
@@ -221,7 +221,7 @@ final class NavigationRenderer
      *
      * @return array The compiled navigation item array
      */
-    public function compileNavigationItem(
+    private function compileNavigationItem(
         ModuleModel $moduleModel,
         PageItems $items,
         array $page,
@@ -310,7 +310,7 @@ final class NavigationRenderer
      *
      * @return string The modified URL
      */
-    public function encodeEmailURL(string $strHref): string
+    private function encodeEmailURL(string $strHref): string
     {
         if (strncasecmp($strHref, 'mailto:', 7) !== 0) {
             return $strHref;
@@ -319,7 +319,7 @@ final class NavigationRenderer
         return StringUtil::encodeEmail($strHref);
     }
 
-    protected function dispatchItemEvent(ModuleModel $moduleModel, array $arrPage): array
+    private function dispatchItemEvent(ModuleModel $moduleModel, array $arrPage): array
     {
         if (! $moduleModel->hofff_navigation_disableHooks) {
             return $arrPage;
@@ -340,9 +340,9 @@ final class NavigationRenderer
      *
      * @return void
      */
-    protected function executeTreeHook(ModuleModel $moduleModel, PageItems $items, $blnForce = false): void
+    private function dispatchTreeEvent(ModuleModel $moduleModel, PageItems $items): void
     {
-        if (! $blnForce && ! $moduleModel->hofff_navigation_disableHooks) {
+        if (! $moduleModel->hofff_navigation_disableHooks) {
             return;
         }
 
@@ -361,7 +361,7 @@ final class NavigationRenderer
      *
      * @return array $arrRootIDs The root pages after hook execution
      */
-    protected function dispatchMenuEvent(ModuleModel $moduleModel, array $arrRootIDs): array
+    private  function dispatchMenuEvent(ModuleModel $moduleModel, array $arrRootIDs): array
     {
         if ($moduleModel->hofff_navigation_disableHooks) {
             return $arrRootIDs;
@@ -373,7 +373,7 @@ final class NavigationRenderer
         return $event->rootIds();
     }
 
-    protected function getFirstNavigationLevel(ModuleModel $moduleModel, PageItems $items, array $arrRootIDs): array
+    private function getFirstNavigationLevel(ModuleModel $moduleModel, PageItems $items, array $arrRootIDs): array
     {
         if ($moduleModel->hofff_navigation_includeStart) {
             return $arrRootIDs;
