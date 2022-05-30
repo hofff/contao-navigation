@@ -182,7 +182,7 @@ abstract class AbstractModuleNavigation extends Module
      * this navigations settings.
      * Maintains relative order of the input array.
      *
-     * For permance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+     * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
      * @param array $arrPages An array of page IDs to filter
@@ -258,7 +258,7 @@ abstract class AbstractModuleNavigation extends Module
      * given conditions, which are added to the WHERE clause of the query.
      * Maintains relative order of the input array.
      *
-     * For permance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+     * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
      * @param array $arrPages An array of parent IDs
@@ -309,7 +309,7 @@ abstract class AbstractModuleNavigation extends Module
      * Maintains relative order of the input array and merges subsequent parent
      * IDs.
      *
-     * For permance reason $arrPages is NOT "intval"ed. Make sure $arrPages
+     * For performance reason $arrPages is NOT "intval"ed. Make sure $arrPages
      * contains no hazardous code.
      *
      * @param array $arrPages An array of child IDs
