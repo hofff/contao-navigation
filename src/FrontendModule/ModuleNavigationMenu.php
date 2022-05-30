@@ -53,8 +53,6 @@ final class ModuleNavigationMenu extends Module
 
     protected string $strNavigation = '';
 
-    protected $arrGroups; // set of groups of the current user
-
     private PageItemsLoader $loader;
 
     private NavigationRenderer $renderer;
@@ -68,13 +66,6 @@ final class ModuleNavigationMenu extends Module
 
         if (TL_MODE === 'BE') {
             return;
-        }
-
-        $this->import('Database');
-
-        if (FE_USER_LOGGED_IN) {
-            $this->import('FrontendUser', 'User');
-            $this->User->groups && $this->arrGroups = $this->User->groups;
         }
 
         if (! strlen($this->navigationTpl)) {
@@ -133,7 +124,7 @@ final class ModuleNavigationMenu extends Module
 
     protected function compile(): void
     {
-        $this->Template->request = $this->getIndexFreeRequest(true);
+        $this->Template->request = $this->getIndexFreeRequest();
         $this->Template->skipId  = 'skipNavigation' . $this->id;
         $this->Template->items   = $this->strNavigation;
         $this->hofff_navigation_addLegacyCss && $this->Template->legacyClass = ' mod_navigation';
