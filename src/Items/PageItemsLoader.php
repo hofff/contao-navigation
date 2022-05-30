@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Hofff\Contao\Navigation\Items;
 
-use Contao\FrontendUser;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
@@ -12,6 +11,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Result;
 use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
+use Hofff\Contao\Navigation\Security\PagePermissionGuard;
 use Symfony\Component\Security\Core\Security;
 
 use function array_diff;
@@ -38,6 +38,8 @@ final class PageItemsLoader
 
     private Security $security;
 
+    private PagePermissionGuard $guard;
+
     /** @psalm-suppress PropertyNotSetInConstructor - Will be initialized in the only public method load() */
     private PageQueryBuilder $pageQueryBuilder;
 
@@ -54,10 +56,11 @@ final class PageItemsLoader
 
     private ?int $activeId = null;
 
-    public function __construct(Connection $connection, Security $security)
+    public function __construct(Connection $connection, Security $security, PagePermissionGuard $guard)
     {
         $this->connection = $connection;
         $this->security   = $security;
+        $this->guard      = $guard;
     }
 
     /**
@@ -157,7 +160,7 @@ final class PageItemsLoader
                     continue;
                 }
 
-                if (! $this->isPermissionGranted($this->moduleModel, $page)) {
+                if (! $this->guard->isPermissionGranted($this->moduleModel, $page)) {
                     continue;
                 }
 
@@ -217,77 +220,6 @@ final class PageItemsLoader
         return $rootIds;
     }
 
-    public function isPermissionCheckRequired(): bool
-    {
-        return ! $this->security->isGranted('ROLE_USER') && ! $this->moduleModel->hofff_navigation_showProtected;
-    }
-
-    /**
-     * Utility method.
-     *
-     * THIS IS NOT THE OPPOSITE OF ::isPermissionDenied()!
-     *
-     * Checks if the current user has permission to view the page of the given
-     * page dataset, in regards to the current navigation settings and the
-     * permission requirements of the page.
-     *
-     * Context property: hofff_navigation_showProtected
-     *
-     * @param array<string,mixed> $page The page dataset of the current page, with at least
-     *                                  groups and protected attributes set.
-     *
-     * @return bool If the permission is granted true, otherwise false.
-     */
-    public function isPermissionGranted(ModuleModel $model, array $page): bool
-    {
-        // be users have access everywhere
-        if ($this->security->isGranted('ROLE_USER')) {
-            return true;
-        }
-
-        // protection is ignored
-        if ($model->hofff_navigation_showProtected) {
-            return true;
-        }
-
-        return ! $this->isPermissionDenied($page);
-    }
-
-    /**
-     * Utility method.
-     *
-     * THIS IS NOT THE OPPOSITE OF ::isPermissionGranted()!
-     *
-     * Checks if the current user has no permission to view the page of the
-     * given page dataset, in regards to the permission requirements of the
-     * page.
-     *
-     * @param array<string,mixed> $page The page dataset of the current page, with at least
-     *                                  groups and protected attributes set.
-     *
-     * @return bool If the permission is denied true, otherwise false.
-     */
-    public function isPermissionDenied(array $page): bool
-    {
-        // this page is not protected
-        if (! $page['protected']) {
-            return false;
-        }
-
-        $user = $this->security->getUser();
-        if (! $user instanceof FrontendUser) {
-            return true;
-        }
-
-        // the current user is not in any group
-        if (! $user->groups) {
-            return true;
-        }
-
-        // check if the current user is not in any group, which is allowed to access the current page
-        return ! array_intersect((array) $user->groups, StringUtil::deserialize($page['groups'], true));
-    }
-
     /**
      * @return list<int>
      */
@@ -338,7 +270,7 @@ final class PageItemsLoader
         /** @psalm-var Result $result */
         $result = $queryBuilder->execute();
 
-        if (! $this->isPermissionCheckRequired()) {
+        if (! $this->guard->isPermissionCheckRequired($this->moduleModel)) {
             return array_values(
                 array_intersect(
                     $pageIds,
@@ -350,7 +282,7 @@ final class PageItemsLoader
         $parentIds = [];
         $valid     = [];
         while ($page = $result->fetchAssociative()) {
-            if ($this->isPermissionDenied($page)) {
+            if ($this->guard->isPermissionDenied($page)) {
                 continue;
             }
 
@@ -384,7 +316,7 @@ final class PageItemsLoader
                             ? array_merge($parentIds[$page['pid']], $currentIds[$page['id']])
                             : $currentIds[$page['id']];
                     }
-                } elseif ($this->isPermissionDenied($page)) {
+                } elseif ($this->guard->isPermissionDenied($page)) {
                     $valid = array_diff($valid, $currentIds[$page['id']]);
                 }
             }
@@ -416,9 +348,9 @@ final class PageItemsLoader
         $result = $queryBuilder->execute();
 
         $next = [];
-        if ($this->isPermissionCheckRequired()) {
+        if ($this->guard->isPermissionCheckRequired($this->moduleModel)) {
             while ($page = $result->fetchAssociative()) {
-                if ($this->isPermissionDenied($page)) {
+                if ($this->guard->isPermissionDenied($page)) {
                     continue;
                 }
 

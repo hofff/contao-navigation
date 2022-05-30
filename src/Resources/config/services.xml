@@ -19,6 +19,7 @@
         <service id="Hofff\Contao\Navigation\Items\PageItemsLoader" public="true">
             <argument type="service" id="database_connection"/>
             <argument type="service" id="security.helper"/>
+            <argument type="service" id="Hofff\Contao\Navigation\Security\PagePermissionGuard"/>
         </service>
 
         <service id="Hofff\Contao\Navigation\Renderer\NavigationRenderer" public="true">
@@ -34,6 +35,10 @@
         <service id="Hofff\Contao\Navigation\FrontendModule\ModuleNavigationMenu">
             <argument type="service" id="Hofff\Contao\Navigation\Items\PageItemsLoader"/>
             <argument type="service" id="Hofff\Contao\Navigation\Renderer\NavigationRenderer"/>
+        </service>
+
+        <service id="Hofff\Contao\Navigation\Security\PagePermissionGuard">
+            <argument type="service" id="security.helper"/>
         </service>
     </services>
 </container>
