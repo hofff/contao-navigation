@@ -5,7 +5,7 @@ namespace Hofff\Contao\Navigation\FrontendModule;
 class ModuleNavigationMenu extends AbstractModuleNavigation
 {
 
-    protected $strTemplate = 'mod_backboneit_navigation_menu';
+    protected $strTemplate = 'mod_hofff_navigation_menu';
 
     protected $strNavigation;
 
@@ -279,11 +279,11 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
         if (! $blnForce && $this->hofff_navigation_disableHooks) {
             return $arrRootIDs;
         }
-        if (! is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_menu'])) {
+        if (! is_array($GLOBALS['TL_HOOKS']['hofff_navigation_menu'])) {
             return $arrRootIDs;
         }
 
-        foreach ($GLOBALS['TL_HOOKS']['backboneit_navigation_menu'] as $arrCallback) {
+        foreach ($GLOBALS['TL_HOOKS']['hofff_navigation_menu'] as $arrCallback) {
             $this->import($arrCallback[0]);
             $arrNewRoots = $this->{$arrCallback[0]}->{$arrCallback[1]}($this, $arrRootIDs);
 

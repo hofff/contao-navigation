@@ -156,7 +156,7 @@ abstract class AbstractModuleNavigation extends Module
 			LIMIT	0, 1';
 
         if (! $this->hofff_navigation_disableHooks) {
-            $this->blnTreeHook = is_array($GLOBALS['TL_HOOKS']['backboneit_navigation_tree']);
+            $this->blnTreeHook = is_array($GLOBALS['TL_HOOKS']['hofff_navigation_tree']);
             $this->blnItemHook = is_array($GLOBALS['TL_HOOKS']['bbit_navi_item']);
         }
     }
@@ -757,7 +757,7 @@ abstract class AbstractModuleNavigation extends Module
             return;
         }
 
-        foreach ((array) $GLOBALS['TL_HOOKS']['backboneit_navigation_tree'] as $arrCallback) {
+        foreach ((array) $GLOBALS['TL_HOOKS']['hofff_navigation_tree'] as $arrCallback) {
             $this->import($arrCallback[0]);
             $this->{$arrCallback[0]}->{$arrCallback[1]}($this);
         }

@@ -49,6 +49,10 @@ final class BackboneNavigationMigration extends AbstractMigration
 
     public function shouldRun(): bool
     {
+        if ($this->hasBackboneItNavigationModules()) {
+            return true;
+        }
+
         $affectedFields = $this->determineAffectedFields();
 
         return $affectedFields !== [];
@@ -56,13 +60,33 @@ final class BackboneNavigationMigration extends AbstractMigration
 
     public function run(): MigrationResult
     {
-        $affectedFields = $this->determineAffectedFields();
+        $this->renameNavigationModules();
 
+        $affectedFields = $this->determineAffectedFields();
         foreach ($affectedFields as $field) {
             $this->renameField($field);
         }
 
-        return $this->createResult(true, 'Renamed field prefix from backboneit_navigation_ to hofff_navigation_.');
+        return $this->createResult(true);
+    }
+
+    private function hasBackboneItNavigationModules(): bool
+    {
+        $result = $this->connection->executeQuery(
+            'SELECT count(id) FROM tl_navigation WHERE type=:type',
+            ['type' => 'backboneit_navigation_menu']
+        );
+
+        return $result->fetchOne() > 0;
+    }
+
+    private function renameNavigationModules(): void
+    {
+        $this->connection->update(
+            'tl_module',
+            ['type' => 'hofff_navigation_menu'],
+            ['type' => 'backboneit_navigation_menu']
+        );
     }
 
     /** @return list<string> */

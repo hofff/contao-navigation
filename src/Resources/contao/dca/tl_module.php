@@ -9,7 +9,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigatio
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineHard';
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineDepth';
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
+$GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_menu']
     = '{title_legend},name,headline,type;'
     . '{hofff_navigation_root_legend},'
     . 'hofff_navigation_currentAsRoot,hofff_navigation_defineRoots,'
