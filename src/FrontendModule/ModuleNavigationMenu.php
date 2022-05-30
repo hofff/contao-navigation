@@ -297,7 +297,7 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
 
     protected function getFirstNavigationLevel(array $arrRootIDs)
     {
-        if ($this->backboneit_navigation_includeStart) {
+        if ($this->hofff_navigation_includeStart) {
             return $arrRootIDs;
         }
 
@@ -319,8 +319,8 @@ class ModuleNavigationMenu extends AbstractModuleNavigation
             array_values(
                 array_unique(
                     array_merge(
-                        \Contao\StringUtil::deserialize($this->backboneit_navigation_roots_order, true),
-                        \Contao\StringUtil::deserialize($this->backboneit_navigation_roots, true)
+                        \Contao\StringUtil::deserialize($this->hofff_navigation_roots_order, true),
+                        \Contao\StringUtil::deserialize($this->hofff_navigation_roots, true)
                     )
                 )
             )

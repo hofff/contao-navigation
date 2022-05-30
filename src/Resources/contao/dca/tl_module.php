@@ -25,26 +25,27 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['backboneit_navigation_menu']
     . '{template_legend:hide},navigationTpl,hofff_navigation_addLegacyCss,'
     . 'hofff_navigation_addFields;'
     . '{protected_legend:hide},protected;'
-    . '{expert_legend:hide},hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages,hofff_navigation_disableHooks,guests,cssID,space';
+    . '{expert_legend:hide},hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages,'
+    . 'hofff_navigation_disableHooks,guests,cssID,space';
 
-$GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineRoots']
-    = 'backboneit_navigation_roots';
-$GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_includeStart']
-    = 'backboneit_navigation_showHiddenStart';
-$GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineStop']
-    = 'backboneit_navigation_stop';
-$GLOBALS['TL_DCA']['tl_module']['subpalettes']['backboneit_navigation_defineHard']
-    = 'backboneit_navigation_hard';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineRoots']
+    = 'hofff_navigation_roots';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_includeStart']
+    = 'hofff_navigation_showHiddenStart';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineStop']
+    = 'hofff_navigation_stop';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['hofff_navigation_defineHard']
+    = 'hofff_navigation_hard';
 
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_roots'] = [
     'exclude'   => true,
     'inputType' => 'pageTree',
     'eval'      => [
         'multiple'   => true,
         'fieldType'  => 'checkbox',
         'tl_class'   => 'clr',
-        'orderField' => 'backboneit_navigation_roots_order',
+        'orderField' => 'hofff_navigation_roots_order',
     ],
     'sql'       => [
         'type'    => Types::BLOB,
@@ -53,7 +54,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots'] = [
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots_order'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_roots_order'] = [
     'sql' => [
         'type'    => Types::BLOB,
         'default' => null,
@@ -61,7 +62,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_roots_order'] =
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_start'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_start'] = [
     'exclude'   => true,
     'inputType' => 'text',
     'eval'      => [
@@ -76,7 +77,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_start'] = [
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectHidden'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_respectHidden'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -89,7 +90,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectHidden']
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectPublish'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_respectPublish'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -102,7 +103,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectPublish'
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectGuests'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_respectGuests'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -115,7 +116,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_respectGuests']
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_includeStart'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_includeStart'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -129,7 +130,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_includeStart'] 
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showHiddenStart'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showHiddenStart'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -142,7 +143,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showHiddenStart
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showHidden'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showHidden'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -155,7 +156,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showHidden'] = 
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showProtected'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showProtected'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -168,7 +169,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showProtected']
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showGuests'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showGuests'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -181,7 +182,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showGuests'] = 
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addFields'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_addFields'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -195,7 +196,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addFields'] = [
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_noForwardResolution'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_noForwardResolution'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -208,7 +209,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_noForwardResolu
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showErrorPages'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showErrorPages'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -221,7 +222,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_showErrorPages'
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_disableHooks'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_disableHooks'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -234,7 +235,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_disableHooks'] 
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_currentAsRoot'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_currentAsRoot'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -247,7 +248,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_currentAsRoot']
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineRoots'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_defineRoots'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -261,7 +262,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineRoots'] =
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineStop'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_defineStop'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -275,7 +276,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineStop'] = 
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_stop'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_stop'] = [
     'exclude'   => true,
     'inputType' => 'text',
     'eval'      => [
@@ -289,7 +290,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_stop'] = [
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineHard'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_defineHard'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -303,7 +304,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_defineHard'] = 
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hard'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_hard'] = [
     'exclude'   => true,
     'inputType' => 'text',
     'eval'      => [
@@ -318,7 +319,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hard'] = [
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_isSitemap'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_isSitemap'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -331,7 +332,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_isSitemap'] = [
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hideSingleLevel'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_hideSingleLevel'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
@@ -344,7 +345,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_hideSingleLevel
     ],
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['backboneit_navigation_addLegacyCss'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_addLegacyCss'] = [
     'exclude'   => true,
     'inputType' => 'checkbox',
     'eval'      => [
