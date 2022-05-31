@@ -7,6 +7,7 @@ namespace Hofff\Contao\Navigation\Migration;
 use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\Column;
 
 use function is_int;
 use function sprintf;
@@ -65,8 +66,9 @@ final class BackboneNavigationMigration extends AbstractMigration
         $this->renameNavigationModules();
 
         $affectedFields = $this->determineAffectedFields();
+        $table          = $this->connection->getSchemaManager()->listTableDetails('tl_module');
         foreach ($affectedFields as $oldName => $newName) {
-            $this->renameField($oldName, $newName);
+            $this->renameField($table->getColumn(self::OLD_PREFIX . $oldName), $newName);
         }
 
         return $this->createResult(true);
@@ -112,15 +114,14 @@ final class BackboneNavigationMigration extends AbstractMigration
         return $fields;
     }
 
-    private function renameField(string $oldName, string $newName): void
+    private function renameField(Column $column, string $newName): void
     {
+        $platform = $this->connection->getDatabasePlatform();
         $this->connection->executeStatement(
             sprintf(
-                'ALTER TABLE tl_module RENAME COLUMN %s%s TO %s%s',
-                self::OLD_PREFIX,
-                $oldName,
-                self::NEW_PREFIX,
-                $newName,
+                'ALTER TABLE tl_module CHANGE %s %s',
+                $column->getName(),
+                $platform->getColumnDeclarationSQL(self::NEW_PREFIX . $newName, $column->toArray())
             )
         );
     }
