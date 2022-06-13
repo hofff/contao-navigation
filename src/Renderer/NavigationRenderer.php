@@ -259,7 +259,7 @@ final class NavigationRenderer
         $page['_title']       = $page['title'];
         $page['_pageTitle']   = $page['pageTitle'];
         $page['_target']      = $page['target'];
-        $page['_description'] = $page['description'];
+        $page['_description'] = $page['description'] ?? '';
 
         $page['link']        = $page['_title'];
         $page['class']       = $page['cssClass'] . ' ' . $page['type'];
