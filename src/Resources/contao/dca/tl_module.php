@@ -23,7 +23,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['hofff_navigation_menu'] = ';{title_
     . ',hofff_navigation_showHidden,hofff_navigation_showProtected'
     . ',hofff_navigation_showGuests,hofff_navigation_isSitemap'
     . ',hofff_navigation_hideSingleLevel'
-    . ';{template_legend:hide},navigationTpl,hofff_navigation_addLegacyCss'
+    . ';{template_legend:hide},customTpl,navigationTpl,hofff_navigation_addLegacyCss'
     . ',hofff_navigation_addFields'
     . ';{protected_legend:hide},protected,guests'
     . ';{expert_legend:hide},cssID,hofff_navigation_noForwardResolution,hofff_navigation_showErrorPages'
