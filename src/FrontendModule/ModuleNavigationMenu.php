@@ -53,7 +53,7 @@ use const PHP_INT_MAX;
  * _target
  * _description
  *
- * @FrontendModule("hofff_navigation_menu", category="navigation")
+ * @FrontendModule("hofff_navigation_menu", category="navigationMenu")
  * @psalm-suppress PropertyNotSetInConstructor
  */
 final class ModuleNavigationMenu extends AbstractFrontendModuleController
