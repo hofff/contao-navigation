@@ -80,7 +80,7 @@ final class PageItemsLoader
         $this->hardLevel        = $hardLevel;
         $this->activeId         = $activeId;
 
-        $this->items->roots = array_fill_keys(array_flip($this->calculateRootIDs()), true);
+        $this->items->roots = array_fill_keys($this->calculateRootIDs(), true);
         if (! $this->items->roots) {
             return $this->items;
         }
