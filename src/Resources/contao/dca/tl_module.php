@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Doctrine\DBAL\Types\Types;
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_rootSelectionType';
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineRoots';
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_includeStart';
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'hofff_navigation_defineStop';
