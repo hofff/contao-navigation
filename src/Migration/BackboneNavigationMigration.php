@@ -21,6 +21,7 @@ final class BackboneNavigationMigration extends AbstractMigration
     private const NEW_PREFIX = 'hofff_navigation_';
 
     private const FIELDS = [
+        'roots',
         'roots_order',
         'start',
         'respectHidden',
