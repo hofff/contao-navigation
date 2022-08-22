@@ -155,7 +155,7 @@ final class NavigationRenderer
                     $item['isInTrail'] = true;
                 }
             } else { // do not flatten if/else
-                if ($item['tid'] === $activeId) {
+                if (isset($item['id']) && $item['tid'] === $activeId) {
                     if ($item['href'] === Environment::get('request')) {
                         $item['isActive']  = true; // nothing else (active class is set in template)
                         $item['isInTrail'] = false;
@@ -188,7 +188,8 @@ final class NavigationRenderer
                     $this->items->subItems[$itemId] ?? [],
                     $stopLimit,
                     $hardLevel,
-                    $currentLevel + 1
+                    $currentLevel + 1,
+                    $activeId
                 );
             } else { // should never be reached, if no hooks are used
                 $item['class'] .= ' leaf';
