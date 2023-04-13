@@ -6,7 +6,7 @@ $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_root_legend'] = 'Konfiguratio
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_legend']      = 'Navigations-Einstellungen';
 
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_start']         = [
-    'Startebene',
+    'Start-Ebene',
     'Relativ zu den Referenzseiten. Negative Werte sind möglich.',
 ];
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_currentAsRoot'] = [
@@ -36,20 +36,20 @@ $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_respectPublish'] = [
 ];
 
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_includeStart']    = [
-    'Startebene anzeigen',
-    'Rendert die Startebene in die Navigation.',
+    'Start-Ebene anzeigen',
+    'Rendert die Start-Ebene in die Navigation.',
 ];
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_showHiddenStart'] = [
     'Versteckte Seiten anzeigen (Startebene)',
     'Seiten in der Startebene mit der Option "Im Menü verstecken" trotzdem anzeigen.',
 ];
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_defineStop']      = [
-    'Stop-Ebenen anpassen',
+    'Stopp-Ebenen anpassen',
     'Ebenen die tiefer als die Stop-Ebenen liegen werden nur dann angezeigt, wenn diese sich im aktuellen Navigationspfad befinden.',
 ];
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_stop']            = [
-    'Stop-Ebenen',
-    'Stop-Ebenen als nicht-negative Ganzzahl (0, 1, 2, ...). Es können mehrere Stop-Ebenen als aufsteigend sortierte, Komma-separierte Liste angegeben werden. Angaben sind relativ zur Startebene.',
+    'Stopp-Ebenen',
+    'Stopp-Ebenen als nicht-negative Ganzzahl (0, 1, 2, ...). Es können mehrere Stopp-Ebenen als aufsteigend sortierte, Komma-separierte Liste angegeben werden. Angaben sind relativ zur Startebene.',
 ];
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_defineHard']      = [
     'Anzahl maximal auszugebender Ebenen anpassen',
@@ -57,7 +57,7 @@ $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_defineHard']      = [
 ];
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_hard']            = [
     'Maximal auszugebende Ebenen',
-    'Angabe als positive Ganzzahl (1, 2, 3, ...). Angaben sind relativ zur Startebene.',
+    'Angabe als positive Ganzzahl (1, 2, 3, ...). Angaben sind relativ zur Start-Ebene.',
 ];
 $GLOBALS['TL_LANG']['tl_module']['hofff_navigation_showProtected']   = [
     'Geschützte Seiten anzeigen',
