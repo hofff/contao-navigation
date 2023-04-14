@@ -133,7 +133,7 @@ final class NavigationRenderer
             return '';
         }
 
-        $stopLevel      = $currentLevel >= $stopLimit[0] ? array_shift($stopLimit) : $stopLimit[0];
+        $stopLevel      = isset($stopLimit[0]) ? ($currentLevel >= $stopLimit[0] ? array_shift($stopLimit) : $stopLimit[0]) : null;
         $renderedItems  = [];
         $containsActive = false;
 
@@ -155,7 +155,7 @@ final class NavigationRenderer
                     $item['isInTrail'] = true;
                 }
             } else { // do not flatten if/else
-                if (isset($item['id']) && $item['tid'] === $activeId) {
+                if (isset($item['id']) && isset($item['tid']) && $item['tid'] === $activeId) {
                     if ($item['href'] === Environment::get('request')) {
                         $item['isActive']  = true; // nothing else (active class is set in template)
                         $item['isInTrail'] = false;
@@ -200,7 +200,7 @@ final class NavigationRenderer
 
         if ($containsActive) {
             foreach ($renderedItems as &$item) {
-                if ($item['isActive']) {
+                if (!empty($item['isActive'])) {
                     continue;
                 }
 
