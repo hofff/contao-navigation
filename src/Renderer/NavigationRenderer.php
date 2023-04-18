@@ -166,7 +166,7 @@ final class NavigationRenderer
                 }
             }
 
-            if ($item['isInTrail']) {
+            if (!empty($item['isInTrail'])) {
                 $item['class'] .= ' trail';
             }
 
@@ -200,7 +200,7 @@ final class NavigationRenderer
 
         if ($containsActive) {
             foreach ($renderedItems as &$item) {
-                if ($item['isActive']) {
+                if (!empty($item['isActive'])) {
                     continue;
                 }
 
@@ -210,8 +210,10 @@ final class NavigationRenderer
             unset($item);
         }
 
-        $renderedItems[0]['class']                         .= ' first';
-        $renderedItems[count($renderedItems) - 1]['class'] .= ' last';
+        if (!empty($renderedItems)) {
+            $renderedItems[0]['class']                         .= ' first';
+            $renderedItems[count($renderedItems) - 1]['class'] .= ' last';
+        }
 
         foreach ($renderedItems as &$item) {
             $item['class'] = ltrim($item['class']);
