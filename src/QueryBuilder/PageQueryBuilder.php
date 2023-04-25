@@ -193,7 +193,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
             }
         );
 
-        $query->setParameter('ids', $pageIds);
+        $query->setParameter('ids', $pageIds, Connection::PARAM_STR_ARRAY);
 
         return $query;
     }
