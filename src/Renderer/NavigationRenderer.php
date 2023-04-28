@@ -183,7 +183,7 @@ final class NavigationRenderer
                 // we are at stop level and not trail and not active, never draw submenu
                 $item['class'] .= ' submenu leaf';
             } elseif ($this->items->subItems[$itemId]) {
-                $item['class']   .= ' submenu inner';
+                $item['class']    .= ' submenu inner';
                 $item['subitems'] = $this->renderTree(
                     $this->items->subItems[$itemId] ?? [],
                     $stopLimit,
@@ -365,7 +365,7 @@ final class NavigationRenderer
         if (! $page['jumpTo']) {
             $query = $this->redirectQueryBuilder->createFallbackQuery((int) $page['id']);
             /** @psalm-var Result $result */
-            $result =  $query->execute();
+            $result = $query->execute();
 
             return $result->fetchAssociative() ?: [];
         }

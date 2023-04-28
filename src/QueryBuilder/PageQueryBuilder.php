@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\Security;
 
 use function array_flip;
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function count;
 
@@ -64,7 +65,12 @@ final class PageQueryBuilder extends BaseQueryBuilder
             __FUNCTION__,
             function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
-                    ->select(...$this->fields)
+                    ->select(
+                        ...array_map(
+                            fn (string $field) => $this->connection->quoteIdentifier($field),
+                            $this->fields
+                        )
+                    )
                     ->andWhere('type != :rootType')
                     ->setParameter('rootType', 'root')
                     ->andWhere('pid IN (:pids)')
@@ -128,8 +134,12 @@ final class PageQueryBuilder extends BaseQueryBuilder
         return $this->query(
             __FUNCTION__,
             function (QueryBuilder $queryBuilder): void {
-                $queryBuilder
-                    ->select('id', 'pid', 'protected', 'groups');
+                $queryBuilder->select(
+                    ...array_map(
+                        fn (string $field) => $this->connection->quoteIdentifier($field),
+                        ['id', 'pid', 'protected', 'groups']
+                    )
+                );
 
                 $this
                     ->addHiddenCondition(
@@ -154,7 +164,12 @@ final class PageQueryBuilder extends BaseQueryBuilder
             __FUNCTION__,
             static function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
-                    ->select('id', 'pid', 'protected', 'groups')
+                    ->select(
+                        ...array_map(
+                            fn (string $field) => $this->connection->quoteIdentifier($field),
+                            ['id', 'pid', 'protected', 'groups']
+                        )
+                    )
                     ->where('id IN (:ids)');
             }
         );
@@ -171,7 +186,12 @@ final class PageQueryBuilder extends BaseQueryBuilder
             __FUNCTION__,
             function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
-                ->select(...$this->fields)
+                ->select(
+                    ...array_map(
+                        fn (string $field) => $this->connection->quoteIdentifier($field),
+                        $this->fields
+                    )
+                )
                 ->where('id IN (:rootIds)');
             }
         );
