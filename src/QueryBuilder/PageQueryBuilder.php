@@ -105,7 +105,12 @@ final class PageQueryBuilder extends BaseQueryBuilder
             __FUNCTION__,
             function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
-                    ->select('id', 'pid', 'protected', 'groups');
+                    ->select(
+                        ...array_map(
+                            fn (string $field) => $this->connection->quoteIdentifier($field),
+                            ['id', 'pid', 'protected', 'groups']
+                        )
+                    );
 
                 $this
                     ->addHiddenCondition(
@@ -162,7 +167,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
     {
         $query = $this->query(
             __FUNCTION__,
-            static function (QueryBuilder $queryBuilder): void {
+            function (QueryBuilder $queryBuilder): void {
                 $queryBuilder
                     ->select(
                         ...array_map(
