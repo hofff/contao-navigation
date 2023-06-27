@@ -106,7 +106,11 @@ final class NavigationRenderer
         }
 
         if ($stopLimit[0] === 0) {
-            array_shift($stopLimit); // special case renderNavigationTree cannot handle
+            // special case renderNavigationTree cannot handle
+            array_shift($stopLimit);
+            if ($stopLimit === []) {
+                $stopLimit = [PHP_INT_MAX];
+            }
         }
 
         return trim(
@@ -142,25 +146,25 @@ final class NavigationRenderer
                 continue;
             }
 
-            $item = $this->items->items[$itemId];
+            $item                = $this->items->items[$itemId];
+            $item['rel']       ??= '';
+            $item['subitems']  ??= '';
+            $item['isActive']  ??= false;
+            $item['isInTrail'] ??= false;
 
             if ($itemId === $activeId) {
                 $containsActive = true;
 
                 if ($item['href'] === Environment::get('request')) {
                     $item['isActive']  = true; // nothing else (active class is set in template)
-                    $item['isInTrail'] = false;
                 } else {
-                    $item['isActive']  = false; // nothing else (active class is set in template)
                     $item['isInTrail'] = true;
                 }
             } else { // do not flatten if/else
-                if (isset($item['id']) && $item['tid'] === $activeId) {
+                if (isset($item['tid']) && $item['tid'] === $activeId) {
                     if ($item['href'] === Environment::get('request')) {
                         $item['isActive']  = true; // nothing else (active class is set in template)
-                        $item['isInTrail'] = false;
                     } else {
-                        $item['isActive']  = false; // nothing else (active class is set in template)
                         $item['isInTrail'] = true;
                     }
                 }
@@ -193,6 +197,7 @@ final class NavigationRenderer
                 );
             } else { // should never be reached, if no hooks are used
                 $item['class'] .= ' leaf';
+                $item['subitems'] = null;
             }
 
             $renderedItems[] = $item;
@@ -200,7 +205,7 @@ final class NavigationRenderer
 
         if ($containsActive) {
             foreach ($renderedItems as &$item) {
-                if ($item['isActive']) {
+                if ($item['isActive'] ?? false) {
                     continue;
                 }
 
