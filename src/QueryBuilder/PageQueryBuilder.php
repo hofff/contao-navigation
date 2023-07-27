@@ -67,7 +67,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
                 $queryBuilder
                     ->select(
                         ...array_map(
-                            fn (string $field) => $this->connection->quoteIdentifier($field),
+                            fn (string $field) => ($field !== '*') ? $this->connection->quoteIdentifier($field) : $field,
                             $this->fields
                         )
                     )
