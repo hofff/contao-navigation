@@ -31,7 +31,7 @@ final class PagePermissionGuard
      * THIS IS NOT THE OPPOSITE OF ::isPermissionDenied()!
      *
      * Checks if the current user has permission to view the page of the given
-     * page dataset, in regards to the current navigation settings and the
+     * page dataset, in regard to the current navigation settings and the
      * permission requirements of the page.
      *
      * Context property: hofff_navigation_showProtected
@@ -62,7 +62,7 @@ final class PagePermissionGuard
      * THIS IS NOT THE OPPOSITE OF ::isPermissionGranted()!
      *
      * Checks if the current user has no permission to view the page of the
-     * given page dataset, in regards to the permission requirements of the
+     * given page dataset, in regard to the permission requirements of the
      * page.
      *
      * @param array<string,mixed> $page The page dataset of the current page, with at least
@@ -83,6 +83,7 @@ final class PagePermissionGuard
         }
 
         // the current user is not in any group
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
         if (! $user->groups) {
             return true;
         }

@@ -7,6 +7,7 @@ namespace Hofff\Contao\Navigation\Items;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Result;
@@ -96,7 +97,7 @@ final class PageItemsLoader
         $this->fetchItems($rootIds, 2);
 
         /** @psalm-var Result $result */
-        $result = $this->pageQueryBuilder->createRootInformationQuery($rootIds)->execute();
+        $result = $this->pageQueryBuilder->createRootInformationQuery($rootIds)->executeQuery();
         while ($row = $result->fetchAssociative()) {
             $this->items->items[$row['id']] = $row;
             $this->items->roots[$row['id']] = true;
@@ -147,14 +148,12 @@ final class PageItemsLoader
                 $endParentIds = [];
             }
 
-            /** @psalm-var Result $result */
-            $result = $this->pageQueryBuilder->createFetchItemsQuery($parentIds)->execute();
+            $result = $this->pageQueryBuilder->createFetchItemsQuery($parentIds)->executeQuery();
             if ($result->rowCount() === 0) {
                 break;
             }
 
             $parentIds = [];
-            /** @psalm-var Result $result */
             while ($page = $result->fetchAssociative()) {
                 if (isset($this->items->items[$page['id']])) {
                     continue;
@@ -190,6 +189,7 @@ final class PageItemsLoader
     {
         $rootIds = $this->getRootIds();
         if ($this->moduleModel->hofff_navigation_currentAsRoot) {
+            /** @psalm-suppress RedundantCastGivenDocblockType */
             array_unshift($rootIds, (int) $this->items->currentPage->id);
         }
 
@@ -266,9 +266,8 @@ final class PageItemsLoader
 
         $queryBuilder
             ->andWhere('id IN (:ids)')
-            ->setParameter('ids', $pageIds, Connection::PARAM_STR_ARRAY);
-        /** @psalm-var Result $result */
-        $result = $queryBuilder->execute();
+            ->setParameter('ids', $pageIds, ArrayParameterType::STRING);
+        $result = $queryBuilder->executeQuery();
 
         if (! $this->guard->isPermissionCheckRequired($this->moduleModel)) {
             return array_values(
@@ -305,9 +304,8 @@ final class PageItemsLoader
             $currentIds = $parentIds;
             $parentIds  = [];
 
-            $query = $this->pageQueryBuilder->createPageInformationQuery(array_keys($currentIds));
-            /** @psalm-var Result $result */
-            $result = $query->execute();
+            $query  = $this->pageQueryBuilder->createPageInformationQuery(array_keys($currentIds));
+            $result = $query->executeQuery();
 
             while ($page = $result->fetchAssociative()) {
                 if (! $page['protected']) { // do not remove, see above
@@ -343,9 +341,8 @@ final class PageItemsLoader
             return $pageIds;
         }
 
-        $queryBuilder->setParameter('ids', array_keys(array_flip($pageIds)), Connection::PARAM_STR_ARRAY);
-        /** @psalm-var Result */
-        $result = $queryBuilder->execute();
+        $queryBuilder->setParameter('ids', array_keys(array_flip($pageIds)), ArrayParameterType::STRING);
+        $result = $queryBuilder->executeQuery();
 
         $next = [];
         if ($this->guard->isPermissionCheckRequired($this->moduleModel)) {
@@ -393,8 +390,7 @@ final class PageItemsLoader
             return $pageIds;
         }
 
-        /** @psalm-var Result $result */
-        $result   = $this->pageQueryBuilder->createPreviousLevelQuery($pageIds)->execute();
+        $result   = $this->pageQueryBuilder->createPreviousLevelQuery($pageIds)->executeQuery();
         $previous = [];
         while ($row = $result->fetchAssociative()) {
             $previous[(int) $row['id']] = (int) $row['pid'];

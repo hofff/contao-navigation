@@ -7,7 +7,6 @@ namespace Hofff\Contao\Navigation\FrontendModule;
 use Contao\CoreBundle\Controller\FrontendModule\AbstractFrontendModuleController;
 use Contao\CoreBundle\ServiceAnnotation\FrontendModule;
 use Contao\Environment;
-use Contao\Input;
 use Contao\ModuleModel;
 use Contao\Template;
 use Hofff\Contao\Navigation\Items\PageItemsLoader;
@@ -72,11 +71,13 @@ final class ModuleNavigationMenu extends AbstractFrontendModuleController
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    protected function getResponse(Template $template, ModuleModel $model, Request $request): ?Response
+    protected function getResponse(Template $template, ModuleModel $model, Request $request): Response
     {
         $stopLevels = $this->getStopLevels($model);
         $hardLevel  = $this->getHardLevel($model);
-        $activeId   = $model->hofff_navigation_isSitemap || Input::get('articles')
+
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
+        $activeId = $model->hofff_navigation_isSitemap || $request->query->has('articles')
             ? null
             : (int) $GLOBALS['objPage']->id;
 

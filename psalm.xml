@@ -15,12 +15,15 @@
     </projectFiles>
 
     <issueHandlers>
+        <DeprecatedClass>
+            <errorLevel type="suppress">
+                <referencedClass name="Contao\Template"/>
+                <referencedClass name="Symfony\Component\Security\Core\Security"/>
+            </errorLevel>
+        </DeprecatedClass>
         <DeprecatedMethod>
             <errorLevel type="suppress">
-                <!-- Deprecated in doctrine/dbal 3, we still support ^2.11 -->
-                <referencedMethod name="Doctrine\DBAL\Query\QueryBuilder::execute"/>
-                <!-- Deprecated in doctrine/dbal 3, we still support ^2.11 -->
-                <referencedMethod name="Doctrine\DBAL\Connection::getSchemaManager"/>
+                <referencedMethod name="Contao\PageModel::getFrontendUrl"/>
             </errorLevel>
         </DeprecatedMethod>
         <InternalMethod>

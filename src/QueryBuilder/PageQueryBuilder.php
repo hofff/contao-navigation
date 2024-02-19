@@ -6,6 +6,7 @@ namespace Hofff\Contao\Navigation\QueryBuilder;
 
 use Contao\ModuleModel;
 use Contao\StringUtil;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
@@ -94,7 +95,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
             }
         );
 
-        $query->setParameter('pids', $parentIds, Connection::PARAM_INT_ARRAY);
+        $query->setParameter('pids', $parentIds, ArrayParameterType::INTEGER);
 
         return $query;
     }
@@ -179,7 +180,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
             }
         );
 
-        $query->setParameter('ids', $pageIds, Connection::PARAM_STR_ARRAY);
+        $query->setParameter('ids', $pageIds, ArrayParameterType::STRING);
 
         return $query;
     }
@@ -201,7 +202,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
             }
         );
 
-        $query->setParameter('rootIds', $rootIds, Connection::PARAM_STR_ARRAY);
+        $query->setParameter('rootIds', $rootIds, ArrayParameterType::STRING);
 
         return $query;
     }
@@ -251,7 +252,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
         if (! $showErrorPages) {
             $queryBuilder
                 ->andWhere('type NOT IN (:errorPages)')
-                ->setParameter('errorPages', self::ERROR_PAGE_TYPES, Connection::PARAM_STR_ARRAY);
+                ->setParameter('errorPages', self::ERROR_PAGE_TYPES, ArrayParameterType::STRING);
         }
 
         return $this;
@@ -274,7 +275,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
         }
 
         $customFields = array_flip($customFields);
-        $table        = $this->connection->getSchemaManager()->listTableDetails('tl_page');
+        $table        = $this->connection->createSchemaManager()->introspectTable('tl_page');
         $fields       = [];
 
         foreach ($table->getColumns() as $column) {

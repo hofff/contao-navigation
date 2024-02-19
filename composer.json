@@ -34,15 +34,15 @@
     "source": "https://github.com/hofff/contao-navigation"
   },
   "require": {
-    "php": "^7.4 || ^8.0",
-    "contao/core-bundle": "^4.9",
-    "doctrine/dbal": "^2.11 || ^3.0",
-    "symfony/config": "^4.4 || ^5.0",
-    "symfony/dependency-injection": "^4.4 || ^5.0",
+    "php": "^8.1",
+    "contao/core-bundle": "^4.13 || ^5.3",
+    "doctrine/dbal": "^3.8",
+    "symfony/config": "^5.4 || ^6.4",
+    "symfony/dependency-injection": "^5.4 || ^6.4",
     "symfony/event-dispatcher-contracts": "^1.1 || ^2.0 || ^3.0",
-    "symfony/http-foundation": "^4.4 || ^5.0",
-    "symfony/http-kernel": "^4.4 || ^5.0",
-    "symfony/security-core": "^4.4 || ^5.0"
+    "symfony/http-foundation": "^5.4 || ^6.4",
+    "symfony/http-kernel": "^5.4 || ^6.4",
+    "symfony/security-core": "^5.4 || ^6.4"
   },
   "require-dev": {
     "contao/manager-plugin": "^2.0",
@@ -62,7 +62,8 @@
     "allow-plugins": {
       "contao-components/installer": false,
       "contao/manager-plugin": true,
-      "dealerdirect/phpcodesniffer-composer-installer": true
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "php-http/discovery": true
     }
   },
   "extra": {

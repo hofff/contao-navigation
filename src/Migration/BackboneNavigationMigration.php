@@ -97,7 +97,7 @@ final class BackboneNavigationMigration extends AbstractMigration
     /** @return array<string,string> */
     private function determineAffectedFields(): array
     {
-        $table  = $this->connection->getSchemaManager()->listTableDetails('tl_module');
+        $table  = $this->connection->createSchemaManager()->introspectTable('tl_module');
         $fields = [];
 
         foreach (self::FIELDS as $oldName => $newName) {

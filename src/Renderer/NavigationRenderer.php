@@ -151,13 +151,16 @@ final class NavigationRenderer
             $item['subitems']  ??= '';
             $item['isActive']  ??= false;
             $item['isInTrail'] ??= false;
+            $item['class']     ??= '';
 
             if ($itemId === $activeId) {
                 $containsActive = true;
 
                 if ($item['href'] === Environment::get('request')) {
                     $item['isActive']  = true; // nothing else (active class is set in template)
+                    $item['isInTrail'] = false;
                 } else {
+                    $item['isActive']  = false; // nothing else (active class is set in template)
                     $item['isInTrail'] = true;
                 }
             } else { // do not flatten if/else
@@ -187,17 +190,16 @@ final class NavigationRenderer
                 // we are at stop level and not trail and not active, never draw submenu
                 $item['class'] .= ' submenu leaf';
             } elseif ($this->items->subItems[$itemId]) {
-                $item['class']    .= ' submenu inner';
+                $item['class']   .= ' submenu inner';
                 $item['subitems'] = $this->renderTree(
                     $this->items->subItems[$itemId] ?? [],
                     $stopLimit,
                     $hardLevel,
                     $currentLevel + 1,
-                    $activeId
+                    $activeId,
                 );
             } else { // should never be reached, if no hooks are used
                 $item['class'] .= ' leaf';
-                $item['subitems'] = null;
             }
 
             $renderedItems[] = $item;
@@ -205,7 +207,7 @@ final class NavigationRenderer
 
         if ($containsActive) {
             foreach ($renderedItems as &$item) {
-                if ($item['isActive'] ?? false) {
+                if ($item['isActive']) {
                     continue;
                 }
 
@@ -367,10 +369,10 @@ final class NavigationRenderer
      */
     private function getRedirectPage(array $page): array
     {
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
         if (! $page['jumpTo']) {
-            $query = $this->redirectQueryBuilder->createFallbackQuery((int) $page['id']);
-            /** @psalm-var Result $result */
-            $result = $query->execute();
+            $query  = $this->redirectQueryBuilder->createFallbackQuery((int) $page['id']);
+            $result = $query->executeQuery();
 
             return $result->fetchAssociative() ?: [];
         }
@@ -380,15 +382,15 @@ final class NavigationRenderer
         do {
             $query = $this->redirectQueryBuilder->createJumpToQuery((int) $jumpToId);
             $query->setParameter('id', $jumpToId);
-            /** @psalm-var Result $result */
-            $result = $query->execute();
-            $next   = $result->fetchAssociative() ?: [];
+            $result = $query->executeQuery();
+            /** @psalm-suppress RiskyTruthyFalsyComparison */
+            $next = $result->fetchAssociative() ?: [];
 
             if (! $result->rowCount()) {
-                $query = $this->redirectQueryBuilder->createFallbackQuery((int) $fallbackSearchId);
-                /** @psalm-var Result $result */
-                $result = $query->execute();
-                $next   = $result->fetchAssociative() ?: [];
+                $query  = $this->redirectQueryBuilder->createFallbackQuery((int) $fallbackSearchId);
+                $result = $query->executeQuery();
+                /** @psalm-suppress RiskyTruthyFalsyComparison */
+                $next = $result->fetchAssociative() ?: [];
                 break;
             }
 
