@@ -400,7 +400,7 @@ final class NavigationRenderer
 
     private function dispatchEvent(Event $event): void
     {
-        if (! $this->moduleModel->hofff_navigation_disableHooks) {
+        if ($this->moduleModel->hofff_navigation_disableHooks) {
             return;
         }
 
