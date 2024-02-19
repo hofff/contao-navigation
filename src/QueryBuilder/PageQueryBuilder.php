@@ -64,9 +64,9 @@ final class PageQueryBuilder extends BaseQueryBuilder
                 $queryBuilder
                     ->select(
                         ...array_map(
-                            fn (string $field) => ($field !== '*') ? $this->connection->quoteIdentifier($field) : $field,
-                            $this->fields
-                        )
+                            fn (string $field) => $field !== '*' ? $this->connection->quoteIdentifier($field) : $field,
+                            $this->fields,
+                        ),
                     )
                     ->andWhere('type != :rootType')
                     ->setParameter('rootType', 'root')
@@ -105,8 +105,8 @@ final class PageQueryBuilder extends BaseQueryBuilder
                     ->select(
                         ...array_map(
                             fn (string $field) => $this->connection->quoteIdentifier($field),
-                            ['id', 'pid', 'protected', 'groups']
-                        )
+                            ['id', 'pid', 'protected', 'groups'],
+                        ),
                     );
 
                 $this
@@ -139,8 +139,8 @@ final class PageQueryBuilder extends BaseQueryBuilder
                 $queryBuilder->select(
                     ...array_map(
                         fn (string $field) => $this->connection->quoteIdentifier($field),
-                        ['id', 'pid', 'protected', 'groups']
-                    )
+                        ['id', 'pid', 'protected', 'groups'],
+                    ),
                 );
 
                 $this
@@ -169,8 +169,8 @@ final class PageQueryBuilder extends BaseQueryBuilder
                     ->select(
                         ...array_map(
                             fn (string $field) => $this->connection->quoteIdentifier($field),
-                            ['id', 'pid', 'protected', 'groups']
-                        )
+                            ['id', 'pid', 'protected', 'groups'],
+                        ),
                     )
                     ->where('id IN (:ids)');
             },
@@ -191,8 +191,8 @@ final class PageQueryBuilder extends BaseQueryBuilder
                 ->select(
                     ...array_map(
                         fn (string $field) => $this->connection->quoteIdentifier($field),
-                        $this->fields
-                    )
+                        $this->fields,
+                    ),
                 )
                 ->where('id IN (:rootIds)');
             },
@@ -215,7 +215,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
             },
         );
 
-        $query->setParameter('ids', $pageIds, Connection::PARAM_STR_ARRAY);
+        $query->setParameter('ids', $pageIds, ArrayParameterType::STRING);
 
         return $query;
     }

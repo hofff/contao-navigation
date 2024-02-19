@@ -146,26 +146,27 @@ final class NavigationRenderer
                 $containsActive = true;
 
                 if ($item['href'] === Environment::get('request')) {
-                    $item['isActive']  = true; // nothing else (active class is set in template)
-                    $item['isInTrail'] = false;
+                    $item['isActive'] = true; // nothing else (active class is set in template)
                 } else {
-                    $item['isActive']  = false; // nothing else (active class is set in template)
                     $item['isInTrail'] = true;
                 }
             } else { // do not flatten if/else
+                /** @psalm-suppress RiskyTruthyFalsyComparison */
                 if (isset($item['tid']) && $item['tid'] === $activeId) {
                     if ($item['href'] === Environment::get('request')) {
-                        $item['isActive']  = true; // nothing else (active class is set in template)
+                        $item['isActive'] = true; // nothing else (active class is set in template)
                     } else {
                         $item['isInTrail'] = true;
                     }
                 }
             }
 
+            /** @psalm-suppress RiskyTruthyFalsyComparison */
             if ($item['isInTrail']) {
                 $item['class'] .= ' trail';
             }
 
+            /** @psalm-suppress RiskyTruthyFalsyComparison */
             if (! isset($this->items->subItems[$itemId])) {
                 $item['class'] .= ' leaf';
             } elseif ($currentLevel >= $hardLevel) {
@@ -196,6 +197,7 @@ final class NavigationRenderer
 
         if ($containsActive) {
             foreach ($renderedItems as &$item) {
+                /** @psalm-suppress RiskyTruthyFalsyComparison */
                 if ($item['isActive']) {
                     continue;
                 }
