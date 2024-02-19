@@ -51,6 +51,10 @@ final class BackboneNavigationMigration extends AbstractMigration
 
     public function shouldRun(): bool
     {
+        if (! $this->connection->createSchemaManager()->tablesExist('tl_module')) {
+            return false;
+        }
+
         if ($this->hasBackboneItNavigationModules()) {
             return true;
         }
