@@ -12,17 +12,11 @@ use function time;
 
 abstract class BaseQueryBuilder
 {
-    private Security $security;
-
-    protected Connection $connection;
-
     /** @var array<string,QueryBuilder> */
     private array $queries = [];
 
-    public function __construct(Connection $connection, Security $security)
+    public function __construct(protected readonly Connection $connection, private readonly Security $security)
     {
-        $this->connection = $connection;
-        $this->security   = $security;
     }
 
     protected function query(string $name, callable $builder): QueryBuilder

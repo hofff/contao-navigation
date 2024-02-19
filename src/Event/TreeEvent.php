@@ -9,13 +9,9 @@ use Hofff\Contao\Navigation\Items\PageItems;
 
 final class TreeEvent extends Event
 {
-    private PageItems $items;
-
-    public function __construct(ModuleModel $moduleModel, PageItems $items)
+    public function __construct(ModuleModel $moduleModel, private readonly PageItems $items)
     {
         parent::__construct($moduleModel);
-
-        $this->items = $items;
     }
 
     public function items(): PageItems

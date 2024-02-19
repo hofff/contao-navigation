@@ -57,14 +57,8 @@ use const PHP_INT_MAX;
  */
 final class ModuleNavigationMenu extends AbstractFrontendModuleController
 {
-    private PageItemsLoader $loader;
-
-    private NavigationRenderer $renderer;
-
-    public function __construct(PageItemsLoader $loader, NavigationRenderer $renderer)
+    public function __construct(private readonly PageItemsLoader $loader, private readonly NavigationRenderer $renderer)
     {
-        $this->loader   = $loader;
-        $this->renderer = $renderer;
     }
 
     /**
@@ -89,7 +83,7 @@ final class ModuleNavigationMenu extends AbstractFrontendModuleController
             array_keys($items->roots),
             $stopLevels,
             $hardLevel,
-            $activeId
+            $activeId,
         );
 
         if ($navigation === '') {

@@ -9,7 +9,6 @@ use Contao\FrontendTemplate;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
-use Doctrine\DBAL\Result;
 use Hofff\Contao\Navigation\Event\ItemEvent;
 use Hofff\Contao\Navigation\Event\MenuEvent;
 use Hofff\Contao\Navigation\Event\TreeEvent;
@@ -29,15 +28,9 @@ use function trim;
 
 use const PHP_INT_MAX;
 
-/**
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
- */
+/** @SuppressWarnings(PHPMD.ExcessiveClassComplexity) */
 final class NavigationRenderer
 {
-    private RedirectPageQueryBuilder $redirectQueryBuilder;
-
-    private EventDispatcherInterface $eventDispatcher;
-
     /** @psalm-suppress PropertyNotSetInConstructor - Will be initialized in the only public method load() */
     private PageItems $items;
 
@@ -45,11 +38,9 @@ final class NavigationRenderer
     private ModuleModel $moduleModel;
 
     public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        RedirectPageQueryBuilder $redirectQueryBuilder
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly RedirectPageQueryBuilder $redirectQueryBuilder,
     ) {
-        $this->redirectQueryBuilder = $redirectQueryBuilder;
-        $this->eventDispatcher      = $eventDispatcher;
     }
 
     /**
@@ -113,9 +104,7 @@ final class NavigationRenderer
             }
         }
 
-        return trim(
-            $this->renderTree($firstIds, $stopLimit, $hardLevel, $currentLevel, $activeId)
-        );
+        return trim($this->renderTree($firstIds, $stopLimit, $hardLevel, $currentLevel, $activeId));
     }
 
     /**
@@ -131,7 +120,7 @@ final class NavigationRenderer
         array $stopLimit = [PHP_INT_MAX],
         int $hardLevel = PHP_INT_MAX,
         int $currentLevel = 1,
-        ?int $activeId = null
+        int|null $activeId = null,
     ): string {
         if (! $itemIds) {
             return '';
@@ -247,7 +236,7 @@ final class NavigationRenderer
 
             $this->items->items[$itemId] = $this->compileNavigationItem(
                 $this->items->items[$itemId],
-                $forwardResolution
+                $forwardResolution,
             );
         }
     }

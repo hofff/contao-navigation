@@ -46,16 +46,13 @@ final class PageQueryBuilder extends BaseQueryBuilder
         'error_404',
     ];
 
-    private ModuleModel $moduleModel;
-
     /** @var list<string> */
     private array $fields = [];
 
-    public function __construct(Connection $connection, Security $security, ModuleModel $moduleModel)
+    public function __construct(Connection $connection, Security $security, private readonly ModuleModel $moduleModel)
     {
         parent::__construct($connection, $security);
 
-        $this->moduleModel = $moduleModel;
         $this->determineFields();
     }
 
@@ -81,18 +78,18 @@ final class PageQueryBuilder extends BaseQueryBuilder
                     ->addHiddenCondition(
                         $queryBuilder,
                         (bool) $this->moduleModel->hofff_navigation_showHidden,
-                        (bool) $this->moduleModel->hofff_navigation_isSitemap
+                        (bool) $this->moduleModel->hofff_navigation_isSitemap,
                     )
                     ->addPublishedCondition($queryBuilder)
                     ->addErrorPagesCondition(
                         $queryBuilder,
-                        (bool) $this->moduleModel->hofff_navigation_showErrorPages
+                        (bool) $this->moduleModel->hofff_navigation_showErrorPages,
                     )
                     ->addGuestsQueryParts(
                         $queryBuilder,
-                        (bool) $this->moduleModel->backboneit_navigation_showGuests
+                        (bool) $this->moduleModel->backboneit_navigation_showGuests,
                     );
-            }
+            },
         );
 
         $query->setParameter('pids', $parentIds, ArrayParameterType::INTEGER);
@@ -117,17 +114,17 @@ final class PageQueryBuilder extends BaseQueryBuilder
                     ->addHiddenCondition(
                         $queryBuilder,
                         ! $this->moduleModel->hofff_navigation_respectHidden,
-                        (bool) $this->moduleModel->hofff_navigation_isSitemap
+                        (bool) $this->moduleModel->hofff_navigation_isSitemap,
                     )
                     ->addGuestsQueryParts(
                         $queryBuilder,
-                        ! $this->moduleModel->hofff_navigation_respectGuests
+                        ! $this->moduleModel->hofff_navigation_respectGuests,
                     )
                     ->addPublishedCondition(
                         $queryBuilder,
-                        (bool) $this->moduleModel->hofff_navigation_respectPublish
+                        (bool) $this->moduleModel->hofff_navigation_respectPublish,
                     );
-            }
+            },
         );
     }
 
@@ -151,15 +148,15 @@ final class PageQueryBuilder extends BaseQueryBuilder
                     ->addHiddenCondition(
                         $queryBuilder,
                         (bool) $this->moduleModel->hofff_navigation_showHiddenStart,
-                        (bool) $this->moduleModel->hofff_navigation_isSitemap
+                        (bool) $this->moduleModel->hofff_navigation_isSitemap,
                     )
                     ->addPublishedCondition($queryBuilder)
                     ->addErrorPagesCondition(
                         $queryBuilder,
-                        (bool) $this->moduleModel->hofff_navigation_showErrorPages
+                        (bool) $this->moduleModel->hofff_navigation_showErrorPages,
                     )
                     ->addGuestsQueryParts($queryBuilder, (bool) $this->moduleModel->hofff_navigation_showGuests);
-            }
+            },
         );
     }
 
@@ -177,7 +174,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
                         )
                     )
                     ->where('id IN (:ids)');
-            }
+            },
         );
 
         $query->setParameter('ids', $pageIds, ArrayParameterType::STRING);
@@ -199,7 +196,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
                     )
                 )
                 ->where('id IN (:rootIds)');
-            }
+            },
         );
 
         $query->setParameter('rootIds', $rootIds, ArrayParameterType::STRING);
@@ -216,7 +213,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
                 $queryBuilder
                 ->select('id', 'pid')
                 ->where('id IN (:ids)');
-            }
+            },
         );
 
         $query->setParameter('ids', $pageIds, Connection::PARAM_STR_ARRAY);
@@ -230,7 +227,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
     private function addHiddenCondition(
         QueryBuilder $queryBuilder,
         bool $showHidden = false,
-        bool $sitemap = false
+        bool $sitemap = false,
     ): self {
         if ($showHidden) {
             return $this;

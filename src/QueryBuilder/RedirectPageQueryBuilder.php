@@ -21,7 +21,7 @@ final class RedirectPageQueryBuilder extends BaseQueryBuilder
                 $this
                     ->addGuestsQueryParts($queryBuilder)
                     ->addPublishedCondition($queryBuilder);
-            }
+            },
         );
 
         $query->setParameter('id', $jumpToId);
@@ -44,7 +44,7 @@ final class RedirectPageQueryBuilder extends BaseQueryBuilder
 
                 $this
                     ->addGuestsQueryParts($queryBuilder);
-            }
+            },
         );
 
         $query->setParameter('pid', $fallbackSearchId);

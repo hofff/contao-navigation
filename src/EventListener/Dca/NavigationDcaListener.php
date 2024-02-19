@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Hofff\Contao\Navigation\EventListener\Dca;
 
 use Contao\Controller;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\CoreBundle\Framework\ContaoFramework;
-use Contao\CoreBundle\ServiceAnnotation\Callback;
 use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
 
 use function array_map;
@@ -17,19 +17,16 @@ use function sprintf;
 /** @psalm-suppress PropertyNotSetInConstructor */
 final class NavigationDcaListener
 {
-    private ContaoFramework $framework;
-
-    public function __construct(ContaoFramework $framework)
+    public function __construct(private readonly ContaoFramework $framework)
     {
-        $this->framework = $framework;
     }
 
     /**
      * @return array<string,string>
      *
-     * @Callback(table="tl_module", target="fields.hofff_navigation_addFields.options")
      * @SuppressWarnings(PHPMD.Superglobals)
      */
+    #[AsCallback('tl_module', 'fields.hofff_navigation_addFields.options')]
     public function getPageFields(): array
     {
         $controller = $this->framework->getAdapter(Controller::class);
@@ -49,9 +46,7 @@ final class NavigationDcaListener
         return $fields;
     }
 
-    /**
-     * @Callback(table="tl_module", target="fields.hofff_navigation_stop.save")
-     */
+    #[AsCallback('tl_module', 'fields.hofff_navigation_stop.save')]
     public function saveStop(string $value): string
     {
         $minimum = -1;

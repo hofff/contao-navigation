@@ -9,11 +9,8 @@ use Symfony\Contracts\EventDispatcher\Event as BaseEvent;
 
 abstract class Event extends BaseEvent
 {
-    private ModuleModel $moduleModel;
-
-    public function __construct(ModuleModel $moduleModel)
+    public function __construct(private readonly ModuleModel $moduleModel)
     {
-        $this->moduleModel = $moduleModel;
     }
 
     public function moduleModel(): ModuleModel

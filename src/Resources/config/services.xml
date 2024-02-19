@@ -7,7 +7,7 @@
     <services>
         <defaults autowire="false" autoconfigure="false" public="false"/>
 
-        <service id="Hofff\Contao\Navigation\EventListener\Dca\NavigationDcaListener">
+        <service id="Hofff\Contao\Navigation\EventListener\Dca\NavigationDcaListener" autoconfigure="true">
             <argument type="service" id="contao.framework"/>
         </service>
 

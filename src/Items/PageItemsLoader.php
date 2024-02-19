@@ -35,12 +35,6 @@ use const PHP_INT_MAX;
 /** @SuppressWarnings(PHPMD.ExcessiveClassComplexity) */
 final class PageItemsLoader
 {
-    private Connection $connection;
-
-    private Security $security;
-
-    private PagePermissionGuard $guard;
-
     /** @psalm-suppress PropertyNotSetInConstructor - Will be initialized in the only public method load() */
     private PageQueryBuilder $pageQueryBuilder;
 
@@ -55,24 +49,22 @@ final class PageItemsLoader
 
     private int $hardLevel = PHP_INT_MAX;
 
-    private ?int $activeId = null;
+    private int|null $activeId = null;
 
-    public function __construct(Connection $connection, Security $security, PagePermissionGuard $guard)
-    {
-        $this->connection = $connection;
-        $this->security   = $security;
-        $this->guard      = $guard;
+    public function __construct(
+        private readonly Connection $connection,
+        private readonly Security $security,
+        private readonly PagePermissionGuard $guard,
+    ) {
     }
 
-    /**
-     * @param list<int> $stopLevels
-     */
+    /** @param list<int> $stopLevels */
     public function load(
         ModuleModel $moduleModel,
         PageModel $currentPage,
         array $stopLevels = [PHP_INT_MAX],
         int $hardLevel = PHP_INT_MAX,
-        ?int $activeId = null
+        int|null $activeId = null,
     ): PageItems {
         $this->items            = new PageItems($currentPage);
         $this->pageQueryBuilder = new PageQueryBuilder($this->connection, $this->security, $moduleModel);
@@ -182,9 +174,7 @@ final class PageItemsLoader
         return $fetched;
     }
 
-    /**
-     * @return list<int>
-     */
+    /** @return list<int> */
     private function calculateRootIDs(): array
     {
         $rootIds = $this->getRootIds();
@@ -220,9 +210,7 @@ final class PageItemsLoader
         return $rootIds;
     }
 
-    /**
-     * @return list<int>
-     */
+    /** @return list<int> */
     private function getRootIds(): array
     {
         if (! $this->moduleModel->hofff_navigation_defineRoots) {
@@ -236,10 +224,10 @@ final class PageItemsLoader
                 array_unique(
                     array_merge(
                         StringUtil::deserialize($this->moduleModel->hofff_navigation_roots_order, true),
-                        StringUtil::deserialize($this->moduleModel->hofff_navigation_roots, true)
-                    )
-                )
-            )
+                        StringUtil::deserialize($this->moduleModel->hofff_navigation_roots, true),
+                    ),
+                ),
+            ),
         );
     }
 
@@ -273,8 +261,8 @@ final class PageItemsLoader
             return array_values(
                 array_intersect(
                     $pageIds,
-                    array_map(static fn (array $row): int => (int) $row['id'], $result->fetchAllAssociative())
-                )
+                    array_map(static fn (array $row): int => (int) $row['id'], $result->fetchAllAssociative()),
+                ),
             );
         } // restore order
 

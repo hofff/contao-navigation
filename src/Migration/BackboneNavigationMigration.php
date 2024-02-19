@@ -7,15 +7,12 @@ namespace Hofff\Contao\Navigation\Migration;
 use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Schema\Column;
 
 use function is_int;
 use function sprintf;
 
 final class BackboneNavigationMigration extends AbstractMigration
 {
-    private Connection $connection;
-
     private const OLD_PREFIX = 'backboneit_navigation_';
 
     private const NEW_PREFIX = 'hofff_navigation_';
@@ -48,9 +45,8 @@ final class BackboneNavigationMigration extends AbstractMigration
         'addLegacyCss',
     ];
 
-    public function __construct(Connection $connection)
+    public function __construct(private readonly Connection $connection)
     {
-        $this->connection = $connection;
     }
 
     public function shouldRun(): bool
@@ -79,7 +75,7 @@ final class BackboneNavigationMigration extends AbstractMigration
     {
         $result = $this->connection->executeQuery(
             'SELECT count(id) FROM tl_module WHERE type=:type',
-            ['type' => 'backboneit_navigation_menu']
+            ['type' => 'backboneit_navigation_menu'],
         );
 
         return $result->fetchOne() > 0;
@@ -90,7 +86,7 @@ final class BackboneNavigationMigration extends AbstractMigration
         $this->connection->update(
             'tl_module',
             ['type' => 'hofff_navigation_menu'],
-            ['type' => 'backboneit_navigation_menu']
+            ['type' => 'backboneit_navigation_menu'],
         );
     }
 

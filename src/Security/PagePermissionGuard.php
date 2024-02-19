@@ -13,11 +13,8 @@ use function array_intersect;
 
 final class PagePermissionGuard
 {
-    private Security $security;
-
-    public function __construct(Security $security)
+    public function __construct(private readonly Security $security)
     {
-        $this->security = $security;
     }
 
     public function isPermissionCheckRequired(ModuleModel $model): bool
