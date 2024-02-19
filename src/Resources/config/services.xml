@@ -32,7 +32,7 @@
             <argument type="service" id="security.helper"/>
         </service>
 
-        <service id="Hofff\Contao\Navigation\FrontendModule\ModuleNavigationMenu">
+        <service id="Hofff\Contao\Navigation\FrontendModule\ModuleNavigationMenu" autoconfigure="true">
             <argument type="service" id="Hofff\Contao\Navigation\Items\PageItemsLoader"/>
             <argument type="service" id="Hofff\Contao\Navigation\Renderer\NavigationRenderer"/>
         </service>

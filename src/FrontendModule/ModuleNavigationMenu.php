@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Hofff\Contao\Navigation\FrontendModule;
 
 use Contao\CoreBundle\Controller\FrontendModule\AbstractFrontendModuleController;
-use Contao\CoreBundle\ServiceAnnotation\FrontendModule;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsFrontendModule;
 use Contao\Environment;
 use Contao\ModuleModel;
 use Contao\Template;
@@ -52,9 +52,9 @@ use const PHP_INT_MAX;
  * _target
  * _description
  *
- * @FrontendModule("hofff_navigation_menu", category="navigationMenu")
  * @psalm-suppress PropertyNotSetInConstructor
  */
+#[AsFrontendModule('hofff_navigation_menu', 'navigation', template: 'mod_hofff_navigation_menu')]
 final class ModuleNavigationMenu extends AbstractFrontendModuleController
 {
     public function __construct(private readonly PageItemsLoader $loader, private readonly NavigationRenderer $renderer)
