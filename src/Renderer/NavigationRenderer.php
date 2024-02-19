@@ -61,8 +61,8 @@ final class NavigationRenderer
         array $itemIds,
         array $stopLimit = [PHP_INT_MAX],
         int $hardLevel = PHP_INT_MAX,
-        ?int $activeId = null,
-        int $currentLevel = 1
+        int|null $activeId = null,
+        int $currentLevel = 1,
     ): string {
         $this->moduleModel = $moduleModel;
         $this->items       = $items;
@@ -174,7 +174,7 @@ final class NavigationRenderer
             } elseif (
                 $currentLevel >= $stopLevel
                 && ! $item['isInTrail'] && $itemId !== $activeId
-                && $item['tid'] !== $activeId
+                && ($item['tid'] ?? null) !== $activeId
             ) {
                 // we are at stop level and not trail and not active, never draw submenu
                 $item['class'] .= ' submenu leaf';
@@ -206,8 +206,10 @@ final class NavigationRenderer
             unset($item);
         }
 
-        $renderedItems[0]['class']                         .= ' first';
-        $renderedItems[count($renderedItems) - 1]['class'] .= ' last';
+        if ($renderedItems !== []) {
+            $renderedItems[0]['class']                         .= ' first';
+            $renderedItems[count($renderedItems) - 1]['class'] .= ' last';
+        }
 
         foreach ($renderedItems as &$item) {
             $item['class'] = ltrim($item['class']);
@@ -293,12 +295,16 @@ final class NavigationRenderer
                 break;
 
             case 'root':
+                /**
+                 * @psalm-suppress RiskyTruthyFalsyComparison
+                 * @psalm-suppress PossiblyUndefinedArrayOffset:
+                 */
                 if (
-                    ! $page['dns']
+                    ! ($page['dns'] ?? false)
                     || preg_replace('/^www\./', '', $page['dns']) === preg_replace(
                         '/^www\./',
                         '',
-                        Environment::get('httpHost')
+                        (string) Environment::get('httpHost'),
                     )
                 ) {
                     $page['href'] = Environment::get('base');
@@ -322,7 +328,7 @@ final class NavigationRenderer
     }
 
     /** @param array<string,mixed> $page */
-    private function generatePageUrl(array $page): ?string
+    private function generatePageUrl(array $page): string|null
     {
         $pageModel = PageModel::findByPk($page['id']);
         if ($pageModel) {
@@ -392,7 +398,7 @@ final class NavigationRenderer
 
     private function dispatchEvent(Event $event): void
     {
-        if ($this->moduleModel->hofff_navigation_disableHooks) {
+        if (! $this->moduleModel->hofff_navigation_disableHooks) {
             return;
         }
 

@@ -37,7 +37,6 @@ final class PageQueryBuilder extends BaseQueryBuilder
         'robots'      => true,
         'cssClass'    => true,
         'accesskey'   => true,
-        'tabindex'    => true,
     ];
 
     private const ERROR_PAGE_TYPES = [
@@ -265,14 +264,20 @@ final class PageQueryBuilder extends BaseQueryBuilder
             return;
         }
 
+        $schemaManager = $this->connection->createSchemaManager();
+        $table         = $schemaManager->introspectTable('tl_page');
+
         if ($customFields === []) {
             $this->fields = array_keys(self::DEFAULT_FIELDS);
+
+            if ($table->hasColumn('tabindex')) {
+                $this->fields[] = 'tabindex';
+            }
 
             return;
         }
 
         $customFields = array_flip($customFields);
-        $table        = $this->connection->createSchemaManager()->introspectTable('tl_page');
         $fields       = [];
 
         foreach ($table->getColumns() as $column) {
