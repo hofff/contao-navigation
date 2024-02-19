@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "717cc1c2336faee42ac370641948f248",
+    "content-hash": "1b118b7e232f4ce3bbd395b7d5730fbc",
     "packages": [
         {
             "name": "ausi/slug-generator",
@@ -1118,16 +1118,16 @@
         },
         {
             "name": "contao/core-bundle",
-            "version": "5.x-dev",
+            "version": "5.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao/core-bundle.git",
-                "reference": "4cffcff438214c009fc78684f78756be8a3c9822"
+                "reference": "3870d9cd16680cdd90b5048788bb53ba643a977e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao/core-bundle/zipball/4cffcff438214c009fc78684f78756be8a3c9822",
-                "reference": "4cffcff438214c009fc78684f78756be8a3c9822",
+                "url": "https://api.github.com/repos/contao/core-bundle/zipball/3870d9cd16680cdd90b5048788bb53ba643a977e",
+                "reference": "3870d9cd16680cdd90b5048788bb53ba643a977e",
                 "shasum": ""
             },
             "require": {
@@ -1281,7 +1281,6 @@
                 "symfony/phpunit-bridge": "^6.4",
                 "symfony/web-profiler-bundle": "^6.4"
             },
-            "default-branch": true,
             "type": "symfony-bundle",
             "extra": {
                 "contao-manager-plugin": "Contao\\CoreBundle\\ContaoManager\\Plugin"
@@ -1329,7 +1328,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2024-02-16T14:28:16+00:00"
+            "time": "2024-02-16T11:16:22+00:00"
         },
         {
             "name": "contao/image",
@@ -1465,7 +1464,7 @@
         },
         {
             "name": "contao/manager-bundle",
-            "version": "5.x-dev",
+            "version": "5.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao/manager-bundle.git",
@@ -1524,7 +1523,6 @@
                 "phpunit/phpunit": "^9.5",
                 "symfony/phpunit-bridge": "^6.4"
             },
-            "default-branch": true,
             "bin": [
                 "bin/contao-console",
                 "bin/contao-setup"
@@ -3440,7 +3438,7 @@
             "dist": {
                 "type": "path",
                 "url": "../..",
-                "reference": "7e3605812828abc41705c857fb765e2b4c117ded"
+                "reference": "d22619e0d8579d37749d31290521e445020b19b1"
             },
             "require": {
                 "contao/core-bundle": "^4.13 || ^5.3",
@@ -12943,7 +12941,6 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "contao/conflicts": 20,
-        "contao/manager-bundle": 20,
         "hofff/contao-navigation": 20
     },
     "prefer-stable": true,
