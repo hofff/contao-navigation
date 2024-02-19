@@ -7,3 +7,10 @@
 !/build.xml
 !/README.md
 !/composer.json
+!/src
+!/.phpcq.yaml.dist
+!/.phpcq.lock
+!/phpcs.xml.dist
+!/phpunit.xml.dist
+!/psalm.xml
+!/.github

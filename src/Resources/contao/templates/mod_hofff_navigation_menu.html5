@@ -1,0 +1,8 @@
+<?php $this->extend('block_unsearchable') ?>
+
+<?php $this->block('content') ?>
+<a href="<?php echo $this->request, '#', $this->skipId; ?>" class="invisible"><?= \Contao\StringUtil::specialchars($this->trans('MSC.skipNavigation', [], 'contao_default')) ?></a>
+<?php echo $this->items; ?>
+<a id="<?php echo $this->skipId; ?>" class="invisible">&nbsp;</a>
+<?php $this->endblock() ?>
+

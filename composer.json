@@ -1,43 +1,76 @@
 {
-	"name": "hofff/contao-navigation",
-	"description": "Advanced navigation module for Contao CMS",
-	"keywords": [ "navigation", "module", "page", "contao" ],
-	"type": "contao-module",
-	"license": "LGPL-3.0+",
-	"authors": [
-		{
-			"name": "Oliver Hoff",
-			"email": "oliver@hofff.com",
-			"homepage": "https://www.hofff.com/",
-			"role": "Developer"
-		},
-		{
-			"name": "Nicky Hoff",
-			"email": "nick@hofff.com",
-			"homepage": "https://www.hofff.com/",
-			"role": "Maintainer"
-		}
-	],
-	"support": {
-		"issues": "https://github.com/hofff/contao-navigation/issues",
-		"source": "https://github.com/hofff/contao-navigation"
-	},
-	"require": {
-		"php": "^5.3 || ^7.0",
-		"contao/core-bundle": "^3.2 || ^4.2",
-		"contao-community-alliance/composer-plugin": "^2.0 || ^3.0"
-	},
-	"replace": {
-		"contao-legacy/backboneit_navigation": "self.version",
-		"backboneit/contao-navigation": "self.version"
-	},
-	"extra": {
-		"contao": {
-			"sources": {
-				"TL_ROOT/system/modules/backboneit_navigation": "system/modules/backboneit_navigation"
-			}
-		},
-		"branch-alias": {
-		}
-	}
+  "name": "hofff/contao-navigation",
+  "description": "Advanced navigation module for Contao CMS",
+  "license": "LGPL-3.0-or-later",
+  "type": "contao-bundle",
+  "keywords": [
+    "navigation",
+    "module",
+    "page",
+    "contao"
+  ],
+  "authors": [
+    {
+      "name": "Oliver Hoff",
+      "email": "oliver@hofff.com",
+      "homepage": "https://www.hofff.com/",
+      "role": "Developer"
+    },
+    {
+      "name": "Nicky Hoff",
+      "email": "nick@hofff.com",
+      "homepage": "https://www.hofff.com/",
+      "role": "Maintainer"
+    },
+    {
+      "name": "David Molineus",
+      "email": "david@hofff.com",
+      "homepage": "https://www.hofff.com/",
+      "role": "Maintainer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/hofff/contao-navigation/issues",
+    "source": "https://github.com/hofff/contao-navigation"
+  },
+  "require": {
+    "php": "^8.1",
+    "contao/core-bundle": "^4.13 || ^5.3",
+    "doctrine/dbal": "^3.8",
+    "symfony/config": "^5.4 || ^6.4",
+    "symfony/dependency-injection": "^5.4 || ^6.4",
+    "symfony/event-dispatcher-contracts": "^1.1 || ^2.0 || ^3.0",
+    "symfony/http-foundation": "^5.4 || ^6.4",
+    "symfony/http-kernel": "^5.4 || ^6.4",
+    "symfony/security-core": "^5.4 || ^6.4"
+  },
+  "require-dev": {
+    "contao/manager-plugin": "^2.0",
+    "doctrine/coding-standard": "^12.0.",
+    "phpcq/runner-bootstrap": "1.x-dev"
+  },
+  "replace": {
+    "backboneit/contao-navigation": "self.version",
+    "contao-legacy/backboneit_navigation": "self.version"
+  },
+  "autoload": {
+    "psr-4": {
+      "Hofff\\Contao\\Navigation\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "contao-components/installer": false,
+      "contao/manager-plugin": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "php-http/discovery": true
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-develop": "2.1.x-dev",
+      "dev-master": "2.0.x-dev"
+    },
+    "contao-manager-plugin": "Hofff\\Contao\\Navigation\\ContaoManager\\Plugin"
+  }
 }

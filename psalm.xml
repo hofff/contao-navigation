@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<psalm
+        errorLevel="3"
+        hideExternalErrors="true"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://getpsalm.org/schema/config"
+        xsi:schemaLocation="https://getpsalm.org/schema/config https://getpsalm.org/schema/config"
+>
+    <projectFiles>
+        <directory name="src"/>
+        <ignoreFiles>
+            <directory name="src/Resources/contao/dca"/>
+            <directory name="src/Resources/contao/languages"/>
+        </ignoreFiles>
+    </projectFiles>
+
+    <issueHandlers>
+        <DeprecatedClass>
+            <errorLevel type="suppress">
+                <referencedClass name="Contao\Template"/>
+                <referencedClass name="Symfony\Component\Security\Core\Security"/>
+            </errorLevel>
+        </DeprecatedClass>
+        <DeprecatedMethod>
+            <errorLevel type="suppress">
+                <referencedMethod name="Contao\PageModel::getFrontendUrl"/>
+            </errorLevel>
+        </DeprecatedMethod>
+        <InternalMethod>
+            <errorLevel type="suppress">
+                <referencedMethod name="Contao\CoreBundle\Framework\ContaoFramework::getAdapter"/>
+            </errorLevel>
+        </InternalMethod>
+        <TooManyArguments>
+            <errorLevel type="suppress">
+                <!-- Method allows variadic arguments -->
+                <referencedFunction name="Doctrine\DBAL\Query\QueryBuilder::select"/>
+            </errorLevel>
+        </TooManyArguments>
+    </issueHandlers>
+
+    <universalObjectCrates>
+        <class name="Contao\ModuleModel"/>
+        <class name="Contao\Template"/>
+    </universalObjectCrates>
+</psalm>
