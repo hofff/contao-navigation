@@ -13,7 +13,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Result;
 use Hofff\Contao\Navigation\QueryBuilder\PageQueryBuilder;
 use Hofff\Contao\Navigation\Security\PagePermissionGuard;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface AS Security;
 
 use function array_diff;
 use function array_fill_keys;
