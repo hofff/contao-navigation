@@ -86,7 +86,7 @@ final class PageQueryBuilder extends BaseQueryBuilder
                     )
                     ->addGuestsQueryParts(
                         $queryBuilder,
-                        (bool) $this->moduleModel->backboneit_navigation_showGuests,
+                        (bool) $this->moduleModel->hofff_navigation_showGuests,
                     );
             },
         );
