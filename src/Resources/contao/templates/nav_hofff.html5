@@ -8,6 +8,7 @@
       <?php if($item['tabindex']): ?>tabindex="<?php echo $item['tabindex']; ?>"<?php endif; ?>
       <?php if($item['isActive']): ?>rel="nofollow"<?php endif; ?>
       <?php echo $item['target']; ?>
+      <?php echo $item['rel'] ?>
     ><?php echo $item['link'];
   ?></a
   ><?php echo $item['subitems'];
