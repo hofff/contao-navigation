@@ -40,7 +40,7 @@ final class NavigationDcaListener
                 continue;
             }
 
-            $fields[$fieldName] = sprintf('%s <span class="tl_gray">[%s]</span>', $config['label'][0], $fieldName);
+            $fields[$fieldName] = sprintf('%s <span class="tl_gray">[%s]</span>', $config['label'][0] ?? '', $fieldName);
         }
 
         return $fields;
