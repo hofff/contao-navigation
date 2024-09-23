@@ -282,7 +282,7 @@ final class NavigationRenderer
                         $page['href']   = $this->encodeEmailURL($redirectPage['url']);
                         $page['target'] = $redirectPage['target'] ? 'target="_blank"' : '';
 
-                        if ('target="_blank"' === $page['target']) {
+                        if ($page['target'] === 'target="_blank"') {
                             $page['rel'] = 'rel="noreferrer noopener"';
                         }
                     } else {
@@ -300,9 +300,10 @@ final class NavigationRenderer
                 $page['href']   = $this->encodeEmailURL($page['url']);
                 $page['target'] = $page['_target'] ? 'target="_blank"' : '';
 
-                if ('target="_blank"' === $page['target']) {
+                if ($page['target'] === 'target="_blank"') {
                     $page['rel'] = 'rel="noreferrer noopener"';
                 }
+
                 break;
 
             case 'root':

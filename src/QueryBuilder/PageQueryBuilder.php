@@ -9,7 +9,7 @@ use Contao\StringUtil;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface AS Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface as Security;
 
 use function array_flip;
 use function array_keys;

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Hofff\Contao\Navigation\QueryBuilder;
 
+use Contao\CoreBundle\ContaoCoreBundle;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface AS Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface as Security;
 
 use function time;
+use function version_compare;
 
 abstract class BaseQueryBuilder
 {
@@ -33,6 +35,10 @@ abstract class BaseQueryBuilder
     protected function addGuestsQueryParts(QueryBuilder $queryBuilder, bool $showGuests = false): self
     {
         if ($showGuests) {
+            return $this;
+        }
+
+        if (version_compare(ContaoCoreBundle::getVersion(), '5.0', '>=')) {
             return $this;
         }
 

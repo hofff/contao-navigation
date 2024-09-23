@@ -1,33 +1,27 @@
 #ddev-generated: Automatically generated ddev .gitignore.
+# You can remove the above line if you want to edit and maintain this file yourself.
+/.gitignore
 
 /**/*.example
 /.dbimageBuild
-/.dbimageExtra
 /.ddev-docker-*.yaml
 /.*downloads
-/.global_commands
 /.homeadditions
 /.importdb*
 /.sshimageBuild
 /.venv
 /.webimageBuild
-/.webimageExtra
 /apache/apache-site.conf
 /commands/.gitattributes
-/commands/db/mysql
-/commands/host/launch
-/commands/web/xdebug
-/commands/web/live
 /config.local.y*ml
 /db_snapshots
-/import-db
-/import.yaml
 /mutagen/mutagen.yml
 /mutagen/.start-synced
 /nginx_full/nginx-site.conf
 /postgres/postgresql.conf
 /providers/acquia.yaml
 /providers/lagoon.yaml
+/providers/pantheon.yaml
 /providers/platform.yaml
 /providers/upsun.yaml
 /sequelpro.spf
@@ -37,11 +31,3 @@
 /traefik/certs/hofff-contao-navigation.key
 /xhprof/xhprof_prepend.php
 /**/README.*
-!/backup
-/contao/vendor
-/contao/assets
-/contao/public
-/contao/bin
-/contao/system
-/contao/var
-/contao/.env.local
