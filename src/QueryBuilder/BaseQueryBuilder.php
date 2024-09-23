@@ -6,7 +6,7 @@ namespace Hofff\Contao\Navigation\QueryBuilder;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface AS Security;
 
 use function time;
 

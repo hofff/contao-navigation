@@ -7,7 +7,7 @@ namespace Hofff\Contao\Navigation\Security;
 use Contao\FrontendUser;
 use Contao\ModuleModel;
 use Contao\StringUtil;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface AS Security;
 
 use function array_intersect;
 
