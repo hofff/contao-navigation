@@ -267,6 +267,7 @@ final class NavigationRenderer
         $page['title']       = StringUtil::specialchars($page['_title'], true);
         $page['pageTitle']   = StringUtil::specialchars($page['_pageTitle'], true);
         $page['target']      = ''; // overwrite DB value
+        $page['rel']         = '';
         $page['nofollow']    = strncmp($page['robots'], 'noindex', 7) === 0;
         $page['description'] = str_replace(["\n", "\r"], [' ', ''], $page['_description']);
         $page['isInTrail']   = $this->items->isInTrail((int) $page['id']);
@@ -280,6 +281,10 @@ final class NavigationRenderer
                     } elseif ($redirectPage['type'] === 'redirect') {
                         $page['href']   = $this->encodeEmailURL($redirectPage['url']);
                         $page['target'] = $redirectPage['target'] ? 'target="_blank"' : '';
+
+                        if ('target="_blank"' === $page['target']) {
+                            $page['rel'] = 'rel="noreferrer noopener"';
+                        }
                     } else {
                         $page['tid']  = $redirectPage['id'];
                         $page['href'] = $this->generatePageUrl($redirectPage);
@@ -294,6 +299,10 @@ final class NavigationRenderer
             case 'redirect':
                 $page['href']   = $this->encodeEmailURL($page['url']);
                 $page['target'] = $page['_target'] ? 'target="_blank"' : '';
+
+                if ('target="_blank"' === $page['target']) {
+                    $page['rel'] = 'rel="noreferrer noopener"';
+                }
                 break;
 
             case 'root':
