@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Hofff\Contao\Navigation\Security;
 
-use Contao\FrontendUser;
+use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\ModuleModel;
 use Contao\StringUtil;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface AS Security;
-
-use function array_intersect;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface as Security;
 
 final class PagePermissionGuard
 {
@@ -74,18 +72,9 @@ final class PagePermissionGuard
             return false;
         }
 
-        $user = $this->security->getUser();
-        if (! $user instanceof FrontendUser) {
-            return true;
-        }
-
-        // the current user is not in any group
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
-        if (! $user->groups) {
-            return true;
-        }
-
-        // check if the current user is not in any group, which is allowed to access the current page
-        return ! array_intersect((array) $user->groups, StringUtil::deserialize($page['groups'], true));
+        return ! $this->security->isGranted(
+            ContaoCorePermissions::MEMBER_IN_GROUPS,
+            StringUtil::deserialize($page['groups'], true),
+        );
     }
 }
