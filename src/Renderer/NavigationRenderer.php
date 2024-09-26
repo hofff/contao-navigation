@@ -146,7 +146,8 @@ final class NavigationRenderer
                 $containsActive = true;
 
                 if ($item['href'] === Environment::get('request')) {
-                    $item['isActive'] = true; // nothing else (active class is set in template)
+                    $item['isActive']  = true; // nothing else (active class is set in template)
+                    $item['isInTrail'] = false;
                 } else {
                     $item['isInTrail'] = true;
                 }
@@ -154,7 +155,8 @@ final class NavigationRenderer
                 /** @psalm-suppress RiskyTruthyFalsyComparison */
                 if (isset($item['tid']) && $item['tid'] === $activeId) {
                     if ($item['href'] === Environment::get('request')) {
-                        $item['isActive'] = true; // nothing else (active class is set in template)
+                        $item['isActive']  = true; // nothing else (active class is set in template)
+                        $item['isInTrail'] = false;
                     } else {
                         $item['isInTrail'] = true;
                     }
