@@ -419,4 +419,13 @@ final class NavigationRenderer
 
         $this->eventDispatcher->dispatch($event);
     }
+
+    private function isActive(string $href): bool
+    {
+        if (str_starts_with($href, '/')) {
+            return $href === '/' . Environment::get('request');
+        }
+
+        return $href === Environment::get('request');
+    }
 }
