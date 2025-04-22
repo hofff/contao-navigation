@@ -11,6 +11,7 @@ use Contao\ModuleModel;
 use Contao\Template;
 use Hofff\Contao\Navigation\Items\PageItemsLoader;
 use Hofff\Contao\Navigation\Renderer\NavigationRenderer;
+use Override;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -65,6 +66,7 @@ final class ModuleNavigationMenu extends AbstractFrontendModuleController
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
+    #[Override]
     protected function getResponse(Template $template, ModuleModel $model, Request $request): Response
     {
         $stopLevels = $this->getStopLevels($model);

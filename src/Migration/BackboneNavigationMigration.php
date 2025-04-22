@@ -8,6 +8,7 @@ use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
+use Override;
 
 use function is_int;
 use function sprintf;
@@ -50,6 +51,7 @@ final class BackboneNavigationMigration extends AbstractMigration
     {
     }
 
+    #[Override]
     public function shouldRun(): bool
     {
         if (! $this->connection->createSchemaManager()->tablesExist('tl_module')) {
@@ -63,6 +65,7 @@ final class BackboneNavigationMigration extends AbstractMigration
         return $this->determineAffectedFields() !== [];
     }
 
+    #[Override]
     public function run(): MigrationResult
     {
         $this->renameNavigationModules();
