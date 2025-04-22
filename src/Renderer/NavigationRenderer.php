@@ -22,6 +22,7 @@ use function count;
 use function ltrim;
 use function preg_replace;
 use function str_replace;
+use function str_starts_with;
 use function strncasecmp;
 use function strncmp;
 use function trim;
@@ -145,7 +146,7 @@ final class NavigationRenderer
             if ($itemId === $activeId) {
                 $containsActive = true;
 
-                if ($item['href'] === Environment::get('request')) {
+                if ($this->isActive($item['href'])) {
                     $item['isActive']  = true; // nothing else (active class is set in template)
                     $item['isInTrail'] = false;
                 } else {
@@ -154,7 +155,7 @@ final class NavigationRenderer
             } else { // do not flatten if/else
                 /** @psalm-suppress RiskyTruthyFalsyComparison */
                 if (isset($item['tid']) && $item['tid'] === $activeId) {
-                    if ($item['href'] === Environment::get('request')) {
+                    if ($this->isActive($item['href'])) {
                         $item['isActive']  = true; // nothing else (active class is set in template)
                         $item['isInTrail'] = false;
                     } else {
