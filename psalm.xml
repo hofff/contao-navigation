@@ -20,6 +20,7 @@
             <errorLevel type="suppress">
                 <referencedClass name="Contao\Template"/>
                 <referencedClass name="Symfony\Component\Security\Core\Security"/>
+                <referencedClass name="Symfony\Component\DependencyInjection\Loader\XmlFileLoader"/>
             </errorLevel>
         </DeprecatedClass>
         <DeprecatedMethod>
@@ -27,11 +28,6 @@
                 <referencedMethod name="Contao\PageModel::getFrontendUrl"/>
             </errorLevel>
         </DeprecatedMethod>
-        <InternalMethod>
-            <errorLevel type="suppress">
-                <referencedMethod name="Contao\CoreBundle\Framework\ContaoFramework::getAdapter"/>
-            </errorLevel>
-        </InternalMethod>
         <TooManyArguments>
             <errorLevel type="suppress">
                 <!-- Method allows variadic arguments -->

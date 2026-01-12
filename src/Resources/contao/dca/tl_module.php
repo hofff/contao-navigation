@@ -80,9 +80,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_respectHidden'] = [
         'tl_class' => 'w50 cbx m12',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -93,9 +92,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_respectPublish'] = [
         'tl_class' => 'clr w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -106,9 +104,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_respectGuests'] = [
         'tl_class' => 'w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -120,9 +117,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_includeStart'] = [
         'tl_class'       => 'clr w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -133,9 +129,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showHiddenStart'] = 
         'tl_class' => 'w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -146,9 +141,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showHidden'] = [
         'tl_class' => 'clr w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -159,9 +153,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showProtected'] = [
         'tl_class' => 'w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -172,9 +165,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showGuests'] = [
         'tl_class' => 'clr w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -199,9 +191,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_noForwardResolution'
         'tl_class' => 'm12 w50',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -212,9 +203,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_showErrorPages'] = [
         'tl_class' => 'w50',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -225,9 +215,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_disableEvents'] = [
         'tl_class' => 'w50',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -238,9 +227,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_currentAsRoot'] = [
         'tl_class' => 'w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -252,9 +240,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_defineRoots'] = [
         'tl_class'       => 'w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -266,9 +253,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_defineStop'] = [
         'tl_class'       => 'clr w50 cbx m12',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -294,9 +280,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_defineHard'] = [
         'tl_class'       => 'clr w50 cbx m12',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -322,9 +307,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_isSitemap'] = [
         'tl_class' => 'w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -335,9 +319,8 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_hideSingleLevel'] = 
         'tl_class' => 'clr w50 cbx',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
 
@@ -348,8 +331,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hofff_navigation_addLegacyCss'] = [
         'tl_class' => 'w50 cbx m12',
     ],
     'sql'       => [
-        'type'    => Types::STRING,
-        'length'  => 1,
-        'default' => '',
+        'type'    => Types::BOOLEAN,
+        'default' => false,
     ],
 ];
